@@ -291,7 +291,13 @@ document.addEventListener("keydown",e=>{
 });
 
 // ---------- VIEWS ----------
+// Pinned bars get an edge once content scrolls under them.
+function shade(){const st=app.querySelector(".sticky"),dk=app.querySelector(".dock");
+  if(st)st.classList.toggle("scrolled",window.scrollY>4);
+  if(dk)dk.classList.toggle("lift",document.documentElement.scrollHeight-window.innerHeight-window.scrollY>4)}
+window.addEventListener("scroll",shade,{passive:true});window.addEventListener("resize",shade);
 function render(){
+  requestAnimationFrame(shade);
   if(S.view==="quiz"){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t&&!S.qs[S.i].ans)t.focus();return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
@@ -358,6 +364,13 @@ function viewSetup(){
   const PICK={expert:"Find the flag among nine, drawn from its look-alikes and region. +3 per correct answer.",master:"Find the flag among sixteen look-alikes and neighbours. +3 per correct answer."};
   const diffNote=grp&&!TYPED(SET.diff)?"Options always come from the look-alike set itself (Hard); Expert and Master "+(SET.dir==="flag"?"show more of them.":"ask you to type."):SET.dir==="flag"&&PICK[SET.diff]?PICK[SET.diff]:DIFF[SET.diff];
   if(p.mode==="all")p.label=scopeName();
+  // Settings that change which flags and designs you see sit under "More"; the summary line says what they are set to.
+  const more=[],sumParts=[];
+  if(p.mode==="region"||p.mode==="all"||p.mode==="lookmix"){more.push(scopeSeg("The same setting as on the home screen; changing it here changes it there."));sumParts.push(SCOPES.find(x=>x[0]===SET.scope)[1])}
+  if(p.mode!=="group"&&nVar){more.push(`<div class="seg"><span class="label">Design</span><div class="btns">
+      ${[["national","National"],["civil","Civil"],["state","State"],["random","Random"]].map(([v,l])=>`<button class="${SET.variant===v?"on":""}" onclick="setOpt('variant','${v}')">${l}</button>`).join("")}</div>
+      <span class="note">${nVar} of these flags have more than one official design, usually a civil version without the arms and a state version with them. ${{national:"National shows the everyday version.",civil:"Civil shows the version citizens fly.",state:"State shows the version government buildings fly.",random:"Random mixes them from question to question."}[SET.variant]}</span></div>`);sumParts.push(SET.variant+" designs")}
+  const summary=sumParts.join(" · ");
   return `${shell({title:p.label,stat:pool.length+(p.mode==="group"?" flags in the set":" flags"),back:S.from&&S.from.view==="look"?"Look-alikes":"Home"})}
   <div class="card">
     <div class="seg"><span class="label">Round length</span><div class="btns">
@@ -369,16 +382,13 @@ function viewSetup(){
       <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
       <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
       <span class="note">${SET.dir==="flag"?"You see the name and choose among four flags.":"You see the flag and choose or type the name."}</span></div>
-    ${p.mode==="region"||p.mode==="all"||p.mode==="lookmix"?scopeSeg("The same setting as on the home screen; changing it here changes it there."):""}
-    ${p.mode!=="group"&&nVar?`<div class="seg"><span class="label">Design</span><div class="btns">
-      ${[["national","National"],["civil","Civil"],["state","State"],["random","Random"]].map(([v,l])=>`<button class="${SET.variant===v?"on":""}" onclick="setOpt('variant','${v}')">${l}</button>`).join("")}</div>
-      <span class="note">${nVar} of these flags have more than one official design, usually a civil version without the arms and a state version with them. ${{national:"National shows the everyday version.",civil:"Civil shows the version citizens fly.",state:"State shows the version government buildings fly.",random:"Random mixes them from question to question."}[SET.variant]}</span></div>`:""}
     <div class="seg"><span class="label">Pace</span><div class="btns">
       <button class="${SET.pace==="learn"?"on":""}" onclick="setOpt('pace','learn')">Learn</button>
       <button class="${SET.pace==="drill"?"on":""}" onclick="setOpt('pace','drill')">Drill</button></div>
       <span class="note">${SET.pace==="drill"?"Correct answers advance automatically.":"Shows what the flag means after each answer."}</span></div>
+    ${more.length?`<details class="more"${S.more?" open":""} ontoggle="S.more=this.open"><summary><span class="label">More</span><span class="sum">${esc(summary)}</span></summary>${more.join("")}</details>`:""}
   </div>
-  ${n?`<button class="btn" id="startBtn" onclick="startRound(S.pick.mode,S.pick.arg,S.pick.label,S.pick.flt)">Start · ${n} questions</button>`:`<p class="muted small">No flags here for this scope. Pick another scope above.</p>`}`;
+  <div class="dock">${n?`<button class="btn" id="startBtn" onclick="startRound(S.pick.mode,S.pick.arg,S.pick.label,S.pick.flt)">Start · ${n} questions</button>`:`<p class="muted small" style="text-align:center">No flags here for this scope. Pick another scope under More.</p>`}</div>`;
 }
 function viewBadges(){
   const nb=BADGES.filter(b=>badges[b.id]).length;
