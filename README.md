@@ -14,7 +14,7 @@ Flag images from [flag-icons](https://github.com/lipis/flag-icons) (MIT) and, fo
 - `js/data/flags.js` – every flag: code, name, set, capital, description
 - `js/data/groups.js` – look-alike sets and their hints
 - `js/data/names.js` – typed-answer aliases, Wikipedia title overrides, official proportions, adoption years
-- `js/version.js` – build number and time, written by `tools/stamp_version.py` before each commit
+- `js/version.js` – commit time, written by `tools/stamp_version.py` before each commit
 - `flags/` – 4:3 artwork; `flags-true/` – official proportions
 - `tools/` – SVG edge snapping and the claude.ai artifact fragment generator
 

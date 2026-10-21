@@ -299,8 +299,8 @@ let VER_CHECKED=null;
 async function checkVersion(){
   if(typeof VERSION!=="object"||VER_CHECKED!==null)return;VER_CHECKED=false;
   try{const r=await fetch("https://raw.githubusercontent.com/maxlep/flag-game/main/js/version.js?"+Date.now(),{cache:"no-store"});
-    const m=(await r.text()).match(/n:(\d+)/);if(!m)return;VER_CHECKED=+m[1];
-    const el=$("#ver");if(el&&VER_CHECKED>VERSION.n)el.innerHTML=`<a class="stale" href="javascript:location.reload(true)">A newer version is available, reload</a>`+el.innerHTML;
+    const m=(await r.text()).match(/at:"([^"]+)"/);if(!m)return;VER_CHECKED=m[1];
+    const el=$("#ver");if(el&&VER_CHECKED>VERSION.at)el.innerHTML=`<a class="stale" href="javascript:location.reload(true)">A newer version is available, reload</a>`+el.innerHTML;
   }catch(e){}
 }
 function resetAsk(){
