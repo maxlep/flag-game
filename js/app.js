@@ -7,7 +7,7 @@ function load(){try{const s=localStorage.getItem(KEY);if(s)prog=JSON.parse(s)||{
   Object.values(prog).forEach(r=>{if(r.s===undefined)r.s=Math.max(-4,Math.min(8,(r.c-r.w)*2))})}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(prog))}catch(e){}}
 const rec=c=>prog[c]||{c:0,w:0,s:0};
-const PTS={easy:0,medium:1,hard:2,expert:3},MASTER=4;
+const PTS={easy:0,medium:1,hard:2,expert:3,master:3},MASTER=4;
 const mastered=c=>rec(c).s>=MASTER;
 const seen=c=>{const r=rec(c);return r.c+r.w>0};
 
@@ -15,6 +15,8 @@ const seen=c=>{const r=rec(c);return r.c+r.w>0};
 const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/^the\s+/,"").replace(/[^a-z0-9]/g,"");
 const NAMES=FLAGS.map(f=>({c:f.c,n:norm(f.n),d:f.n}));
 const ALIASN=Object.fromEntries(Object.entries(ALIASES).map(([c,a])=>[c,a.map(norm)]));
+// Master: the name or an alias, nothing less. Case, accents and punctuation are still ignored.
+function matchStrict(text){const t=norm(text);if(!t)return null;const exact=NAMES.find(x=>x.n===t);if(exact)return exact.c;for(const [c,a] of Object.entries(ALIASN))if(a.includes(t))return c;return null}
 function matchTyped(text){
   const t=norm(text);if(!t)return null;
   const exact=NAMES.find(x=>x.n===t);if(exact)return exact.c;
@@ -63,21 +65,23 @@ function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t,true
 const SKEY="flaglore.settings";
 let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true"};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
-function setOpt(k,v){SET[k]=v;if(SET.dir==="flag"&&SET.diff==="expert")SET.diff="hard";try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
-const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no points.",medium:"Options come from the same region. +1 point per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer."};
+const TYPED=d=>d==="expert"||d==="master";
+function setOpt(k,v){SET[k]=v;if(SET.dir==="flag"&&TYPED(SET.diff))SET.diff="hard";try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
+const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no points.",medium:"Options come from the same region. +1 point per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer.",master:"Type the exact name, with no suggestions or typo help. Common names still count. +3 per correct answer."};
 
 // ---------- BADGES ----------
 const BKEY="flaglore.badges";let badges={};
 function loadB(){try{badges=JSON.parse(localStorage.getItem(BKEY))||{}}catch(e){badges={}}}
 function saveB(){try{localStorage.setItem(BKEY,JSON.stringify(badges))}catch(e){}}
 const BADGES=[
- {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Expert with no misses. All 252, typed, no mistakes.",big:1},
- {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Expert with no misses. All 197, typed, no mistakes.",big:1},
- ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Expert with no misses."})),
+ {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Expert or Master with no misses. All 252, typed, no mistakes.",big:1},
+ {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Expert or Master with no misses. All 197, typed, no mistakes.",big:1},
+ ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Expert or Master with no misses."})),
  {id:"tour",e:"🌍",n:"World Tour",h:"Finish a full Whole World round at any difficulty."},
  {id:"clean10",e:"✨",n:"Clean Sheet",h:"A perfect round of 10 or more on Medium or harder."},
  {id:"sharp25",e:"🎯",n:"Sharp Eye",h:"A perfect round of 25 or more on Hard or harder."},
  {id:"typed25",e:"🐝",n:"Spelling Bee",h:"A perfect typed round of 25 or more."},
+ {id:"purist",e:"🧠",n:"Purist",h:"A perfect round of 25 or more on Master: exact names, no help."},
  {id:"mirror",e:"🪞",n:"Mirror Image",h:"A perfect round of 25 or more in Pick-the-flag on Hard."},
  {id:"twins",e:"👯",n:"Twin Spotter",h:"Perfect rounds in 10 different look-alike sets."},
  {id:"streak25",e:"🔥",n:"On a Roll",h:"25 correct in a row."},
@@ -93,13 +97,14 @@ const BADGES=[
 const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
 function checkBadges(){
   const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length,perfect=right===n;
-  const D={easy:0,medium:1,hard:2,expert:3}[S.diff]||0,typed=S.diff==="expert"&&S.dir==="name";
+  const D={easy:0,medium:1,hard:2,expert:3,master:4}[S.diff]||0,typed=TYPED(S.diff)&&S.dir==="name";
   const mc=COUNTRIES.filter(f=>mastered(f.c)).length,earned=[];
   const award=id=>{if(!badges[id]){badges[id]=Date.now();earned.push(id)}};
   award("first");
   if(perfect&&n>=10&&D>=1)award("clean10");
   if(perfect&&n>=25&&D>=2)award("sharp25");
   if(perfect&&n>=25&&typed)award("typed25");
+  if(perfect&&n>=25&&S.diff==="master"&&S.dir==="name")award("purist");
   if(perfect&&n>=25&&S.dir==="flag"&&D>=2)award("mirror");
   if(S.mode==="all"&&S.full)award("tour");
   if(S.mode==="group"&&perfect){const t=badges._twins=badges._twins||[];if(!t.includes(S.arg))t.push(S.arg);if(t.length>=10)award("twins")}
@@ -163,7 +168,7 @@ function distractors(c,diff,mode){
   const gm=shuffle(groups.flatMap(i=>GROUPS[i].f).filter(x=>x!==c));
   const same=shuffle(FLAGS.filter(x=>x.r===f.r&&x.c!==c).map(x=>x.c));
   const any=shuffle(FLAGS.map(x=>x.c).filter(x=>x!==c));
-  if(mode==="group"||mode==="lookmix"||diff==="hard"||diff==="expert"){add(gm);add(same)}
+  if(mode==="group"||mode==="lookmix"||diff==="hard"||TYPED(diff)){add(gm);add(same)}
   else if(diff==="medium"){add(same)}
   add(any);
   return [...out];
@@ -186,7 +191,7 @@ function startRound(mode,arg,label){
   const pool=poolFor(mode,arg);
   if(!pool.length)return;
   const from=S.view==="quiz"||S.view==="done"||S.view==="setup"?S.from:here();
-  const diff=SET.dir==="flag"&&SET.diff==="expert"?"hard":SET.diff;
+  const diff=SET.dir==="flag"&&TYPED(SET.diff)?"hard":SET.diff;
   let order,full;
   const grp=mode==="group"||mode==="lookmix";
   if(mode==="group"){full=SET.len==="all";
@@ -197,13 +202,13 @@ function startRound(mode,arg,label){
     order=pickOrder(pool,n);
   }
   const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode)]),ans:null,typed:""}));
-  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:grp&&diff!=="expert"?"hard":diff,dir:SET.dir,pace:SET.pace,from,full};
+  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,pace:SET.pace,from,full};
   render();window.scrollTo(0,0);
 }
 function submitTyped(){
   const inp=$("#typeIn");if(!inp)return;
   const text=inp.value.trim();if(!text)return;
-  const k=matchTyped(text);
+  const k=S.diff==="master"?matchStrict(text):matchTyped(text);
   const q=S.qs[S.i];q.typed=text;
   answer(k||"__wrong__");
 }
@@ -310,14 +315,14 @@ function resetAsk(){
 function viewSetup(){
   const p=S.pick,pool=poolFor(p.mode,p.arg),grp=p.mode==="group"||p.mode==="lookmix";
   const n=p.mode==="group"?(SET.len==="all"?pool.length*2:SET.len):SET.len==="all"?pool.length:Math.min(SET.len,pool.length);
-  const eff=grp&&SET.diff!=="expert"?"hard":SET.dir==="flag"&&SET.diff==="expert"?"hard":SET.diff;
-  const diffNote=grp?"Options always come from the look-alike set itself (Hard); Expert asks you to type.":SET.dir==="flag"&&SET.diff==="expert"?"Typed answers need the flag shown; switch to country names.":DIFF[SET.diff];
+  const eff=grp&&!TYPED(SET.diff)?"hard":SET.dir==="flag"&&TYPED(SET.diff)?"hard":SET.diff;
+  const diffNote=grp&&!TYPED(SET.diff)?"Options always come from the look-alike set itself (Hard); Expert and Master ask you to type.":SET.dir==="flag"&&TYPED(SET.diff)?"Typed answers need the flag shown; switch to country names.":DIFF[SET.diff];
   return `${shell({title:p.label,stat:pool.length+(p.mode==="group"?" flags in the set":" flags"),back:S.from&&S.from.view==="look"?"Look-alikes":"Home"})}
   <div class="card">
     <div class="seg"><span class="label">Round length</span><div class="btns">
       ${[[10,"10"],[25,"25"],["all","Full set"]].map(([v,l])=>`<button class="${SET.len===v?"on":""}" onclick="setOpt('len',${typeof v==="string"?"'all'":v})">${l}</button>`).join("")}</div></div>
     <div class="seg"><span class="label">Difficulty</span><div class="btns">
-      ${["easy","medium","hard","expert"].map(d=>`<button class="${eff===d?"on":""}${(d==="expert"&&SET.dir==="flag")||(grp&&d!=="expert"&&d!=="hard")?" off":""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join("")}</div>
+      ${["easy","medium","hard","expert","master"].map(d=>`<button class="${eff===d?"on":""}${(TYPED(d)&&SET.dir==="flag")||(grp&&!TYPED(d)&&d!=="hard")?" off":""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join("")}</div>
       <span class="note">${diffNote}</span></div>
     <div class="seg"><span class="label">Answer with</span><div class="btns">
       <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
@@ -344,7 +349,7 @@ function viewQuiz(){
   const q=S.qs[S.i],f=BY[q.c],n=S.qs.length;
   const dots=n>30?`<i class="now" style="flex:${S.i+1} 1 0"></i><i style="flex:${n-S.i-1} 1 0"></i>`:S.qs.map((x,i)=>`<i class="${x.ans?(x.ans===x.c?"ok":"bad"):(i===S.i?"now":"")}"></i>`).join("");
   const letters="ABCD";
-  const reverse=S.dir==="flag",typed=S.diff==="expert"&&!reverse;
+  const reverse=S.dir==="flag",typed=TYPED(S.diff)&&!reverse,strict=S.diff==="master";
   let prompt,opts;
   if(reverse){
     prompt=`<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
@@ -354,8 +359,8 @@ function viewQuiz(){
   } else if(typed){
     prompt=`${img(q.c)}<p class="eyebrow">Which country? Type it.</p>`;
     opts=q.ans?"":`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
-      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Country name" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}}">
-      <div class="sugg" id="sugg"></div>
+      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
+      ${strict?"":'<div class="sugg" id="sugg"></div>'}
       <div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div></form>`;
   } else {
     prompt=`${img(q.c)}<p class="eyebrow">Which country?</p>`;
