@@ -559,21 +559,22 @@ function matchTyped(text){
   const t=norm(text);if(!t)return null;
   const exact=NAMES.find(x=>x.n===t);if(exact)return exact.c;
   for(const [c,a] of Object.entries(ALIASN))if(a.includes(t))return c;
-  if(t.length>=4){const pre=NAMES.filter(x=>x.n.startsWith(t));if(pre.length===1)return pre[0].c}
+  // If what you've typed narrows the suggestion list to one name, that name is the answer.
+  const sg=suggestAll(t);if(sg.length===1)return sg[0];
   // Typo tolerance: the closest candidate wins if it is within its allowance and no other country ties it.
   let best=Infinity,who=new Set();
   for(const x of CANDS){if(Math.abs(x.n.length-t.length)>2)continue;const d=editDist(t,x.n);if(d>allowed(x.n.length))continue;
     if(d<best){best=d;who=new Set([x.c])}else if(d===best)who.add(x.c)}
   return who.size===1?[...who][0]:null;
 }
-function suggest(text){
-  const t=norm(text);if(t.length<2)return [];
+function suggestAll(t){
   const out=[];
   NAMES.forEach(x=>{if(x.n.startsWith(t))out.push(x.c)});
   NAMES.forEach(x=>{if(!out.includes(x.c)&&x.n.includes(t))out.push(x.c)});
   Object.entries(ALIASN).forEach(([c,a])=>{if(!out.includes(c)&&a.some(y=>y.startsWith(t)))out.push(c)});
-  return out.slice(0,5);
+  return out;
 }
+function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t).slice(0,5)}
 
 // ---------- SETTINGS ----------
 const SKEY="flaglore.settings";
