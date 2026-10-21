@@ -86,13 +86,14 @@ const BADGES=[ // roughly in the order people earn them
  {id:"streak50",e:"⚡",n:"Unstoppable",h:"50 correct in a row."},
  {id:"typed25",e:"🐝",n:"Spelling Bee",h:"A perfect typed round of 25 or more."},
  {id:"m100",e:"📚",n:"Vexillologist",h:"100 flags learned."},
- {id:"purist",e:"🧠",n:"Purist",h:"A perfect round of 25 or more on Master: exact names, no help."},
+ {id:"purist",e:"🧠",n:"Purist",h:"A perfect typed round of 25 or more on Master: exact names, no help."},
+ {id:"hawk",e:"🦅",n:"Hawkeye",h:"A perfect Pick-the-flag round of 25 or more on Master: the right flag among sixteen."},
  {id:"carto",e:"🗺️",n:"Cartographer",h:"Every territory, region and organisation flag learned."},
  {id:"streak100",e:"💯",n:"Centurion",h:"100 correct in a row."},
  {id:"m197",e:"🏆",n:"Completionist",h:"Every country's flag learned."},
- ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Master with no misses."})),
- {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Master with no misses. All 197, typed exactly, no mistakes.",big:1},
- {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Master with no misses. All 252, typed exactly, no mistakes.",big:1}
+ ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Master, typed, with no misses."})),
+ {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Master, typed, with no misses. All 197 names exact, no mistakes.",big:1},
+ {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Master, typed, with no misses. Every flag, names exact, no mistakes.",big:1}
 ];
 const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
 function checkBadges(){
@@ -106,6 +107,7 @@ function checkBadges(){
   if(perfect&&n>=25&&typed)award("typed25");
   if(perfect&&n>=25&&S.diff==="master"&&S.dir==="name")award("purist");
   if(perfect&&n>=25&&S.dir==="flag"&&D>=2)award("mirror");
+  if(perfect&&n>=25&&S.dir==="flag"&&S.diff==="master")award("hawk");
   if(S.mode==="all"&&S.full&&S.scope==="countries")award("tour");
   if(S.mode==="all"&&S.full&&S.scope==="territories")award("explorer");
   if(S.mode==="group"&&perfect){const t=badges._twins=badges._twins||[];if(!t.includes(S.arg))t.push(S.arg);if(t.length>=10)award("twins")}
@@ -248,6 +250,7 @@ function startRound(mode,arg,label,flt=null){
 }
 function submitTyped(){
   const inp=$("#typeIn");if(!inp)return;
+  if(S.qs[S.i].ans){next();return}
   const text=inp.value.trim();if(!text)return;
   const k=S.diff==="master"?matchStrict(text):matchTyped(text);
   const q=S.qs[S.i];q.typed=text;
@@ -300,7 +303,13 @@ function shade(){const st=app.querySelector(".sticky"),dk=app.querySelector(".do
 window.addEventListener("scroll",shade,{passive:true});window.addEventListener("resize",shade);
 function render(){
   requestAnimationFrame(shade);
-  if(S.view==="quiz"){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t&&!S.qs[S.i].ans)t.focus();return}
+  if(S.view==="quiz"){
+    const old=document.activeElement,keep=old&&old.id==="typeIn"&&app.contains(old);
+    if(!keep){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t)t.focus();return}
+    // Mobile browsers only keep the keyboard open if focus moves straight from one field to another, so the
+    // new screen is added beside the old one, focus is handed over, and only then is the old screen removed.
+    const was=[...app.childNodes];const tmp=document.createElement("template");tmp.innerHTML=viewQuiz();
+    old.id="typeOld";app.appendChild(tmp.content);const t=$("#typeIn");if(t)t.focus();was.forEach(n=>n.remove());return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
   if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
@@ -411,10 +420,11 @@ function viewQuiz(){
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
     prompt=`${img(q.c,"flag",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country? Type it.</p>`;
-    opts=q.ans?"":`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
-      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
-      ${strict?"":'<div class="sugg" id="sugg"></div>'}
-      <div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div></form>`;
+    // After the answer the box stays, read-only, so the keyboard stays open; Enter in it moves on.
+    opts=`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
+      <input id="typeIn" type="text" enterkeyhint="${q.ans?"next":"go"}" ${q.ans?"readonly":""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans?"Enter for next":strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
+      ${strict||q.ans?"":'<div class="sugg" id="sugg"></div>'}
+      ${q.ans?"":`<div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div>`}</form>`;
   } else {
     prompt=`${img(q.c,"flag",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
