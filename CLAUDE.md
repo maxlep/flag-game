@@ -23,13 +23,15 @@ What the project is and where files live: see README.md. This file holds the rul
 
 ## Adding or changing flag artwork
 
-- Two artwork sets: `flags/` is 4:3 (from flag-icons), `flags-true/` is official proportions (from svg-country-flags). A flag needs both; if the true-proportion file is missing, the app falls back to 4:3.
+- Flags are always drawn in official proportions from `flags-true/` (svg-country-flags). `flags/` (flag-icons, 4:3) is only the fallback for the few flags with no true-proportion file; there is no setting to draw everything at 4:3, since that shows designs that don't exist.
+- Variants: `VARIANTS` in `js/data/names.js` lists a flag's official designs for use on land (civil, state, reverse), each with Wikipedia's infobox "Use" label and a short difference. Entry 0 is `flags-true/<code>.svg`; the others are `flags-true/<code>-<kind>.svg`, with an optional ratio and `bare` flag for swallowtails. `USE` holds the infobox label for single-design flags where it isn't "National flag". Civil versions were derived from our artwork by dropping the arms; versions that add arms came from Wikimedia Commons (public domain). Check the infobox before adding one; ensigns and war flags don't count.
 - Run `tools/snap_edges.py` on every new SVG, in both folders. It stops hairline seams between stripes.
 - Add the true-proportion ratio to `TRUER` in `js/data/names.js` (width ÷ height from the SVG's viewBox). Non-rectangular flags go in `BARE`.
 - A new flag also needs: an entry in `js/data/flags.js`, a Wikipedia title in `FLAGWIKI` if "Flag_of_<Name>" isn't the article, and a `CAPWIKI` entry if the capital's name is ambiguous on Wikipedia.
 
 ## Behaviour that the code relies on
 
+- The Design setting (`SET.variant`: national, civil, state, random) picks which variant each question shows; questions store it as `q.v` (and `q.ov` per option) so a restored round looks the same. The info card, study list and viewer let the reader switch designs; that never changes the setting.
 - Settings and progress live in localStorage under `flaglore.*` keys; the storage format must stay backward compatible (`rec()` migrates old records).
 - Badges are awarded only in `checkBadges()` at round end and are never revoked.
 - The round in progress is saved under `flaglore.round` on every answer and restored on load; `saveRound()` must run after any change to `S` during a round, and the key is cleared when leaving.

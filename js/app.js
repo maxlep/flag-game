@@ -63,7 +63,7 @@ function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t,true
 
 // ---------- SETTINGS ----------
 const SKEY="flaglore.settings";
-let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true",scope:"countries"};
+let SET={len:10,diff:"medium",dir:"name",pace:"learn",scope:"countries",variant:"national"};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
 const TYPED=d=>d==="expert"||d==="master";
 function setOpt(k,v){SET[k]=v;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
@@ -138,13 +138,27 @@ let S={view:"home"};
 const $=s=>document.querySelector(s);
 const app=$("#app");
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-// Official width:height ratios of the true-proportion artwork (flags-true/). Flags missing there fall back to the 4:3 set.
-// Each flag sits in a 4:3 slot. Uniform mode fills it. True mode sizes flags to roughly equal area, capped by the slot,
-// so a wide flag like Qatar reads as wider rather than merely shorter.
-const img=(c,cls="flag")=>{
-  const tru=SET.shape==="true"&&TRUER[c];const r=tru?TRUER[c]:4/3;const src=tru?"flags-true":"flags";
+// Variants: VARIANTS[c] lists a flag's official designs for use on land (civil, state, reverse). Entry 0 is the
+// artwork at flags-true/<c>.svg, the rest at flags-true/<c>-<k>.svg. Most flags have one design and no entry.
+const VARS=c=>(typeof VARIANTS==="object"&&VARIANTS[c])||null;
+const useLabel=(c,vi=0)=>{const v=VARS(c);if(v)return v[vi].l;return (typeof USE==="object"&&USE[c])||(BY[c].sov?"National flag":"Flag")};
+// Which variant a round shows: the setting names a kind; a flag without that kind shows its main design.
+function variantIdx(c,how){const v=VARS(c);if(!v)return 0;if(how==="random")return Math.floor(Math.random()*v.length);const i=v.findIndex(x=>x.k===how);return i<0?0:i}
+// Official width:height ratios (TRUER); a variant can carry its own ratio. Flags without true-proportion artwork fall
+// back to the 4:3 set. Each flag sits in a 4:3 slot and is sized to roughly equal area, capped by the slot, so a wide
+// flag like Qatar reads as wider rather than merely shorter.
+const img=(c,cls="flag",vi=0)=>{
+  const v=VARS(c),ve=v&&v[vi],stem=ve&&vi?c+"-"+ve.k:c;
+  const tru=TRUER[c];const r=ve&&ve.r||(tru?TRUER[c]:4/3);const src=tru?"flags-true":"flags";
   const w=tru?Math.min(100,75*r,100*Math.sqrt(0.62*r)):100;
-  return `<div class="${cls}"><div class="fl${BARE.has(c)?" bare":""}" style="--r:${r};--w:${w.toFixed(1)}%"><img src="${src}/${c}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
+  return `<div class="${cls}"><div class="fl${BARE.has(c)||ve&&ve.bare?" bare":""}" style="--r:${r};--w:${w.toFixed(1)}%"><img src="${src}/${stem}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
+// One line naming the design on screen, with chips to switch when the flag has more than one.
+function variantLine(c,vi,onpick){
+  const v=VARS(c);
+  if(!v)return `<p class="vline small muted">${esc(useLabel(c))}</p>`;
+  const cur=v[vi];
+  return `<div class="vline"><span class="small muted">${esc(cur.l)}${cur.d?" · "+esc(cur.d):""}</span><span class="vchips">${v.map((x,i)=>`<button type="button" class="chipbtn${i===vi?" on":""}" onclick="${onpick.replace("%i",i)}">${esc(x.k[0].toUpperCase()+x.k.slice(1))}</button>`).join("")}</span></div>`;
+}
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
 // Look-alike filter: a region name or null for all regions. The scope setting applies on top.
@@ -221,8 +235,8 @@ function startRound(mode,arg,label,flt=null){
     order=pickOrder(pool,n);
   }
   const nOpt=optCount(diff,SET.dir);
-  const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode,nOpt-1)]),ans:null,typed:""}));
-  S={view:"quiz",mode,arg,label,flt,scope:SET.scope,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,nOpt,pace:SET.pace,from,full};
+  const qs=order.map(c=>{const opts=shuffle([c,...distractors(c,diff,mode,nOpt-1)]);return {c,opts,v:variantIdx(c,SET.variant),ov:opts.map(o=>variantIdx(o,SET.variant)),ans:null,typed:""}});
+  S={view:"quiz",mode,arg,label,flt,scope:SET.scope,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,nOpt,pace:SET.pace,variant:SET.variant,from,full};
   saveRound();render();window.scrollTo(0,0);
 }
 function submitTyped(){
@@ -252,9 +266,10 @@ function answer(k){
 }
 function next(){ clearTimeout(S.timer);S.timer=null; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0)} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
 function showLore(){const q=S.qs[S.i];q.lore=true;render()}
+function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();render()}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
-  if(LB){if(e.key==="Escape")closeFlag();return}
+  if(LB){if(e.key==="Escape")closeFlag();else if((e.key==="ArrowLeft"||e.key==="ArrowRight")&&VARS(LB.c)){const k=VARS(LB.c).length;lbVar((LB.vi+(e.key==="ArrowRight"?1:k-1))%k)}return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
@@ -332,7 +347,7 @@ function resetAsk(){
   f.innerHTML=`<span class="small">Clear all progress?</span><span class="row" style="flex:none"><button class="link" onclick="prog={};badges={};save();saveB();render()">Yes, clear</button><button class="link" onclick="render()">Keep</button></span>`;
 }
 function viewSetup(){
-  const p=S.pick,pool=poolFor(p.mode,p.arg,p.flt),grp=p.mode==="group"||p.mode==="lookmix";
+  const p=S.pick,pool=poolFor(p.mode,p.arg,p.flt),grp=p.mode==="group"||p.mode==="lookmix",nVar=pool.filter(c=>VARS(c)).length;
   const n=p.mode==="group"?(SET.len==="all"?pool.length*2:SET.len):SET.len==="all"?pool.length:Math.min(SET.len,pool.length);
   const eff=grp&&!TYPED(SET.diff)?"hard":SET.diff;
   const PICK={expert:"Find the flag among nine, drawn from its look-alikes and region. +3 per correct answer.",master:"Find the flag among sixteen look-alikes and neighbours. +3 per correct answer."};
@@ -350,10 +365,9 @@ function viewSetup(){
       <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
       <span class="note">${SET.dir==="flag"?"You see the name and choose among four flags.":"You see the flag and choose or type the name."}</span></div>
     ${p.mode==="region"||p.mode==="all"||p.mode==="lookmix"?scopeSeg("The same setting as on the home screen; changing it here changes it there."):""}
-    <div class="seg"><span class="label">Flag shapes</span><div class="btns">
-      <button class="${SET.shape==="true"?"on":""}" onclick="setOpt('shape','true')">True</button>
-      <button class="${SET.shape==="uniform"?"on":""}" onclick="setOpt('shape','uniform')">Uniform</button></div>
-      <span class="note">${SET.shape==="true"?"Each flag in its official proportions, sized to roughly equal area. Applies everywhere in the app.":"Every flag drawn at 4:3, the same size."}</span></div>
+    ${p.mode!=="group"&&nVar?`<div class="seg"><span class="label">Design</span><div class="btns">
+      ${[["national","National"],["civil","Civil"],["state","State"],["random","Random"]].map(([v,l])=>`<button class="${SET.variant===v?"on":""}" onclick="setOpt('variant','${v}')">${l}</button>`).join("")}</div>
+      <span class="note">${nVar} of these flags have more than one official design, usually a civil version without the arms and a state version with them. ${{national:"National shows the everyday version.",civil:"Civil shows the version citizens fly.",state:"State shows the version government buildings fly.",random:"Random mixes them from question to question."}[SET.variant]}</span></div>`:""}
     <div class="seg"><span class="label">Pace</span><div class="btns">
       <button class="${SET.pace==="learn"?"on":""}" onclick="setOpt('pace','learn')">Learn</button>
       <button class="${SET.pace==="drill"?"on":""}" onclick="setOpt('pace','drill')">Drill</button></div>
@@ -377,15 +391,15 @@ function viewQuiz(){
     prompt=`<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
     opts=`<div class="flagopts n${q.opts.length}">${q.opts.map((c,i)=>{
       let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
-      return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm")}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
+      return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
-    prompt=`${img(q.c)}<p class="eyebrow">Which country? Type it.</p>`;
+    prompt=`${img(q.c,"flag",q.v||0)}<p class="eyebrow">Which country? Type it.</p>`;
     opts=q.ans?"":`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
       ${strict?"":'<div class="sugg" id="sugg"></div>'}
       <div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div></form>`;
   } else {
-    prompt=`${img(q.c)}<p class="eyebrow">Which country?</p>`;
+    prompt=`${img(q.c,"flag",q.v||0)}<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
       let cls="opt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')"><span class="key">${letters[i]}</span><span>${esc(BY[c].n)}</span></button>`}).join("")}</div>`;
@@ -406,15 +420,15 @@ function viewQuiz(){
       :`<div class="card lore">
         <p class="verdict bad">Not quite ${pill}</p>
         <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p></div>
-        ${reverse?img(q.c):""}${miss}
+        ${reverse?img(q.c,"flag",q.v||0):""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
       </div>
       <button class="btn" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
     } else
     reveal=`<div class="card lore">
       <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
-      ${reverse?img(q.c):""}
-      <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p></div>
+      ${reverse?img(q.c,"flag",q.v||0):""}
+      <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p>${variantLine(q.c,q.v||0,"setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
       ${miss}
     </div>
@@ -444,9 +458,11 @@ function shareMissed(){
 }
 function shareText(){
   const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length;
-  const diff=S.diff[0].toUpperCase()+S.diff.slice(1),mode=S.dir==="flag"?" · pick the flag":"";
+  const diff=S.diff[0].toUpperCase()+S.diff.slice(1),mode=S.dir==="flag"?"pick the flag":"name the flag";
+  const scope=S.mode==="region"&&S.scope==="all"?" with territories":S.mode==="region"&&S.scope==="territories"?" territories":"";
+  const variant=S.variant&&S.variant!=="national"?` · ${S.variant} designs`:"";
   const grid=shareGrid();
-  return `Flags of the World · ${S.label} · ${diff}${mode}\n${right}/${n}${S.best>=5?` · streak ${S.best}`:""}${grid?"\n"+grid:""}\n${shareMissed()}\n${SITE}`;
+  return `Flags of the World · ${S.label}${scope}\n${right}/${n} · ${diff} · ${mode}${variant}${S.best>=5?` · streak ${S.best}`:""}${grid?"\n"+grid:""}\n${shareMissed()}\n${SITE}`;
 }
 const CLIP=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 async function copyResult(){
@@ -481,6 +497,7 @@ function viewDone(){
   <button class="btn" onclick="startRound(S.mode,S.arg,S.label,S.flt)">Play again</button>
   <button class="btn ghost" onclick="goBack()">Choose another set</button>`;
 }
+function studyVar(btn,i){const en=btn.closest(".entry"),c=en.dataset.c;en.dataset.v=i;en.querySelector(".flink").innerHTML=img(c,"flag sm",i);en.querySelector(".vline").outerHTML=variantLine(c,i,"studyVar(this,%i)")}
 function viewStudy(){
   const r=S.region;
   const wide=["Whole world","Everything","All territories"].includes(r);
@@ -492,7 +509,7 @@ function viewStudy(){
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
   const status=f=>mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span><p>${esc(f.m)}</p></div></div>`}).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.parentElement.dataset.v)" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)?variantLine(f.c,0,`studyVar(this,%i)`):""}<p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
@@ -541,15 +558,17 @@ function viewLook(){
 
 // ---------- FLAG VIEWER ----------
 let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
-function openFlag(c){
+function openFlag(c,vi=0){
   closeFlag();
   const el=document.createElement("div");el.className="lb";el.id="lb";
+  const v=VARS(c);
   el.innerHTML=`<div class="lb-top"><span class="nm">${esc(BY[c].n)}</span><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-stage" id="lbStage">${img(c,"flag").replace('loading="lazy"','')}</div>
-    <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset</p>`;
+    <div class="lb-stage" id="lbStage">${img(c,"flag",vi).replace('loading="lazy"','')}</div>
+    <div class="lb-var" id="lbVar">${variantLine(c,vi,"lbVar(%i)")}</div>
+    <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset${v?" · swipe for the other design":""}</p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
-  LB={c,scale:1,x:0,y:0,pts:new Map(),el,fl:el.querySelector(".flag .fl"),stage:el.querySelector("#lbStage")};
+  LB={c,vi,scale:1,x:0,y:0,pts:new Map(),el,fl:el.querySelector(".flag .fl"),stage:el.querySelector("#lbStage")};
   LB.baseW=LB.fl.getBoundingClientRect().width;
   const st=LB.stage;
   st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};LB.moved=false;st.classList.add("drag")});
@@ -562,7 +581,11 @@ function openFlag(c){
     if(Math.abs(LB.x-s0.x)+Math.abs(LB.y-s0.y)>6||LB.scale!==s0.scale)LB.moved=true;
     lbApply()});
   // Double tap by hand: touch devices don't send dblclick. Two quick taps near the same spot, with no drag between.
-  const up=e=>{LB.pts.delete(e.pointerId);LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};if(!LB.pts.size)st.classList.remove("drag");
+  const up=e=>{LB.pts.delete(e.pointerId);const s0=LB.start;
+    // At normal size a sideways drag flips to the next design instead of panning.
+    if(VARS(LB.c)&&s0&&s0.scale===1&&s0.pts.length===1&&LB.scale===1&&Math.abs(LB.x)>40&&Math.abs(LB.x)>Math.abs(LB.y)){const d=LB.x<0?1:-1;LB.x=0;LB.y=0;lbApply();lbVar((LB.vi+d+VARS(LB.c).length)%VARS(LB.c).length);LB.moved=true}
+    else if(s0&&s0.scale===1&&LB.scale===1&&(LB.x||LB.y)){LB.x=0;LB.y=0;lbApply()}
+    LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};if(!LB.pts.size)st.classList.remove("drag");
     if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
       if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){LB.lastTap=null;lbToggle({x:e.clientX,y:e.clientY})}else LB.lastTap={at:now,x:e.clientX,y:e.clientY}}};
   st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
@@ -579,6 +602,7 @@ function lbZoom(f,P){if(!LB)return;const ns=Math.min(8,Math.max(1,LB.scale*f));f
   if(ns===1){LB.x=0;LB.y=0}lbApply()}
 // Zoom by resizing the element rather than transform:scale, so the SVG is re-rendered sharp at every level.
 function lbApply(){if(!LB)return;LB.fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px)`}
+function lbVar(i){if(!LB||!VARS(LB.c))return;LB.vi=i;LB.scale=1;LB.x=0;LB.y=0;LB.stage.innerHTML=img(LB.c,"flag",i).replace('loading="lazy"','');LB.fl=LB.stage.querySelector(".flag .fl");LB.baseW=LB.fl.getBoundingClientRect().width;$("#lbVar").innerHTML=variantLine(LB.c,i,"lbVar(%i)")}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
 // ---------- BOOT ----------

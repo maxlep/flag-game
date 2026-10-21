@@ -157,6 +157,14 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .titlerow{align-items:center}
 .chipbtn{font-size:13px;font-weight:600;color:var(--accent);background:var(--tint);border-radius:999px;padding:6px 12px;white-space:nowrap}
 .chipbtn.on{background:var(--accent);color:var(--accent-ink)}
+.vline{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:4px}
+.vline .vchips{display:flex;gap:4px}
+.vline .chipbtn{padding:3px 9px;font-size:12px}
+p.vline{margin:4px 0 0}
+.lb-var{padding:8px 16px 0;color:#fff}
+.lb-var .small.muted{color:rgba(255,255,255,.7)}
+.lb-var .chipbtn{background:rgba(255,255,255,.15);color:#fff}
+.lb-var .chipbtn.on{background:#fff;color:#111}
 .titlerow select{width:auto;max-width:56%;padding:7px 28px 7px 10px;font-size:14px;border-radius:8px;appearance:none;-webkit-appearance:none;
   background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6678' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center/14px}
 select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
