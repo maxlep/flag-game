@@ -11,9 +11,9 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 <title>Flags of the World</title>
-<link rel="icon" href="icons/favicon.ico" sizes="32x32 48x48">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-<link rel="icon" type="image/png" sizes="64x64" href="icons/icon-64.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="apple-mobile-web-app-title" content="Flags">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -542,12 +542,29 @@ const ALIASES={vg:["bvi"],vi:["usvi","us virgin islands"],eh:["sahrawi arab demo
 const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/^the\s+/,"").replace(/[^a-z0-9]/g,"");
 const NAMES=FLAGS.map(f=>({c:f.c,n:norm(f.n),d:f.n}));
 const ALIASN=Object.fromEntries(Object.entries(ALIASES).map(([c,a])=>[c,a.map(norm)]));
+// Optimal string alignment distance (insert, delete, substitute, transpose adjacent).
+function editDist(a,b){
+  const m=a.length,n=b.length;if(!m)return n;if(!n)return m;
+  const d=[];for(let i=0;i<=m;i++){d[i]=[i]}for(let j=1;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){
+    const cost=a[i-1]===b[j-1]?0:1;
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+cost);
+    if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1);
+  }
+  return d[m][n];
+}
+const CANDS=[...NAMES.map(x=>({c:x.c,n:x.n})),...Object.entries(ALIASN).flatMap(([c,a])=>a.map(n=>({c,n})))];
+const allowed=len=>len>=9?2:len>=5?1:0;
 function matchTyped(text){
   const t=norm(text);if(!t)return null;
   const exact=NAMES.find(x=>x.n===t);if(exact)return exact.c;
   for(const [c,a] of Object.entries(ALIASN))if(a.includes(t))return c;
   if(t.length>=4){const pre=NAMES.filter(x=>x.n.startsWith(t));if(pre.length===1)return pre[0].c}
-  return null;
+  // Typo tolerance: the closest candidate wins if it is within its allowance and no other country ties it.
+  let best=Infinity,who=new Set();
+  for(const x of CANDS){if(Math.abs(x.n.length-t.length)>2)continue;const d=editDist(t,x.n);if(d>allowed(x.n.length))continue;
+    if(d<best){best=d;who=new Set([x.c])}else if(d===best)who.add(x.c)}
+  return who.size===1?[...who][0]:null;
 }
 function suggest(text){
   const t=norm(text);if(t.length<2)return [];
