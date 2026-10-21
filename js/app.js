@@ -292,7 +292,7 @@ function viewHome(){
     ${card({wide:true,name:"Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>
-  <p class="ver" id="ver"><span class="stamp">${typeof VERSION==="object"?"build "+VERSION.n+" · "+VERSION.at:""}</span></p>`;
+  <p class="ver" id="ver"><span class="stamp">${typeof VERSION==="object"?"updated "+VERSION.at:""}</span></p>`;
 }
 // Compare this build with the one on GitHub; say so if a newer one exists. Fails silently where the network is blocked.
 let VER_CHECKED=null;
@@ -300,7 +300,7 @@ async function checkVersion(){
   if(typeof VERSION!=="object"||VER_CHECKED!==null)return;VER_CHECKED=false;
   try{const r=await fetch("https://raw.githubusercontent.com/maxlep/flag-game/main/js/version.js?"+Date.now(),{cache:"no-store"});
     const m=(await r.text()).match(/n:(\d+)/);if(!m)return;VER_CHECKED=+m[1];
-    const el=$("#ver");if(el&&VER_CHECKED>VERSION.n)el.innerHTML=`<a class="stale" href="javascript:location.reload(true)">Build ${VER_CHECKED} is available, reload</a>`+el.innerHTML;
+    const el=$("#ver");if(el&&VER_CHECKED>VERSION.n)el.innerHTML=`<a class="stale" href="javascript:location.reload(true)">A newer version is available, reload</a>`+el.innerHTML;
   }catch(e){}
 }
 function resetAsk(){
