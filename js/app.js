@@ -551,14 +551,18 @@ function openFlag(c){
       LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y)}
     if(Math.abs(LB.x-s0.x)+Math.abs(LB.y-s0.y)>6||LB.scale!==s0.scale)LB.moved=true;
     lbApply()});
-  const up=e=>{LB.pts.delete(e.pointerId);LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};if(!LB.pts.size)st.classList.remove("drag")};
+  // Double tap by hand: touch devices don't send dblclick. Two quick taps near the same spot, with no drag between.
+  const up=e=>{LB.pts.delete(e.pointerId);LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};if(!LB.pts.size)st.classList.remove("drag");
+    if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
+      if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){LB.lastTap=null;lbToggle({x:e.clientX,y:e.clientY})}else LB.lastTap={at:now,x:e.clientX,y:e.clientY}}};
   st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
   st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
-  st.addEventListener("dblclick",e=>{if(LB.scale>1){LB.scale=1;LB.x=0;LB.y=0;lbApply()}else lbZoom(2.5,{x:e.clientX,y:e.clientY})});
+  st.addEventListener("dblclick",e=>{if(e.pointerType==="touch"||e.sourceCapabilities?.firesTouchEvents)return;lbToggle({x:e.clientX,y:e.clientY})});
   el.addEventListener("click",e=>{if(e.target===st&&!LB.moved)closeFlag()});
 }
 // The flag is centred in the stage and transformed as translate(x,y) scale(s) about its own centre C, so a local
 // offset q shows at C+t+s·q. Zooming by f about a screen point P keeps the point under P fixed: t' = (1-f)(P-C) + f·t.
+function lbToggle(P){if(!LB)return;if(LB.scale>1){LB.scale=1;LB.x=0;LB.y=0;lbApply()}else lbZoom(2.5,P)}
 function lbCenter(){const r=LB.stage.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}}
 function lbZoom(f,P){if(!LB)return;const ns=Math.min(8,Math.max(1,LB.scale*f));f=ns/LB.scale;if(f===1)return;
   const C=lbCenter();P=P||C;LB.x=(1-f)*(P.x-C.x)+f*LB.x;LB.y=(1-f)*(P.y-C.y)+f*LB.y;LB.scale=ns;
