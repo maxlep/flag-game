@@ -123,7 +123,8 @@ function links(c){
 const wl=(url,text,title="Wikipedia")=>`<a class="wl" href="${url}" target="_blank" rel="noopener" title="${title}">${text}</a>`;
 // Country name as a quiet link; capital line carries the capital and flag-article links.
 function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
-function capLine(c){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))} · ${f.r} · ${wl(L.flag,"Flag","The flag on Wikipedia")}`}
+function capLine(c){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";const y=typeof ADOPTED==="object"&&ADOPTED[c];
+  return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))} · ${f.r} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
