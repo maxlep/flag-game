@@ -96,14 +96,21 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .btn.line{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
 
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0;transition:transform .08s}
-.tile:active,.opt:active,.fopt:active{transform:scale(.985)}
+.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.tile .tmain{flex:1;display:flex;flex-direction:column;gap:8px;padding:14px 14px 10px;text-align:left;width:100%;transition:background .1s}
+.tile .tmain:active{background:var(--tint)}
+.tile .tstudy{align-self:flex-end;padding:4px 14px 10px;font-size:13px;font-weight:600;color:var(--accent)}
+.tile .tstudy:hover{text-decoration:underline}
+.tile.dim{opacity:.5}
+.opt:active,.fopt:active{transform:scale(.985)}
 .tile .name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15}
 .tile .name.sm{font-size:15px}
 .tile .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .bar{height:6px;background:var(--tint);border-radius:3px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
-.tile.wide{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between}
+.tile.wide{grid-column:1/-1;flex-direction:row;align-items:stretch}
+.tile.wide .tmain{flex-direction:row;align-items:center;justify-content:space-between;padding:14px}
+.tile.wide .tstudy{align-self:center;padding:14px;border-left:1px solid var(--line)}
 .tile.wide .name{font-size:17px}
 
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -152,9 +159,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .wl:hover,.wl:focus-visible{text-decoration-color:var(--accent);color:var(--accent)}
 .capital .wl{text-decoration-thickness:1px}
 .flink{display:block;width:100%;border-radius:4px;text-align:left}
-.tabs{display:flex;gap:6px;background:var(--tint);padding:4px;border-radius:10px}
-.tabs button{flex:1;padding:8px;border-radius:7px;font-weight:600;font-size:14px;transition:background .12s}
-.tabs button.on,.seg .btns button.on{color:var(--accent-ink);background:var(--accent)}
+.seg .btns button.on{color:var(--accent-ink);background:var(--accent)}
+.subtitle{font-size:22px;padding-bottom:2px}
 select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
 .seg{display:flex;flex-direction:column;gap:6px}
 .seg .label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
@@ -624,7 +630,7 @@ function capLine(c){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="Non
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
-let S={view:"home",tab:"quiz"};
+let S={view:"home"};
 const $=s=>document.querySelector(s);
 const app=$("#app");
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -640,6 +646,7 @@ function poolFor(mode,arg){
   if(mode==="everything")return FLAGS.map(f=>f.c);
   if(mode==="weak")return FLAGS.map(f=>f.c).filter(c=>rec(c).w>0&&!mastered(c));
   if(mode==="group")return GROUPS[arg].f.slice();
+  if(mode==="lookmix")return [...new Set(GROUPS.flatMap(g=>g.f))];
   return [];
 }
 function pickOrder(pool,n){
@@ -655,23 +662,32 @@ function distractors(c,diff,mode){
   const gm=shuffle(groups.flatMap(i=>GROUPS[i].f).filter(x=>x!==c));
   const same=shuffle(FLAGS.filter(x=>x.r===f.r&&x.c!==c).map(x=>x.c));
   const any=shuffle(FLAGS.map(x=>x.c).filter(x=>x!==c));
-  if(mode==="group"||diff==="hard"||diff==="expert"){add(gm);add(same)}
+  if(mode==="group"||mode==="lookmix"||diff==="hard"||diff==="expert"){add(gm);add(same)}
   else if(diff==="medium"){add(same)}
   add(any);
   return [...out];
 }
+const here=()=>({view:S.view,region:S.region,pick:S.pick,scroll:window.scrollY});
 function goBack(){
   clearTimeout(S.timer);
-  const f=S.from||{view:"home",tab:"quiz"};
-  S={view:f.view,tab:f.tab||"quiz",region:f.region};render();
+  const f=S.from||{view:"home"};
+  S={view:f.view,region:f.region,pick:f.pick};render();
   window.scrollTo(0,f.scroll||0);
 }
+let HOME_Y=0;
+function goHome(){clearTimeout(S.timer);S={view:"home"};render();window.scrollTo(0,HOME_Y)}
+function leaveHome(){if(S.view==="home")HOME_Y=window.scrollY}
+function openSetup(mode,arg,label){leaveHome();const from=here();S={view:"setup",pick:{mode,arg,label},from};render();window.scrollTo(0,0)}
+function openStudy(r){leaveHome();const from=here();S={view:"study",region:r,from};render();window.scrollTo(0,0)}
+function openLook(){leaveHome();const from=here();S={view:"look",from};render();window.scrollTo(0,0)}
+function openBadges(){leaveHome();const from=here();S={view:"badges",from};render();window.scrollTo(0,0)}
 function startRound(mode,arg,label){
   const pool=poolFor(mode,arg);
   if(!pool.length)return;
-  const from=S.view==="quiz"||S.view==="done"?S.from:{view:S.view,tab:S.tab,region:S.region,scroll:window.scrollY};
+  const from=S.view==="quiz"||S.view==="done"||S.view==="setup"?S.from:here();
   const diff=SET.dir==="flag"&&SET.diff==="expert"?"hard":SET.diff;
   let order,full;
+  const grp=mode==="group"||mode==="lookmix";
   if(mode==="group"){full=SET.len==="all";
     const n=SET.len==="all"?pool.length*2:SET.len;
     order=[];while(order.length<n){let sh=shuffle(pool);if(pool.length>1&&order.length&&sh[0]===order[order.length-1])sh.push(sh.shift());order.push(...sh)}order=order.slice(0,n);
@@ -680,7 +696,7 @@ function startRound(mode,arg,label){
     order=pickOrder(pool,n);
   }
   const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode)]),ans:null,typed:""}));
-  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:mode==="group"&&diff!=="expert"?"hard":diff,dir:SET.dir,pace:SET.pace,from,full};
+  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:grp&&diff!=="expert"?"hard":diff,dir:SET.dir,pace:SET.pace,from,full};
   render();window.scrollTo(0,0);
 }
 function submitTyped(){
@@ -713,8 +729,11 @@ function showLore(){const q=S.qs[S.i];q.lore=true;render()}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
   if(LB){if(e.key==="Escape")closeFlag();return}
-  if(S.view!=="quiz"||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
+  if(S.view==="setup"){if(e.key==="Enter"){e.preventDefault();startRound(S.pick.mode,S.pick.arg,S.pick.label)}else if(e.key==="Escape")goBack();return}
+  if(S.view==="study"||S.view==="look"||S.view==="badges"){if(e.key==="Escape")goBack();return}
+  if(S.view!=="quiz")return;
   const q=S.qs[S.i];
   if(e.key==="Escape"){goBack();return}
   if(e.key==="Enter"){if(q.ans){e.preventDefault();next()}return}
@@ -728,67 +747,81 @@ document.addEventListener("keydown",e=>{
 function render(){
   if(S.view==="quiz"){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t&&!S.qs[S.i].ans)t.focus();return}
   if(S.view==="done")return app.innerHTML=viewDone();
+  if(S.view==="setup")return app.innerHTML=viewSetup();
   if(S.view==="study")return app.innerHTML=viewStudy();
+  if(S.view==="look")return app.innerHTML=viewLook();
   if(S.view==="badges")return app.innerHTML=viewBadges();
   return app.innerHTML=viewHome();
 }
-function tiles(list=REGIONS){
-  return list.map(r=>{
-    const all=FLAGS.filter(f=>f.r===r);const m=all.filter(f=>mastered(f.c)).length;
-    return `<button class="tile" onclick="startRound('region','${r}','${r}')">
-      <span class="name${r.length>14?" sm":""}">${r}</span>
-      <span class="count">${badges["lord-"+r]?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned"}</span>
-      <span class="bar"><i style="width:${Math.round(100*m/all.length)}%"></i></span></button>`}).join("");
-}
-function setTab(t){S.tab=t;S.view=t==="quiz"?"home":t;if(t==="study")S.region=S.region||"Europe";render();window.scrollTo(0,0)}
-function shell(extra=""){
+function shell(sub){
   const total=FLAGS.length,m=FLAGS.filter(f=>mastered(f.c)).length,lord=!!badges.lord;
-  return `<div class="sticky"><div class="top"><div><h1 class="brand">Flags of the world</h1>${lord?`<p class="eyebrow" style="color:var(--gold)">Flag Lord · since ${fmtDate(badges.lord)}</p>`:""}</div><span class="stat">${m}/${total}</span></div>
-  <div class="tabs">${[["quiz","Quiz"],["study","Study"],["badges","Badges"]].map(([t,l])=>`<button class="${S.tab===t?"on":""}" onclick="setTab('${t}')">${l}</button>`).join("")}</div>${extra}</div>`;
+  if(!sub)return `<div class="sticky"><div class="top"><div><h1 class="brand">Flags of the world</h1>${lord?`<p class="eyebrow" style="color:var(--gold)">Flag Lord · since ${fmtDate(badges.lord)}</p>`:""}</div><span class="stat">${m}/${total}</span></div></div>`;
+  return `<div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ ${esc(sub.back||"Home")}</button><span class="stat">${esc(sub.stat||"")}</span></div><h2 class="subtitle">${esc(sub.title)}</h2></div>`;
 }
-function viewBadges(){
-  const nb=BADGES.filter(b=>badges[b.id]).length;
-  return `${shell()}
-  <div class="top"><h3>${nb} of ${BADGES.length} earned</h3><span class="stat">${FLAGS.filter(f=>mastered(f.c)).length} / ${FLAGS.length} learned</span></div>
-  <div class="badges">${BADGES.map(b=>`<div class="badge${badges[b.id]?" on":""}${b.big?" big":""}"><span class="be">${b.e}</span><span class="bn">${b.n}</span><span class="bh">${b.h}${badges[b.id]?" Earned "+fmtDate(badges[b.id])+".":""}</span></div>`).join("")}</div>
-  <p class="small muted">A flag counts as learned at 4 points: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert; a miss costs 2. Badges are kept once earned.</p>`;
+// A home card: the card itself starts a round; the trailing link opens the study list.
+function card(o){
+  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
+  const study=o.study?`<button class="tstudy" onclick="${o.study}">Study</button>`:"";
+  return `<div class="tile${o.wide?" wide":""}">${main}${study}</div>`;
+}
+function setCards(list){
+  return list.map(r=>{const all=FLAGS.filter(f=>f.r===r),m=all.filter(f=>mastered(f.c)).length;
+    return card({name:r,count:badges["lord-"+r]?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
 }
 function viewHome(){
   const total=FLAGS.length,weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
+  const learned=l=>l.filter(f=>mastered(f.c)).length;
   return `${shell()}
-  <p class="muted small">Name the flag, then read what it stands for. Pick a region or the whole world, set the difficulty, and play in Learn or Drill. Flags you miss come back sooner.</p>
-  <div class="kbd"><span class="eyebrow">Keyboard</span><span><kbd>A</kbd>–<kbd>D</kbd> or <kbd>1</kbd>–<kbd>4</kbd> answer</span><span><kbd>Enter</kbd> continues</span><span><kbd>Esc</kbd> leaves the round</span></div>
-  <div class="card">
-    <div class="seg"><span class="label">Round length</span><div class="btns">
-      ${[[10,"10"],[25,"25"],["all","Full set"]].map(([v,l])=>`<button class="${SET.len===v?"on":""}" onclick="setOpt('len',${typeof v==="string"?"'all'":v})">${l}</button>`).join("")}</div></div>
-    <div class="seg"><span class="label">Difficulty</span><div class="btns">
-      ${["easy","medium","hard","expert"].map(d=>`<button class="${SET.diff===d?"on":""}${d==="expert"&&SET.dir==="flag"?" off":""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join("")}</div>
-      <span class="note">${SET.dir==="flag"&&SET.diff==="expert"?"Typed answers need the flag shown; switch to country names.":DIFF[SET.diff]}</span></div>
-    <div class="seg"><span class="label">Answer with</span><div class="btns">
-      <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
-      <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
-      <span class="note">${SET.dir==="flag"?"You see the country and choose among four flags.":"You see the flag and choose or type the country."}</span></div>
-    <div class="seg"><span class="label">Pace</span><div class="btns">
-      <button class="${SET.pace==="learn"?"on":""}" onclick="setOpt('pace','learn')">Learn</button>
-      <button class="${SET.pace==="drill"?"on":""}" onclick="setOpt('pace','drill')">Drill</button></div>
-      <span class="note">${SET.pace==="drill"?"Correct answers advance automatically.":"Shows what the flag means after each answer."}</span></div>
-  </div>
-  <div class="tiles">${tiles()}
-    <button class="tile wide" onclick="startRound('all',null,'Whole world')"><span class="name">Whole world</span><span class="count">${COUNTRIES.length} countries</span></button>
+  <p class="muted small">Name the flag, then read what it stands for. Tap a set to play it, or Study to read through it. Flags you miss come back sooner.</p>
+  <div class="kbd"><span class="eyebrow">Keyboard</span><span><kbd>A</kbd>–<kbd>D</kbd> or <kbd>1</kbd>–<kbd>4</kbd> answer</span><span><kbd>Enter</kbd> starts and continues</span><span><kbd>Esc</kbd> goes back</span></div>
+  <p class="eyebrow">Countries</p>
+  <div class="tiles">${setCards(REGIONS)}
+    ${card({wide:true,name:"Whole world",count:learned(COUNTRIES)+" / "+COUNTRIES.length+" learned",go:"openSetup('all',null,'Whole world')",study:"openStudy('Whole world')"})}
   </div>
   <p class="eyebrow" style="padding-top:4px">Beyond the countries</p>
-  <div class="tiles">${tiles(SETS)}
-    <button class="tile wide" onclick="startRound('everything',null,'Everything')"><span class="name">Everything</span><span class="count">${total} flags</span></button>
+  <div class="tiles">${setCards(SETS)}
+    ${card({wide:true,name:"Everything",count:learned(FLAGS)+" / "+total+" learned",go:"openSetup('everything',null,'Everything')",study:"openStudy('Everything')"})}
   </div>
-  <div class="tiles" style="padding-top:4px">
-    <button class="tile wide" onclick="startRound('weak',null,'Weak spots')" ${weak?"":"disabled style='opacity:.5'"}><span class="name">Weak spots</span><span class="count">${weak?weak+" to fix":"nothing missed yet"}</span></button>
-    <button class="tile wide" onclick="setTab('badges')"><span class="name">Badges</span><span class="count">${nb} / ${BADGES.length} earned ›</span></button>
+  <p class="eyebrow" style="padding-top:4px">Practice</p>
+  <div class="tiles">
+    ${card({wide:true,name:"Look-alikes",count:GROUPS.length+" sets · mixed round",go:"openSetup('lookmix',null,'Look-alikes')",study:"openLook()"})}
+    ${weak?card({wide:true,name:"Weak spots",count:weak+" to fix",go:"openSetup('weak',null,'Weak spots')"}):`<div class="tile wide dim"><span class="tmain"><span class="name">Weak spots</span><span class="count">nothing missed yet</span></span></div>`}
+    ${card({wide:true,name:"Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>`;
 }
 function resetAsk(){
   const f=app.querySelector(".foot");
   f.innerHTML=`<span class="small">Clear all progress?</span><span class="row" style="flex:none"><button class="link" onclick="prog={};badges={};save();saveB();render()">Yes, clear</button><button class="link" onclick="render()">Keep</button></span>`;
+}
+function viewSetup(){
+  const p=S.pick,pool=poolFor(p.mode,p.arg),grp=p.mode==="group"||p.mode==="lookmix";
+  const n=p.mode==="group"?(SET.len==="all"?pool.length*2:SET.len):SET.len==="all"?pool.length:Math.min(SET.len,pool.length);
+  const eff=grp&&SET.diff!=="expert"?"hard":SET.dir==="flag"&&SET.diff==="expert"?"hard":SET.diff;
+  const diffNote=grp?"Options always come from the look-alike set itself (Hard); Expert asks you to type.":SET.dir==="flag"&&SET.diff==="expert"?"Typed answers need the flag shown; switch to country names.":DIFF[SET.diff];
+  return `${shell({title:p.label,stat:pool.length+(p.mode==="group"?" flags in the set":" flags"),back:S.from&&S.from.view==="look"?"Look-alikes":"Home"})}
+  <div class="card">
+    <div class="seg"><span class="label">Round length</span><div class="btns">
+      ${[[10,"10"],[25,"25"],["all","Full set"]].map(([v,l])=>`<button class="${SET.len===v?"on":""}" onclick="setOpt('len',${typeof v==="string"?"'all'":v})">${l}</button>`).join("")}</div></div>
+    <div class="seg"><span class="label">Difficulty</span><div class="btns">
+      ${["easy","medium","hard","expert"].map(d=>`<button class="${eff===d?"on":""}${(d==="expert"&&SET.dir==="flag")||(grp&&d!=="expert"&&d!=="hard")?" off":""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join("")}</div>
+      <span class="note">${diffNote}</span></div>
+    <div class="seg"><span class="label">Answer with</span><div class="btns">
+      <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
+      <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
+      <span class="note">${SET.dir==="flag"?"You see the name and choose among four flags.":"You see the flag and choose or type the name."}</span></div>
+    <div class="seg"><span class="label">Pace</span><div class="btns">
+      <button class="${SET.pace==="learn"?"on":""}" onclick="setOpt('pace','learn')">Learn</button>
+      <button class="${SET.pace==="drill"?"on":""}" onclick="setOpt('pace','drill')">Drill</button></div>
+      <span class="note">${SET.pace==="drill"?"Correct answers advance automatically.":"Shows what the flag means after each answer."}</span></div>
+  </div>
+  <button class="btn" id="startBtn" onclick="startRound(S.pick.mode,S.pick.arg,S.pick.label)">Start · ${n} questions</button>`;
+}
+function viewBadges(){
+  const nb=BADGES.filter(b=>badges[b.id]).length;
+  return `${shell({title:"Badges",stat:nb+" of "+BADGES.length+" earned"})}
+  <div class="badges">${BADGES.map(b=>`<div class="badge${badges[b.id]?" on":""}${b.big?" big":""}"><span class="be">${b.e}</span><span class="bn">${b.n}</span><span class="bh">${b.h}${badges[b.id]?" Earned "+fmtDate(badges[b.id])+".":""}</span></div>`).join("")}</div>
+  <p class="small muted">A flag counts as learned at 4 points: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert; a miss costs 2. Badges are kept once earned.</p>`;
 }
 function viewQuiz(){
   const q=S.qs[S.i],f=BY[q.c],n=S.qs.length;
@@ -890,21 +923,21 @@ function viewDone(){
 }
 function viewStudy(){
   const r=S.region;
-  const opt=x=>`<option value="${x}" ${x===r?"selected":""}>${x==="Look-alikes"?"Look-alikes · "+GROUPS.length+" sets":x==="Whole world"?"Whole world · "+COUNTRIES.length+" flags":x+" · "+FLAGS.filter(f=>f.r===x).length+" flags"}</option>`;
-  const opts=`<optgroup label="Countries">${[...REGIONS,"Whole world"].map(opt).join("")}</optgroup><optgroup label="Beyond the countries">${SETS.map(opt).join("")}</optgroup><optgroup label="Practice">${opt("Look-alikes")}</optgroup>`;
-  let body;
-  if(r==="Look-alikes"){
-    const order=["Horizontal stripes","Vertical stripes","Cantons & crosses","Discs & stars","Triangles & serrations"];
-    const sorted=GROUPS.map((g,i)=>({g,i,r:g.k})).sort((a,b)=>order.indexOf(a.r)-order.indexOf(b.r)||a.g.t.localeCompare(b.g.t));
-    let lastR="";
-    body=sorted.map(({g,i,r})=>(r!==lastR?`<p class="eyebrow" style="padding-top:6px">${esc(lastR=r)}</p>`:"")+`<div class="group"><h3>${esc(g.t)}</h3><div class="flags">${g.f.map(c=>`<figure>${img(c,"flag sm")}<figcaption>${esc(BY[c].n)}</figcaption></figure>`).join("")}</div><p class="hint">${esc(g.h)}</p><button class="btn line" onclick="startRound('group',${i},GROUPS[${i}].t)">Quiz me on this set</button></div>`).join("");
-  } else {
-    const list=r==="Whole world"?COUNTRIES.slice().sort((a,b)=>a.n.localeCompare(b.n)):FLAGS.filter(f=>f.r===r);
-    body=list.map(f=>`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
-  }
-  return `${shell(`<select id="studySel" onchange="S.region=this.value;render();window.scrollTo(0,0)">${opts}</select>`)}
+  const list=r==="Whole world"?COUNTRIES.slice().sort((a,b)=>a.n.localeCompare(b.n)):r==="Everything"?FLAGS.slice().sort((a,b)=>a.n.localeCompare(b.n)):FLAGS.filter(f=>f.r===r);
+  const body=list.map(f=>`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
+  const mode=r==="Whole world"?"all":r==="Everything"?"everything":"region",arg=mode==="region"?r:null;
+  return `${shell({title:r,stat:list.length+" flags"})}
   <div class="study">${body}</div>
-`;
+  <button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${r}')">Quiz me on ${esc(r)}</button>`;
+}
+function viewLook(){
+  const order=["Horizontal stripes","Vertical stripes","Cantons & crosses","Discs & stars","Triangles & serrations"];
+  const sorted=GROUPS.map((g,i)=>({g,i,r:g.k})).sort((a,b)=>order.indexOf(a.r)-order.indexOf(b.r)||a.g.t.localeCompare(b.g.t));
+  let lastR="";
+  const body=sorted.map(({g,i,r})=>(r!==lastR?`<p class="eyebrow" style="padding-top:6px">${esc(lastR=r)}</p>`:"")+`<div class="group"><h3>${esc(g.t)}</h3><div class="flags">${g.f.map(c=>`<figure><button class="flink" type="button" onclick="openFlag('${c}')" title="View large">${img(c,"flag sm")}</button><figcaption>${esc(BY[c].n)}</figcaption></figure>`).join("")}</div><p class="hint">${esc(g.h)}</p><button class="btn line" onclick="openSetup('group',${i},GROUPS[${i}].t)">Quiz me on this set</button></div>`).join("");
+  return `${shell({title:"Look-alikes",stat:GROUPS.length+" sets"})}
+  <div class="study">${body}</div>
+  <button class="btn" onclick="openSetup('lookmix',null,'Look-alikes')">Mixed round across all sets</button>`;
 }
 
 // ---------- FLAG VIEWER ----------
