@@ -885,15 +885,24 @@ function viewQuiz(){
   ${reveal}`;
 }
 const SITE="https://maxlep.github.io/flag-game/";
+// Flag emoji: regional-indicator pairs for ISO codes; tag sequences for England, Scotland, Wales. Others have none.
+const EMOJI_EXTRA={"gb-eng":"🏴\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}","gb-sct":"🏴\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}","gb-wls":"🏴\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}"};
+function flagEmoji(c){if(EMOJI_EXTRA[c])return EMOJI_EXTRA[c];if(!/^[a-z]{2}$/.test(c))return "";return [...c.toUpperCase()].map(ch=>String.fromCodePoint(0x1F1E6+ch.charCodeAt(0)-65)).join("")}
 function shareGrid(){
-  const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length;
-  if(n<=50){const sq=S.qs.map(q=>q.ans===q.c?"🟩":"🟥");const rows=[];for(let i=0;i<n;i+=10)rows.push(sq.slice(i,i+10).join(""));return rows.join("\n")}
-  const k=20,red=Math.round((n-right)/n*k);return "🟩".repeat(k-red)+"🟥".repeat(red);
+  const n=S.qs.length;if(n>25)return "";
+  const sq=S.qs.map(q=>q.ans===q.c?"🟩":"🟥");const rows=[];for(let i=0;i<n;i+=10)rows.push(sq.slice(i,i+10).join(""));return rows.join("\n");
+}
+function shareMissed(){
+  const seen=new Set(),m=S.qs.filter(q=>q.ans!==q.c&&!seen.has(q.c)&&seen.add(q.c)).map(q=>q.c);
+  if(!m.length)return (S.earned||[]).includes("lord")?"Perfect round 👑":"Perfect round";
+  const show=m.slice(0,6).map(c=>flagEmoji(c)||BY[c].n),more=m.length>6?` +${m.length-6} more`:"";
+  return "Missed "+show.join(" ")+more;
 }
 function shareText(){
   const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length;
   const diff=S.diff[0].toUpperCase()+S.diff.slice(1),mode=S.dir==="flag"?" · pick the flag":"";
-  return `Flag Game · ${S.label} · ${diff}${mode}\n${right}/${n}${S.best>=5?` · streak ${S.best}`:""}\n${shareGrid()}\n${SITE}`;
+  const grid=shareGrid();
+  return `Flags of the World · ${S.label} · ${diff}${mode}\n${right}/${n}${S.best>=5?` · streak ${S.best}`:""}${grid?"\n"+grid:""}\n${shareMissed()}\n${SITE}`;
 }
 async function share(){
   const text=shareText(),btn=$("#shareBtn");
@@ -913,7 +922,8 @@ function viewDone(){
     <p class="eyebrow">${word}</p>
     <p class="score">${right}<span class="muted" style="font-size:24px"> / ${n}</span></p>
     <p class="small muted">Best streak this round: ${S.best}</p>
-    <p class="grid">${shareGrid().replace(/\n/g,"<br>")}</p>
+    ${shareGrid()?`<p class="grid">${shareGrid().replace(/\n/g,"<br>")}</p>`:""}
+    <p class="small">${esc(shareMissed())}</p>
     <button class="btn line" id="shareBtn" onclick="share()">Share result</button>
     <textarea class="sharebox" id="shareTa" hidden readonly aria-label="Result text to copy"></textarea>
   </div>
