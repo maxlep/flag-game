@@ -19,7 +19,7 @@
 *{box-sizing:border-box}
 html{scrollbar-gutter:stable}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 24px}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
 h1{font-size:30px;font-weight:800;letter-spacing:-.01em}
@@ -133,7 +133,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .grid{font-size:18px;line-height:1.25;letter-spacing:1px;word-break:break-all;max-width:100%}
 .sharebox{width:100%;font:13px var(--mono);color:var(--ink);background:var(--tint);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:120px}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}
-.ver{display:flex;justify-content:flex-start;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:28px}
+.ver{display:flex;justify-content:flex-start;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:-4px}
 .ver .stamp{font:10px var(--mono);color:var(--muted);opacity:.55;letter-spacing:.02em;display:inline-flex;align-items:center;gap:6px}
 .ver .refresh{font-size:13px;line-height:1;color:var(--muted);padding:2px 4px;border-radius:4px}
 .ver .stamp:hover{opacity:1}
