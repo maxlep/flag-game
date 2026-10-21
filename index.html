@@ -549,6 +549,18 @@ const ALIASES={vg:["bvi"],vi:["usvi","us virgin islands"],eh:["sahrawi arab demo
 const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/^the\s+/,"").replace(/[^a-z0-9]/g,"");
 const NAMES=FLAGS.map(f=>({c:f.c,n:norm(f.n),d:f.n}));
 const ALIASN=Object.fromEntries(Object.entries(ALIASES).map(([c,a])=>[c,a.map(norm)]));
+function matchTyped(text){
+  const t=norm(text);if(!t)return null;
+  const exact=NAMES.find(x=>x.n===t);if(exact)return exact.c;
+  for(const [c,a] of Object.entries(ALIASN))if(a.includes(t))return c;
+  // If what you've typed narrows the suggestion list to one name, that name is the answer.
+  const sg=suggestAll(t);if(sg.length===1)return sg[0];
+  // Typo tolerance: the closest candidate wins if it is within its allowance and no other country ties it.
+  let best=Infinity,who=new Set();
+  for(const x of CANDS){if(Math.abs(x.n.length-t.length)>2)continue;const d=editDist(t,x.n);if(d>allowed(x.n.length))continue;
+    if(d<best){best=d;who=new Set([x.c])}else if(d===best)who.add(x.c)}
+  return who.size===1?[...who][0]:null;
+}
 // Optimal string alignment distance (insert, delete, substitute, transpose adjacent).
 function editDist(a,b){
   const m=a.length,n=b.length;if(!m)return n;if(!n)return m;
@@ -562,23 +574,19 @@ function editDist(a,b){
 }
 const CANDS=[...NAMES.map(x=>({c:x.c,n:x.n})),...Object.entries(ALIASN).flatMap(([c,a])=>a.map(n=>({c,n})))];
 const allowed=len=>len>=9?2:len>=5?1:0;
-function matchTyped(text){
-  const t=norm(text);if(!t)return null;
-  const exact=NAMES.find(x=>x.n===t);if(exact)return exact.c;
-  for(const [c,a] of Object.entries(ALIASN))if(a.includes(t))return c;
-  // If what you've typed narrows the suggestion list to one name, that name is the answer.
-  const sg=suggestAll(t);if(sg.length===1)return sg[0];
-  // Typo tolerance: the closest candidate wins if it is within its allowance and no other country ties it.
-  let best=Infinity,who=new Set();
-  for(const x of CANDS){if(Math.abs(x.n.length-t.length)>2)continue;const d=editDist(t,x.n);if(d>allowed(x.n.length))continue;
-    if(d<best){best=d;who=new Set([x.c])}else if(d===best)who.add(x.c)}
-  return who.size===1?[...who][0]:null;
-}
 function suggestAll(t){
   const out=[];
   NAMES.forEach(x=>{if(x.n.startsWith(t))out.push(x.c)});
   NAMES.forEach(x=>{if(!out.includes(x.c)&&x.n.includes(t))out.push(x.c)});
   Object.entries(ALIASN).forEach(([c,a])=>{if(!out.includes(c)&&a.some(y=>y.startsWith(t)))out.push(c)});
+  // Typo-tolerant extras, ranked by distance: whole names, then the same-length start of longer names.
+  const tol=allowed(t.length),ptol=t.length>=7?2:tol;
+  if(tol){const fz=[];
+    for(const x of CANDS){if(out.includes(x.c))continue;
+      const dw=Math.abs(x.n.length-t.length)<=tol?editDist(t,x.n):9,dp=x.n.length>t.length?editDist(t,x.n.slice(0,t.length)):9;
+      const d=Math.min(dw<=tol?dw:9,dp<=ptol?dp:9);
+      if(d<9)fz.push([d,x.c])}
+    fz.sort((a,b)=>a[0]-b[0]);fz.forEach(([d,c])=>{if(!out.includes(c))out.push(c)})}
   return out;
 }
 function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t).slice(0,5)}
@@ -862,7 +870,7 @@ function viewQuiz(){
   } else if(typed){
     prompt=`${img(q.c)}<p class="eyebrow">Which country? Type it.</p>`;
     opts=q.ans?"":`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
-      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Country name" value="${esc(q.typed||"")}" oninput="typeInput(this.value)">
+      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Country name" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){const sg=suggest(this.value);if(sg.length){event.preventDefault();this.value=BY[sg[0]].n;typeInput(this.value)}}">
       <div class="sugg" id="sugg"></div>
       <div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div></form>`;
   } else {
