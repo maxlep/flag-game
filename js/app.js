@@ -66,7 +66,7 @@ const SKEY="flaglore.settings";
 let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true"};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
 const TYPED=d=>d==="expert"||d==="master";
-function setOpt(k,v){SET[k]=v;if(SET.dir==="flag"&&TYPED(SET.diff))SET.diff="hard";try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
+function setOpt(k,v){SET[k]=v;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
 const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no points.",medium:"Options come from the same region. +1 point per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer.",master:"Type the exact name, with no suggestions or typo help. Common names still count. +3 per correct answer."};
 
 // ---------- BADGES ----------
@@ -161,9 +161,11 @@ function pickOrder(pool,n){
   w.sort((a,b)=>b[0]-a[0]);
   return w.slice(0,n).map(x=>x[1]);
 }
-function distractors(c,diff,mode){
+// Pick-the-flag grows the grid instead of removing options: 4 flags up to Hard, 9 on Expert, 16 on Master.
+const optCount=(diff,dir)=>dir==="flag"&&diff==="master"?16:dir==="flag"&&diff==="expert"?9:4;
+function distractors(c,diff,mode,n=3){
   const f=BY[c];const out=new Set();
-  const add=list=>list.forEach(x=>{if(out.size<3)out.add(x)});
+  const add=list=>list.forEach(x=>{if(out.size<n)out.add(x)});
   const groups=GROUP_OF[c]||[];
   const gm=shuffle(groups.flatMap(i=>GROUPS[i].f).filter(x=>x!==c));
   const same=shuffle(FLAGS.filter(x=>x.r===f.r&&x.c!==c).map(x=>x.c));
@@ -191,7 +193,7 @@ function startRound(mode,arg,label){
   const pool=poolFor(mode,arg);
   if(!pool.length)return;
   const from=S.view==="quiz"||S.view==="done"||S.view==="setup"?S.from:here();
-  const diff=SET.dir==="flag"&&TYPED(SET.diff)?"hard":SET.diff;
+  const diff=SET.diff;
   let order,full;
   const grp=mode==="group"||mode==="lookmix";
   if(mode==="group"){full=SET.len==="all";
@@ -201,8 +203,9 @@ function startRound(mode,arg,label){
     const n=SET.len==="all"?pool.length:Math.min(SET.len,pool.length);full=n===pool.length;
     order=pickOrder(pool,n);
   }
-  const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode)]),ans:null,typed:""}));
-  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,pace:SET.pace,from,full};
+  const nOpt=optCount(diff,SET.dir);
+  const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode,nOpt-1)]),ans:null,typed:""}));
+  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,nOpt,pace:SET.pace,from,full};
   render();window.scrollTo(0,0);
 }
 function submitTyped(){
@@ -246,7 +249,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Enter"){if(q.ans){e.preventDefault();next()}return}
   if(q.ans)return;
   const k=e.key.toLowerCase();let i=-1;
-  if(k>="a"&&k<="d")i=k.charCodeAt(0)-97;else if(k>="1"&&k<="4")i=+k-1;
+  if(k>="a"&&k<="p")i=k.charCodeAt(0)-97;else if(k>="1"&&k<="9")i=+k-1;
   if(i>=0&&q.opts&&q.opts[i]){e.preventDefault();answer(q.opts[i])}
 });
 
@@ -315,14 +318,15 @@ function resetAsk(){
 function viewSetup(){
   const p=S.pick,pool=poolFor(p.mode,p.arg),grp=p.mode==="group"||p.mode==="lookmix";
   const n=p.mode==="group"?(SET.len==="all"?pool.length*2:SET.len):SET.len==="all"?pool.length:Math.min(SET.len,pool.length);
-  const eff=grp&&!TYPED(SET.diff)?"hard":SET.dir==="flag"&&TYPED(SET.diff)?"hard":SET.diff;
-  const diffNote=grp&&!TYPED(SET.diff)?"Options always come from the look-alike set itself (Hard); Expert and Master ask you to type.":SET.dir==="flag"&&TYPED(SET.diff)?"Typed answers need the flag shown; switch to country names.":DIFF[SET.diff];
+  const eff=grp&&!TYPED(SET.diff)?"hard":SET.diff;
+  const PICK={expert:"Find the flag among nine, drawn from its look-alikes and region. +3 per correct answer.",master:"Find the flag among sixteen look-alikes and neighbours. +3 per correct answer."};
+  const diffNote=grp&&!TYPED(SET.diff)?"Options always come from the look-alike set itself (Hard); Expert and Master "+(SET.dir==="flag"?"show more of them.":"ask you to type."):SET.dir==="flag"&&PICK[SET.diff]?PICK[SET.diff]:DIFF[SET.diff];
   return `${shell({title:p.label,stat:pool.length+(p.mode==="group"?" flags in the set":" flags"),back:S.from&&S.from.view==="look"?"Look-alikes":"Home"})}
   <div class="card">
     <div class="seg"><span class="label">Round length</span><div class="btns">
       ${[[10,"10"],[25,"25"],["all","Full set"]].map(([v,l])=>`<button class="${SET.len===v?"on":""}" onclick="setOpt('len',${typeof v==="string"?"'all'":v})">${l}</button>`).join("")}</div></div>
     <div class="seg"><span class="label">Difficulty</span><div class="btns">
-      ${["easy","medium","hard","expert","master"].map(d=>`<button class="${eff===d?"on":""}${(TYPED(d)&&SET.dir==="flag")||(grp&&!TYPED(d)&&d!=="hard")?" off":""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join("")}</div>
+      ${["easy","medium","hard","expert","master"].map(d=>`<button class="${eff===d?"on":""}${grp&&!TYPED(d)&&d!=="hard"?" off":""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join("")}</div>
       <span class="note">${diffNote}</span></div>
     <div class="seg"><span class="label">Answer with</span><div class="btns">
       <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
@@ -348,12 +352,12 @@ function viewBadges(){
 function viewQuiz(){
   const q=S.qs[S.i],f=BY[q.c],n=S.qs.length;
   const dots=n>30?`<i class="now" style="flex:${S.i+1} 1 0"></i><i style="flex:${n-S.i-1} 1 0"></i>`:S.qs.map((x,i)=>`<i class="${x.ans?(x.ans===x.c?"ok":"bad"):(i===S.i?"now":"")}"></i>`).join("");
-  const letters="ABCD";
+  const letters="ABCDEFGHIJKLMNOP";
   const reverse=S.dir==="flag",typed=TYPED(S.diff)&&!reverse,strict=S.diff==="master";
   let prompt,opts;
   if(reverse){
     prompt=`<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
-    opts=`<div class="flagopts">${q.opts.map((c,i)=>{
+    opts=`<div class="flagopts n${q.opts.length}">${q.opts.map((c,i)=>{
       let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm")}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
