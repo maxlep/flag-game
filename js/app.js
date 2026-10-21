@@ -323,7 +323,7 @@ function setCards(list){
     return card({name:r,count:badges["lord-"+r]&&SET.scope!=="territories"?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
 }
 const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
-const scopeSeg=note=>`<div class="seg"><span class="label">Flags</span><div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
+const scopeSeg=(note,label)=>`<div class="seg">${label?'<span class="label">Flags</span>':""}<div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
 function viewHome(){
   const weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
   const learned=l=>l.filter(f=>mastered(f.c)).length;
@@ -366,7 +366,7 @@ function viewSetup(){
   if(p.mode==="all")p.label=scopeName();
   // Settings that change which flags and designs you see sit under "More"; the summary line says what they are set to.
   const more=[],sumParts=[];
-  if(p.mode!=="weak"){more.push(scopeSeg("The same setting as on the home screen; changing it here changes it there."));sumParts.push(SCOPES.find(x=>x[0]===SET.scope)[1])}
+  if(p.mode!=="weak"){more.push(scopeSeg("The same setting as on the home screen; changing it here changes it there.",true));sumParts.push(SCOPES.find(x=>x[0]===SET.scope)[1])}
   if(nVar){more.push(`<div class="seg"><span class="label">Design</span><div class="btns">
       ${[["national","National"],["civil","Civil"],["state","State"],["random","Random"]].map(([v,l])=>`<button class="${SET.variant===v?"on":""}" onclick="setOpt('variant','${v}')">${l}</button>`).join("")}</div>
       <span class="note">${nVar} of these flags have more than one official design, usually a civil version without the arms and a state version with them. ${{national:"National shows the everyday version.",civil:"Civil shows the version citizens fly.",state:"State shows the version government buildings fly.",random:"Random mixes them from question to question."}[SET.variant]}</span></div>`);sumParts.push(SET.variant+" designs")}
