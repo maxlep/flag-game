@@ -317,11 +317,12 @@ function render(){
   requestAnimationFrame(shade);
   if(S.view==="quiz"){
     const old=document.activeElement,keep=old&&old.id==="typeIn"&&app.contains(old);
-    if(!keep){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t)t.focus();return}
+    if(!keep){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t)t.focus({preventScroll:true});return}
     // Mobile browsers only keep the keyboard open if focus moves straight from one field to another, so the
     // new screen is added beside the old one, focus is handed over, and only then is the old screen removed.
     const was=[...app.childNodes];const tmp=document.createElement("template");tmp.innerHTML=viewQuiz();
-    old.id="typeOld";app.appendChild(tmp.content);const t=$("#typeIn");if(t)t.focus();was.forEach(n=>n.remove());return}
+    old.id="typeOld";app.appendChild(tmp.content);const t=$("#typeIn");if(t)t.focus({preventScroll:true});was.forEach(n=>n.remove());
+    if(document.body.classList.contains("kb")){window.scrollTo(0,0);setTimeout(()=>window.scrollTo(0,0),250)}return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
   if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
