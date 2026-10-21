@@ -147,15 +147,23 @@ function variantIdx(c,how){const v=VARS(c);if(!v)return 0;if(how==="random")retu
 // Official width:height ratios (TRUER); a variant can carry its own ratio. Flags without true-proportion artwork fall
 // back to the 4:3 set. Each flag sits in a 4:3 slot and is sized to roughly equal area, capped by the slot, so a wide
 // flag like Qatar reads as wider rather than merely shorter.
+// A flag with several designs carries all of them, one visible; switching designs then only toggles a hidden
+// attribute, so nothing reloads or flickers.
 const img=(c,cls="flag",vi=0)=>{
-  const v=VARS(c),ve=v&&v[vi],stem=ve&&vi?c+"-"+ve.k:c;
-  const tru=TRUER[c];const r=ve&&ve.r||(tru?TRUER[c]:4/3);const src=tru?"flags-true":"flags";
-  const w=tru?Math.min(100,75*r,100*Math.sqrt(0.62*r)):100;
-  return `<div class="${cls}"><div class="fl${BARE.has(c)||ve&&ve.bare?" bare":""}" style="--r:${r};--w:${w.toFixed(1)}%"><img src="${src}/${stem}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
+  const v=VARS(c)||[null],tru=TRUER[c],src=tru?"flags-true":"flags";
+  const one=(ve,i)=>{const stem=ve&&i?c+"-"+ve.k:c,r=ve&&ve.r||(tru?TRUER[c]:4/3),w=tru?Math.min(100,75*r,100*Math.sqrt(0.62*r)):100;
+    return `<div class="fl${BARE.has(c)||ve&&ve.bare?" bare":""}" data-v="${i}" style="--r:${r};--w:${w.toFixed(1)}%"${i===vi?"":" hidden"}><img src="${src}/${stem}.svg" alt="Flag of ${BY[c].n}"${i===vi?' loading="lazy"':""}></div>`};
+  return `<div class="${cls}" data-c="${c}">${v.map(one).join("")}</div>`};
+// Switch every rendered copy of flag c to design i, in place.
+function showVariant(c,i){
+  app.querySelectorAll(`.flag[data-c="${c}"] .fl`).forEach(fl=>{fl.hidden=+fl.dataset.v!==i});
+  app.querySelectorAll(`.vchips[data-c="${c}"]`).forEach(ch=>[...ch.children].forEach((b,j)=>b.classList.toggle("on",j===i)));
+  app.querySelectorAll(`.vline[data-c="${c}"]`).forEach(p=>p.outerHTML=useLine(c,i));
+}
 // One line naming the design on screen (text only), and a separate row of chips to switch designs. Keeping them apart
 // means the chips sit in a fixed spot under the flag and never move with the length of the label.
-function useLine(c,vi){const v=VARS(c),cur=v&&v[vi];return `<p class="vline small muted">${cur?esc(cur.l)+(cur.d?" · "+esc(cur.d):""):esc(useLabel(c))}</p>`}
-function vchips(c,vi,onpick,hidden){const v=VARS(c);if(!v)return "";return `<div class="vchips${hidden?" hide":""}">${v.map((x,i)=>`<button type="button" class="chipbtn${i===vi?" on":""}" onclick="${onpick.replace("%i",i)}">${esc(x.k[0].toUpperCase()+x.k.slice(1))}</button>`).join("")}</div>`}
+function useLine(c,vi){const v=VARS(c),cur=v&&v[vi];return `<p class="vline" data-c="${c}">${cur?esc(cur.l)+(cur.d?" · "+esc(cur.d):""):esc(useLabel(c))}</p>`}
+function vchips(c,vi,onpick,hidden){const v=VARS(c);if(!v)return "";return `<div class="vchips${hidden?" hide":""}" data-c="${c}">${v.map((x,i)=>`<button type="button" class="chipbtn${i===vi?" on":""}" onclick="${onpick.replace("%i",i)}">${esc(x.k[0].toUpperCase()+x.k.slice(1))}</button>`).join("")}</div>`}
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
 // Look-alike filter: a region name or null for all regions. The scope setting applies on top.
@@ -251,7 +259,7 @@ function typeInput(v){
 function pickSugg(c){const inp=$("#typeIn");if(inp)inp.value=BY[c].n;submitTyped()}
 function answer(k){
   const q=S.qs[S.i];if(q.ans)return;
-  q.ans=k;const ok=k===q.c;
+  q.ans=k;const ok=k===q.c;S.confirmLeave=false; // carrying on answers the "leave this round?" question
   const r=rec(q.c);const pts=S.diff==="master"&&S.dir==="flag"?3:(PTS[S.diff]||0);
   if(ok){r.c++;r.s=Math.min(8,(r.s||0)+pts);q.pts=pts}else{r.w++;r.s=Math.max(-4,(r.s||0)-2);q.pts=-2}
   q.nowMastered=ok&&r.s>=MASTER&&r.s-pts<MASTER;
@@ -261,9 +269,9 @@ function answer(k){
   if(S.pace==="drill"&&ok){clearTimeout(S.timer);S.timer=setTimeout(next,650);return}
   requestAnimationFrame(()=>{const btns=app.querySelectorAll(".btn");const b=btns[btns.length-1];if(b)b.scrollIntoView({block:"end",behavior:"smooth"})});
 }
-function next(){ clearTimeout(S.timer);S.timer=null; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0)} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
+function next(){ clearTimeout(S.timer);S.timer=null;S.confirmLeave=false; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0)} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
 function showLore(){const q=S.qs[S.i];q.lore=true;render()}
-function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();render()}
+function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();showVariant(q.c,i)}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
   if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbGo(LB.vi+(e.key==="ArrowRight"?1:-1));return}
@@ -494,7 +502,7 @@ function viewDone(){
   <button class="btn" onclick="startRound(S.mode,S.arg,S.label,S.flt)">Play again</button>
   <button class="btn ghost" onclick="goBack()">Choose another set</button>`;
 }
-function studyVar(btn,i){const en=btn.closest(".entry"),c=en.dataset.c;en.dataset.v=i;en.querySelector(".flink").innerHTML=img(c,"flag sm",i);en.querySelector(".vchips").outerHTML=vchips(c,i,"studyVar(this,%i)");en.querySelector(".vline").outerHTML=useLine(c,i)}
+function studyVar(btn,i){const en=btn.closest(".entry");en.dataset.v=i;showVariant(en.dataset.c,i)}
 function viewStudy(){
   const r=S.region;
   const wide=["Whole world","Everything","All territories"].includes(r);
@@ -566,7 +574,7 @@ function openFlag(c,vi=0){
     <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset${v?" · swipe for the other design":""}</p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
-  LB={c,vi,n,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track,fls:[...el.querySelectorAll(".lb-slide .flag .fl")]};
+  LB={c,vi,n,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track,fls:[...el.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]};
   LB.fl=LB.fls[vi];LB.baseW=LB.fl.getBoundingClientRect().width;
   lbTrack(false);
   const st=stage;
