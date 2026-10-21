@@ -1,0 +1,35 @@
+// Look-alike sets, each with a hint for telling the flags apart.
+// Look-alike groups: codes plus a hint for telling them apart.
+const GROUPS=[
+ {t:"Chad & Romania",k:"Vertical stripes",f:["td","ro","ad","md"],h:"Chad's blue is officially indigo, Romania's cobalt; in practice they are nearly identical and Chad's shade varies. Andorra and Moldova add a coat of arms (Moldova's has an eagle)."},
+ {t:"Red over white",k:"Horizontal stripes",f:["id","mc","pl","sg"],h:"Indonesia and Monaco are red on top (Indonesia is wider). Poland is white on top. Singapore adds a crescent and five stars."},
+ {t:"Nordic crosses",k:"Cantons & crosses",f:["dk","se","no","fi","is","fo","ax"],h:"Denmark: white on red. Sweden: yellow on blue. Finland: blue on white. Norway: red with a blue cross. Iceland: blue with a red cross. Faroe Islands: white with a red cross edged in blue. Åland: blue with a red cross edged in yellow."},
+ {t:"Pacific ensigns",k:"Cantons & crosses",f:["au","nz","fj","tv","ck","nu"],h:"Australia: white stars plus the large Commonwealth Star. New Zealand: four red stars. Fiji: light blue with a shield. Tuvalu: light blue with nine stars. Cook Islands: a ring of fifteen stars. Niue: a yellow field."},
+ {t:"Caribbean & Atlantic ensigns",k:"Cantons & crosses",f:["ai","ky","fk","vg","ms","tc","sh-hl","sh-ac","sh-ta","gs","bm"],h:"Only the badge differs. Anguilla: three dolphins. Cayman Islands: three stars on waves. Falklands: a ram over a ship. British Virgin Islands: a woman with lamps. Montserrat: a woman with a harp. Turks and Caicos: a yellow shield with a conch and lobster. St Helena: a ship and a bird. Ascension: terns and turtles. Tristan da Cunha: a longboat and lobsters. South Georgia: a reindeer and a seal. Bermuda is the one on red."},
+ {t:"St George's crosses",k:"Cantons & crosses",f:["gb-eng","ge","gg","gb-nir"],h:"England: the plain red cross. Georgia: four small crosses in the quarters. Guernsey: a gold cross inside the red one. Northern Ireland: a star with a red hand at centre."},
+ {t:"Saltires",k:"Cantons & crosses",f:["gb-sct","je","jm","bi"],h:"Scotland: white on blue. Jersey: red on white with three leopards above the centre. Jamaica: gold with black and green quarters. Burundi: white on red and green with three stars."},
+ {t:"Cuba & Puerto Rico",k:"Triangles & serrations",f:["cu","pr"],h:"Cuba: blue stripes with a red triangle. Puerto Rico: red stripes with a blue triangle, a deliberate colour swap of Cuba's."},
+ {t:"Australia & New Zealand",k:"Cantons & crosses",f:["au","nz"],h:"New Zealand has four red stars with white borders. Australia has white stars, one extra small star, and the large seven-pointed Commonwealth Star under the Union Jack."},
+ {t:"Red, white, blue stripes",k:"Horizontal stripes",f:["nl","lu","hr","py"],h:"Luxembourg's blue is a lighter, bright blue and the flag is longer. Croatia and Paraguay add an emblem at centre: Croatia's is a checkerboard shield, Paraguay's a round seal that differs on each side."},
+ {t:"Pan-Slavic white, blue, red",k:"Horizontal stripes",f:["ru","sk","si","rs"],h:"Russia is plain. Slovakia and Slovenia add a shield at the hoist (double cross on hills vs. Mount Triglav). Serbia is red on top with an eagle."},
+ {t:"Green, white, orange",k:"Vertical stripes",f:["ie","ci","it","mx"],h:"Ireland is green at the hoist, Côte d'Ivoire orange at the hoist. Italy's third stripe is red, not orange; Mexico adds the eagle."},
+ {t:"Pan-African verticals",k:"Vertical stripes",f:["gn","ml","sn","cm"],h:"Guinea is red first, Mali green first. Senegal is Mali with a green star. Cameroon is green-red-yellow with a gold star."},
+ {t:"Red, yellow, green stacks",k:"Horizontal stripes",f:["bo","gh","lt","et"],h:"Bolivia is red on top with no star; Ghana adds a black star. Lithuania is yellow on top. Ethiopia is green on top with a blue disc."},
+ {t:"Gran Colombia",k:"Horizontal stripes",f:["co","ec","ve"],h:"Colombia is plain. Ecuador carries its coat of arms. Venezuela has an arc of eight stars (and a smaller yellow band)."},
+ {t:"Central American blue-white-blue",k:"Horizontal stripes",f:["hn","sv","ni","ar","gt"],h:"Honduras: five stars. El Salvador and Nicaragua: near-identical coats of arms (a triangle of five volcanoes under a rainbow, ringed by text); El Salvador's adds a laurel wreath and flags. Argentina: a sun face. Guatemala: vertical stripes with a quetzal."},
+ {t:"Arab Liberation stripes",k:"Horizontal stripes",f:["eg","iq","sy","ye"],h:"Yemen is the plain red-white-black. Egypt adds a gold eagle. Iraq adds green script. Syria's current flag is green on top with three red stars."},
+ {t:"Arab Revolt triangles",k:"Triangles & serrations",f:["jo","ps","kw","ae","sd"],h:"Palestine is plain; Jordan adds a white star in the red triangle. Kuwait's black is a trapezoid at the hoist. UAE's red band is vertical. Sudan's triangle is green."},
+ {t:"Qatar & Bahrain",k:"Triangles & serrations",f:["qa","bh"],h:"Bahrain is bright red with five points. Qatar is maroon with nine points and is much wider."},
+ {t:"Sun discs",k:"Discs & stars",f:["jp","bd","pw"],h:"Japan: red on white. Bangladesh: red on green, disc toward the hoist. Palau: yellow on light blue, also off-centre."},
+ {t:"India & Niger",k:"Horizontal stripes",f:["in","ne"],h:"India has a blue wheel at centre; Niger has a plain orange disc, and its flag is nearly square."},
+ {t:"Blue and red stripes",k:"Horizontal stripes",f:["th","cr","la"],h:"Thailand: blue centre, red outer. Costa Rica: red centre, blue outer. Laos: red outer with a white disc on blue."},
+ {t:"Stars and stripes",k:"Cantons & crosses",f:["us","lr","my"],h:"Liberia has one star and eleven stripes. Malaysia has a crescent and 14-point star on blue with fourteen stripes."},
+ {t:"Hungary, Bulgaria, Iran, Tajikistan",k:"Horizontal stripes",f:["hu","bg","ir","tj"],h:"Hungary: red on top. Bulgaria: white on top. Iran: green on top with an emblem. Tajikistan: red on top with a crown and stars."},
+ {t:"Türkiye & Tunisia",k:"Discs & stars",f:["tr","tn"],h:"Tunisia puts the crescent and star inside a white disc. Türkiye's sit directly on the red."},
+ {t:"Liechtenstein & Haiti",k:"Horizontal stripes",f:["li","ht"],h:"Liechtenstein has a gold crown in the corner; Haiti has its coat of arms on a white panel at centre."},
+ {t:"Nine stripes",k:"Cantons & crosses",f:["gr","uy"],h:"Greece has a white cross on blue in the canton; Uruguay has a sun face on white."},
+ {t:"Belgium & Germany",k:"Vertical stripes",f:["be","de"],h:"Belgium's stripes are vertical and black-yellow-red. Germany's are horizontal and black-red-gold."},
+ {t:"Austria & Latvia",k:"Horizontal stripes",f:["at","lv","pe"],h:"Austria's bands are equal and bright red. Latvia's are a deep carmine with a thin white stripe. Peru's are vertical."},
+ {t:"Red with stars",k:"Discs & stars",f:["kp","vn","cn"],h:"Vietnam: one yellow star on red. China: one large and four small stars. North Korea: red star in a white disc on a red band with blue edges."}
+];
+const GROUP_OF={}; GROUPS.forEach((g,i)=>g.f.forEach(c=>{(GROUP_OF[c]=GROUP_OF[c]||[]).push(i)}));

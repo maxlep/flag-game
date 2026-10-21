@@ -5,3 +5,13 @@ A quiz for learning the flags of the world. Every answer shows what the flag's c
 Built by prompting Claude: the ideas, testing and bug reports are mine; the code is Claude's.
 
 Flag images from [flag-icons](https://github.com/lipis/flag-icons) (MIT) and, for official proportions, [svg-country-flags](https://github.com/hampusborgos/country-flags) (public domain).
+
+## Layout
+
+- `index.html` – markup and script tags
+- `css/app.css` – styles
+- `js/app.js` – state, quiz logic, views
+- `js/data/flags.js` – every flag: code, name, set, capital, description
+- `js/data/groups.js` – look-alike sets and their hints
+- `js/data/names.js` – typed-answer aliases, Wikipedia title overrides, official proportions
+- `flags/` – 4:3 artwork; `flags-true/` – official proportions
