@@ -30,6 +30,7 @@ What the project is and where files live: see README.md. This file holds the rul
 
 - Settings and progress live in localStorage under `flaglore.*` keys; the storage format must stay backward compatible (`rec()` migrates old records).
 - Badges are awarded only in `checkBadges()` at round end and are never revoked.
+- The round in progress is saved under `flaglore.round` on every answer and restored on load; `saveRound()` must run after any change to `S` during a round, and the key is cleared when leaving.
 - Typed answers (Expert): exact → unique exact prefix/substring → typo-tolerant only when nothing matches exactly. Don't let fuzzy matches widen the "one suggestion left" rule; precise typists rely on it. Master is exact names and aliases only, no suggestions.
 - Keyboard: Enter starts/continues, Esc goes back, Tab never leaves the page during a round.
 

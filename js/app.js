@@ -176,14 +176,21 @@ function distractors(c,diff,mode,n=3){
   return [...out];
 }
 const here=()=>({view:S.view,region:S.region,pick:S.pick,scroll:window.scrollY});
+// The round in progress (and its results screen) is kept in localStorage so a refresh resumes it.
+const RKEY="flaglore.round";
+function saveRound(){try{if(S.view==="quiz"||S.view==="done"){const {timer,...rest}=S;localStorage.setItem(RKEY,JSON.stringify(rest))}else localStorage.removeItem(RKEY)}catch(e){}}
+function loadRound(){try{const s=localStorage.getItem(RKEY);if(!s)return null;const r=JSON.parse(s);return r&&r.qs&&r.qs.length?r:null}catch(e){return null}}
+// Leaving mid-round asks first; a second Esc or the Leave button confirms.
 function goBack(){
+  if(S.view==="quiz"&&S.qs.some(q=>q.ans)&&!S.confirmLeave){S.confirmLeave=true;render();return}
   clearTimeout(S.timer);
   const f=S.from||{view:"home"};
-  S={view:f.view,region:f.region,pick:f.pick};render();
+  S={view:f.view,region:f.region,pick:f.pick};saveRound();render();
   window.scrollTo(0,f.scroll||0);
 }
+function stayInRound(){S.confirmLeave=false;render()}
 let HOME_Y=0;
-function goHome(){clearTimeout(S.timer);S={view:"home"};render();window.scrollTo(0,HOME_Y)}
+function goHome(){clearTimeout(S.timer);S={view:"home"};saveRound();render();window.scrollTo(0,HOME_Y)}
 function leaveHome(){if(S.view==="home")HOME_Y=window.scrollY}
 function openSetup(mode,arg,label){leaveHome();const from=here();S={view:"setup",pick:{mode,arg,label},from};render();window.scrollTo(0,0)}
 function openStudy(r){leaveHome();const from=here();S={view:"study",region:r,from};render();window.scrollTo(0,0)}
@@ -206,7 +213,7 @@ function startRound(mode,arg,label){
   const nOpt=optCount(diff,SET.dir);
   const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode,nOpt-1)]),ans:null,typed:""}));
   S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,nOpt,pace:SET.pace,from,full};
-  render();window.scrollTo(0,0);
+  saveRound();render();window.scrollTo(0,0);
 }
 function submitTyped(){
   const inp=$("#typeIn");if(!inp)return;
@@ -229,11 +236,11 @@ function answer(k){
   q.nowMastered=ok&&r.s>=MASTER&&r.s-pts<MASTER;
   prog[q.c]=r;save();
   S.streak=ok?S.streak+1:0;S.best=Math.max(S.best,S.streak);
-  render();
+  saveRound();render();
   if(S.pace==="drill"&&ok){clearTimeout(S.timer);S.timer=setTimeout(next,650);return}
   requestAnimationFrame(()=>{const btns=app.querySelectorAll(".btn");const b=btns[btns.length-1];if(b)b.scrollIntoView({block:"end",behavior:"smooth"})});
 }
-function next(){ clearTimeout(S.timer);S.timer=null; if(S.i+1<S.qs.length){S.i++;render();window.scrollTo(0,0)} else {S.earned=checkBadges();S.view="done";render();window.scrollTo(0,0)} }
+function next(){ clearTimeout(S.timer);S.timer=null; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0)} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
 function showLore(){const q=S.qs[S.i];q.lore=true;render()}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
@@ -405,6 +412,7 @@ function viewQuiz(){
   const right=S.qs.filter(x=>x.ans===x.c).length;
   return `
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ ${esc(S.label)}</button><span class="stat">${right} right · ${S.i+1} / ${n}</span></div>
+  ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}
   <div class="progress">${dots}</div></div>
   ${prompt}
   ${opts}
@@ -429,6 +437,12 @@ function shareText(){
   const grid=shareGrid();
   return `Flags of the World · ${S.label} · ${diff}${mode}\n${right}/${n}${S.best>=5?` · streak ${S.best}`:""}${grid?"\n"+grid:""}\n${shareMissed()}\n${SITE}`;
 }
+const CLIP=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+async function copyResult(){
+  const text=shareText(),btn=$("#copyBtn");
+  try{await navigator.clipboard.writeText(text);btn.classList.add("ok");btn.title="Copied";setTimeout(()=>{btn.classList.remove("ok");btn.title="Copy result text"},1500)}
+  catch(e){const ta=$("#shareTa");ta.hidden=false;ta.value=text;ta.focus();ta.select()}
+}
 async function share(){
   const text=shareText(),btn=$("#shareBtn");
   try{if(navigator.share){await navigator.share({text});btn.textContent="Shared";return}}catch(e){if(e&&e.name==="AbortError")return}
@@ -449,7 +463,7 @@ function viewDone(){
     <p class="small muted">Best streak this round: ${S.best}</p>
     ${shareGrid()?`<p class="grid">${shareGrid().replace(/\n/g,"<br>")}</p>`:""}
     <p class="small">${esc(shareMissed())}</p>
-    <button class="btn line" id="shareBtn" onclick="share()">Share result</button>
+    <div class="row" style="flex-wrap:nowrap"><button class="btn line" id="shareBtn" onclick="share()">Share result</button><button class="btn line icon" id="copyBtn" onclick="copyResult()" title="Copy result text" aria-label="Copy result text">${CLIP}</button></div>
     <textarea class="sharebox" id="shareTa" hidden readonly aria-label="Result text to copy"></textarea>
   </div>
   ${missed.length?`<div class="card"><h3>Missed</h3><div class="missed">${missed.map(q=>`<span class="chip">${img(q.c,"flag")}${esc(BY[q.c].n)}</span>`).join("")}</div></div>`:""}
@@ -535,6 +549,12 @@ function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="
 
 // ---------- BOOT ----------
 load();loadSet();loadB();
-function start(data){ if(data&&data.S)S=data.S; render(); }
+function start(data){
+  if(data&&data.S)S=data.S;
+  else{const r=loadRound();if(r){S=r;S.confirmLeave=false;S.timer=null;
+    // a Drill round saved right after a correct answer should move on as it would have
+    if(S.view==="quiz"&&S.pace==="drill"){const q=S.qs[S.i];if(q.ans&&q.ans===q.c)S.timer=setTimeout(next,400)}}}
+  render();
+}
 if(window.claude?.hot?.snapshot)window.claude.hot.snapshot(()=>({S}));
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
