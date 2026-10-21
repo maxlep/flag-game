@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Flag quiz with the story behind each flag: regional levels, look-alike drills, four difficulty levels and saved progress.">
+<meta name="theme-color" content="#1e3f8f">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Flag Lore</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow column like a field guide; the flag is always the largest thing on screen. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --ink:#15223a; --muted:#5b6678; --line:#d6dbe4;
+  --accent:#1e3f8f; --accent-ink:#ffffff; --tint:#e3e9f6;
+  --ok:#1f7a4c; --ok-tint:#dff3e7; --bad:#b4262b; --bad-tint:#fbe3e3;
+  --display:"Bricolage Grotesque","Avenir Next",Helvetica,Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
+  --accent:#8fb0ff; --accent-ink:#0f1521; --tint:#1f2b47;
+  --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
+  --accent:#8fb0ff; --accent-ink:#0f1521; --tint:#1f2b47;
+  --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
+h1{font-size:30px;font-weight:800;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:700}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top .back{font-weight:600;color:var(--accent);display:flex;align-items:center;gap:6px}
+.top .stat{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.flag{width:100%;max-width:100%;aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:var(--surface);
+  box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(10,20,40,.12)}
+.flag img{display:block;width:100%;height:100%;object-fit:cover}
+.flag.sm{aspect-ratio:4/3;box-shadow:0 0 0 1px var(--line)}
+
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;
+  padding:12px 14px;font-weight:600;font-size:16px;min-height:52px;transition:transform .08s}
+.opt:active{transform:scale(.985)}
+.opt .key{font-family:var(--mono);font-size:12px;color:var(--muted);width:18px;flex:none}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.opt.dim{opacity:.45}
+.opt[disabled]{cursor:default}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card.lore{border-left:4px solid var(--accent)}
+.verdict{font-family:var(--display);font-weight:800;font-size:20px}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.lore p{max-width:65ch}
+.capital{font-family:var(--mono);font-size:13px;color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:var(--accent-ink);
+  font-weight:700;border-radius:10px;padding:14px 18px;min-height:50px;width:100%;font-family:var(--display);font-size:17px}
+.btn.ghost{background:var(--tint);color:var(--ink)}
+.btn.line{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tile .name{font-family:var(--display);font-weight:700;font-size:18px}
+.tile .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--tint);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.tile.wide{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between}
+.tile.wide .name{font-size:17px}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row > *{flex:1;min-width:0}
+.pill{font-family:var(--mono);font-size:12px;background:var(--tint);color:var(--ink);border-radius:999px;padding:4px 10px}
+.pill.bad{background:var(--bad-tint);color:var(--bad)}
+.pill.ok{background:var(--ok-tint);color:var(--ok)}
+
+.progress{display:flex;gap:4px}
+.progress i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.progress i.ok{background:var(--ok)} .progress i.bad{background:var(--bad)} .progress i.now{background:var(--accent)}
+
+.study{display:flex;flex-direction:column;gap:12px}
+.entry{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.entry .flag{border-radius:4px}
+.entry .t{min-width:0;display:flex;flex-direction:column;gap:4px}
+.entry .t .name{font-family:var(--display);font-weight:700;font-size:16px}
+.entry p{font-size:14px;color:var(--ink)}
+.group{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.group .flags{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px}
+.group .flags figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.group .flags figcaption{font-size:12px;font-weight:600;line-height:1.2}
+.group .hint{font-size:14px;color:var(--ink);max-width:65ch}
+.missed{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 4px;font-size:14px;font-weight:600}
+.chip .flag{width:28px;aspect-ratio:4/3;border-radius:3px;box-shadow:none;border:1px solid var(--line)}
+.score{font-family:var(--display);font-weight:800;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}
+.link{color:var(--accent);font-weight:600;font-size:14px}
+.tabs{display:flex;gap:6px;background:var(--tint);padding:4px;border-radius:10px}
+.tabs button{flex:1;padding:8px;border-radius:7px;font-weight:600;font-size:14px}
+.tabs button.on{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.seg{display:flex;flex-direction:column;gap:6px}
+.seg .label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.seg .btns{display:flex;gap:6px;background:var(--tint);padding:4px;border-radius:10px}
+.seg .btns button{flex:1;padding:8px 4px;border-radius:7px;font-weight:600;font-size:14px;min-width:0}
+.seg .btns button.on{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg .btns button.off{opacity:.4}
+.seg .note{font-size:13px;color:var(--muted)}
+.flagopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fopt{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;min-width:0}
+.fopt .flag{box-shadow:0 0 0 1px var(--line)}
+.fopt .key{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.fopt.right{border-color:var(--ok);background:var(--ok-tint)}
+.fopt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.fopt.dim{opacity:.45}
+.fopt[disabled]{cursor:default}
+.ask{font-family:var(--display);font-weight:800;font-size:28px;line-height:1.1}
+.typebox{display:flex;flex-direction:column;gap:8px}
+.typebox input{font:inherit;font-size:17px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;width:100%}
+.typebox input:focus{outline:3px solid var(--accent);outline-offset:1px;border-color:transparent}
+.sugg{display:flex;flex-wrap:wrap;gap:6px;min-height:0}
+.sugg button{background:var(--tint);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ---------- DATA ----------
+// Each: [code, name, region, capital, meaning]
+const EU="Europe",AS="Asia",AF="Africa",AM="Americas",OC="Oceania";
+const RAW=[
+["al","Albania",EU,"Tirana","A two-headed black eagle on red. The eagle was the emblem of Skanderbeg, the 15th-century hero who held off the Ottomans, and Albanians' own name for their country, Shqipëri, is often glossed as 'land of eagles'."],
+["ad","Andorra",EU,"Andorra la Vella","Blue, yellow and red vertical stripes with the coat of arms. Blue and red come from France, yellow and red from Spain: the two neighbours whose heads of state jointly serve as Andorra's co-princes. Without the arms it would match Romania and Chad."],
+["at","Austria",EU,"Vienna","Red, white, red. Legend says Duke Leopold V's white tunic was soaked in blood after a battle in 1191 except for the strip under his belt. One of the oldest flag designs still in use."],
+["by","Belarus",EU,"Minsk","Red over green with a white-and-red woven pattern at the hoist, a traditional rushnyk (ritual towel) design. Red for past struggles, green for forests and the future."],
+["be","Belgium",EU,"Brussels","Black, yellow, red in vertical stripes, from the arms of the Duchy of Brabant: a gold lion with red claws and tongue on black. The vertical layout copies France; Germany uses similar colours horizontally."],
+["ba","Bosnia and Herzegovina",EU,"Sarajevo","A yellow triangle on blue with a diagonal row of white stars. The three points stand for the three main peoples (Bosniaks, Croats, Serbs) and echo the country's shape; the blue and stars nod to the EU flag. Designed in 1998 to favour no group."],
+["bg","Bulgaria",EU,"Sofia","White for peace, green for farmland, red for courage. It is the Russian white-blue-red with blue swapped for green."],
+["hr","Croatia",EU,"Zagreb","Red, white, blue with the red-and-white checkerboard shield (šahovnica), topped by a crown of five small historical crests. The checkerboard is the giveaway among pan-Slavic tricolours."],
+["cy","Cyprus",EU,"Nicosia","A copper-orange silhouette of the island (copper gave Cyprus its name) over two olive branches for peace between Greek and Turkish Cypriots. The white field deliberately avoids both Greek blue and Turkish red."],
+["cz","Czechia",EU,"Prague","White and red are Bohemia's colours; the blue triangle at the hoist was added in 1920 so the flag would no longer be identical to Poland's."],
+["dk","Denmark",EU,"Copenhagen","The Dannebrog: a white Nordic cross on red. Legend says it fell from the sky during a battle in Estonia in 1219. Often called the oldest continuously used national flag, and the model for every other Nordic cross."],
+["ee","Estonia",EU,"Tallinn","Blue for the sky and loyalty, black for the soil and past suffering, white for snow and hope. Chosen by a student society in 1881."],
+["fi","Finland",EU,"Helsinki","A blue Nordic cross on white: the country's thousands of lakes and its winter snow."],
+["fr","France",EU,"Paris","The tricolour of the Revolution. White was the colour of the monarchy; blue and red were the colours of Paris. It inspired dozens of other vertical tricolours."],
+["de","Germany",EU,"Berlin","Black, red and gold come from the uniforms of the Lützow Free Corps in the Napoleonic wars (black coats, red facings, gold buttons), taken up by the liberal revolution of 1848."],
+["gr","Greece",EU,"Athens","Nine blue-and-white stripes, often said to count the syllables of 'Eleftheria i Thanatos' (Freedom or Death). The cross in the canton stands for Greek Orthodoxy."],
+["hu","Hungary",EU,"Budapest","Red for strength, white for faithfulness, green for hope, the colours of the medieval Hungarian arms. Note the order: Bulgaria is white on top, Iran has green on top."],
+["is","Iceland",EU,"Reykjavík","A red cross edged in white on blue: fire (volcanoes), ice (glaciers) and the sea. It is Norway's colours inverted: Norway is red with a blue cross."],
+["ie","Ireland",EU,"Dublin","Green for the Gaelic and Catholic tradition, orange for the Protestant followers of William of Orange, and white for peace between them. Côte d'Ivoire is the same flag reversed."],
+["it","Italy",EU,"Rome","Green, white, red, modelled on the French tricolour; the colours come from Milanese civic guard uniforms of 1796. Mexico uses the same stripes with an eagle at centre."],
+["xk","Kosovo",EU,"Pristina","A gold map of the country under six white stars for its six main communities, on blue. Adopted at independence in 2008; Cyprus is the only other flag that uses a map."],
+["lv","Latvia",EU,"Riga","Deep carmine with a white stripe. Legend tells of a wounded leader wrapped in a white sheet that was stained red on both sides. The design is recorded in a 13th-century chronicle."],
+["li","Liechtenstein",EU,"Vaduz","Blue over red with a gold crown. The crown was added in 1937 after the team arrived at the 1936 Berlin Olympics and discovered Haiti's flag was identical."],
+["lt","Lithuania",EU,"Vilnius","Yellow for the sun and prosperity, green for forests and hope, red for the blood shed for the homeland."],
+["lu","Luxembourg",EU,"Luxembourg","Red, white and a light sky blue, from the Grand Duke's arms (a red lion on white-and-blue stripes). The pale blue is the clue that separates it from the Netherlands."],
+["mt","Malta",EU,"Valletta","White and red, said to come from the colours of Count Roger of Sicily in 1091. The George Cross in the corner was awarded to the whole island for its bravery under siege in 1942."],
+["md","Moldova",EU,"Chișinău","Blue, yellow, red like Romania (shared language and history), with Moldova's arms: an eagle holding a shield with an aurochs head, star, rose and crescent."],
+["mc","Monaco",EU,"Monaco","Red over white, the heraldic colours of the Grimaldi family who have ruled since the 13th century. Indonesia's flag is the same except for its proportions."],
+["me","Montenegro",EU,"Podgorica","A gold-bordered red field with the double-headed eagle of the Petrović dynasty; the lion on its chest stands for the Church."],
+["nl","Netherlands",EU,"Amsterdam","Originally orange, white and blue for William of Orange, but the orange dye faded or turned red at sea, so red was adopted. The oldest tricolour, and the inspiration for Russia's."],
+["mk","North Macedonia",EU,"Skopje","A gold sun with eight widening rays on red, 'the new sun of liberty' from the national anthem. It replaced the Vergina Sun in 1995 after a dispute with Greece over that ancient symbol."],
+["no","Norway",EU,"Oslo","A blue cross outlined in white on red. Red, white and blue were chosen in 1821 as the colours of liberty (France, the US), laid on the Nordic cross."],
+["pl","Poland",EU,"Warsaw","White over red, from the white eagle on a red shield in Poland's arms. Indonesia and Monaco are the same flag upside down."],
+["pt","Portugal",EU,"Lisbon","Green for hope and red for the blood of the 1910 republic. The armillary sphere was a navigation instrument of the Age of Discovery; the shield carries five small shields and seven castles from the medieval kingdom."],
+["ro","Romania",EU,"Bucharest","Blue, yellow, red, combining the colours of Wallachia and Moldavia in the 1848 revolution. Chad's flag is almost identical; Chad's blue is a touch darker."],
+["ru","Russia",EU,"Moscow","White, blue, red, adopted by Peter the Great in the 1690s, reportedly after seeing the Dutch flag. These became the pan-Slavic colours used by Slovakia, Slovenia and Serbia."],
+["sm","San Marino",EU,"San Marino","White (the snow on Monte Titano, and purity) over light blue (the sky, and liberty), with arms showing the three towers on the mountain's three peaks."],
+["rs","Serbia",EU,"Belgrade","Pan-Slavic red, blue, white with the arms: a white double-headed eagle and a cross with four firesteels, read as four Cyrillic 'C's for 'Only Unity Saves the Serbs'."],
+["sk","Slovakia",EU,"Bratislava","White, blue, red pan-Slavic stripes with a shield: a white double cross on three blue hills for the Tatra, Fatra and Mátra ranges."],
+["si","Slovenia",EU,"Ljubljana","White, blue, red with a shield showing Mount Triglav, the highest peak, three gold stars from the Counts of Celje, and wavy lines for the sea and rivers."],
+["es","Spain",EU,"Madrid","Red and yellow, the colours of the Crown of Aragon, picked in 1785 because they were easy to spot at sea. The arms combine Castile, León, Aragon, Navarre and Granada between the Pillars of Hercules."],
+["se","Sweden",EU,"Stockholm","A yellow Nordic cross on blue, taken from the national arms of three gold crowns on blue."],
+["ch","Switzerland",EU,"Bern","A white cross on red, from the field sign of the Swiss Confederates in the 14th century. One of only two square national flags; the other is Vatican City's."],
+["ua","Ukraine",EU,"Kyiv","Blue sky over a golden wheat field. The colours come from the arms of the medieval kingdom of Galicia-Volhynia."],
+["gb","United Kingdom",EU,"London","The Union Jack layers three crosses: St George (England, red on white), St Andrew (Scotland, white diagonal on blue) and St Patrick (Ireland, red diagonal)."],
+["va","Vatican City",EU,"Vatican City","Yellow and white with the crossed keys of St Peter (gold for heaven, silver for earth) under the papal tiara. Square, like Switzerland's."],
+
+["af","Afghanistan",AS,"Kabul","Black for the past, red for blood shed for independence, green for hope and Islam, with an emblem of a mosque, pulpit and wheat. This is the republic's flag; the Taliban replaced it with a plain white banner in 2021, and this design is still widely used by Afghans abroad."],
+["am","Armenia",AS,"Yerevan","Red for the blood shed for survival and the Christian faith, blue for the sky and hope, orange (often called apricot) for the creativity and hard work of the people."],
+["az","Azerbaijan",AS,"Baku","Blue for Turkic heritage, red for progress and modernity, green for Islam. The eight-pointed star stands for the eight branches of the Turkic peoples."],
+["bh","Bahrain",AS,"Manama","Red with a white band joined by five white points, one for each of the Five Pillars of Islam. Qatar's neighbouring flag is maroon with nine points."],
+["bd","Bangladesh",AS,"Dhaka","A red disc, the sun rising over Bengal and the blood of the 1971 war, on green for the lush land. The disc sits slightly toward the hoist so it looks centred when flying. Japan's is red on white; Palau's is yellow on blue."],
+["bt","Bhutan",AS,"Thimphu","A white thunder dragon (druk) clutching jewels across a diagonal of yellow (the secular monarchy) and orange (Buddhism). Bhutan calls itself Druk Yul, Land of the Thunder Dragon."],
+["bn","Brunei",AS,"Bandar Seri Begawan","Yellow for royalty, crossed by white and black stripes for the sultan's two chief ministers. The red crest holds a crescent reading 'Always in service with God's guidance' and a banner naming 'Brunei, abode of peace'."],
+["kh","Cambodia",AS,"Phnom Penh","A white Angkor Wat on a red band between blue bands. One of very few national flags showing a building."],
+["cn","China",AS,"Beijing","Red for the revolution. The large star is the Communist Party and the four small stars are the classes of the people united around it."],
+["ge","Georgia",AS,"Tbilisi","The 'five-cross flag': a large red St George's cross with four small Bolnisi crosses, a medieval Georgian design revived in 2004."],
+["in","India",AS,"New Delhi","Saffron for courage and sacrifice, white for truth and peace, green for faith and fertility. The blue Ashoka Chakra at centre is a 24-spoke wheel of law. Niger is the look-alike: orange, white, green with a plain orange disc."],
+["id","Indonesia",AS,"Jakarta","Red for courage and white for purity, colours used by the 13th-century Majapahit empire. Identical to Monaco's except for proportions; Poland is the reverse."],
+["ir","Iran",AS,"Tehran","Green, white, red with a stylised 'Allah' emblem shaped like a tulip at centre, and 'Allahu Akbar' written 22 times along the stripe edges for 22 Bahman, the date of the 1979 revolution."],
+["iq","Iraq",AS,"Baghdad","Arab Liberation red, white, black with 'Allahu Akbar' in green Kufic script across the white band. Egypt, Syria and Yemen share the stripes; the script is Iraq's tell."],
+["il","Israel",AS,"Jerusalem","The two blue stripes recall the tallit, the Jewish prayer shawl, with the Star of David at centre."],
+["jp","Japan",AS,"Tokyo","The Hinomaru, 'circle of the sun': a red disc on white for the land of the rising sun."],
+["jo","Jordan",AS,"Amman","The Arab Revolt colours: black (Abbasid), white (Umayyad) and green (Fatimid) caliphates, with a red triangle for the Hashemite dynasty. The seven-pointed star stands for the seven verses of the Quran's opening chapter; Palestine's flag is the same without the star."],
+["kz","Kazakhstan",AS,"Astana","Sky blue for the open sky and the Turkic peoples, a 32-rayed gold sun above a soaring steppe eagle, and a traditional ornament running along the hoist."],
+["kw","Kuwait",AS,"Kuwait City","Arab Revolt colours with a black trapezoid at the hoist. A poem supplies the meanings: green for the land, white for deeds, red for swords, black for the battlefield."],
+["kg","Kyrgyzstan",AS,"Bishkek","A red field with a 40-rayed sun for the 40 tribes united by the hero Manas. Inside the sun is a tunduk, the circular crown of a yurt seen from below."],
+["la","Laos",AS,"Vientiane","Red for blood shed in the struggle, blue for the Mekong and prosperity. The white disc is the full moon over the river, and national unity. Easily confused with Thailand and Costa Rica, which have stripes but no disc."],
+["lb","Lebanon",AS,"Beirut","A green cedar of Lebanon, the tree of the Bible and of Lebanese identity, on white for peace between two red bands for sacrifice."],
+["my","Malaysia",AS,"Kuala Lumpur","Fourteen stripes and a 14-pointed star for the 13 states plus the federal territories; the crescent is Islam and yellow is the royal colour. The stripes-and-canton layout echoes the US and Liberian flags."],
+["mv","Maldives",AS,"Malé","Red for the blood of heroes framing a green rectangle for Islam and the islands' palms, with a white crescent."],
+["mn","Mongolia",AS,"Ulaanbaatar","The Soyombo symbol in yellow on a red stripe beside blue for the eternal sky. The symbol stacks fire, sun, moon, arrows and a yin-yang, each with its own meaning."],
+["mm","Myanmar",AS,"Naypyidaw","Yellow for solidarity, green for peace and greenery, red for courage, with a large white star for the union. Adopted in 2010; it looks like Lithuania's with a star."],
+["np","Nepal",AS,"Kathmandu","The only non-rectangular national flag: two stacked pennants from the old Rana dynasty banners. The moon is the royal house and calm, the sun is the people and their fierce resolve; crimson is the colour of the rhododendron."],
+["kp","North Korea",AS,"Pyongyang","Red for revolution, blue for sovereignty and peace, white for purity; a red star for communism inside a white disc."],
+["om","Oman",AS,"Muscat","White for peace, red for battles fought, green for the Jebel Akhdar (Green Mountain). The emblem is a khanjar dagger over two crossed swords."],
+["pk","Pakistan",AS,"Islamabad","Green for Islam and the Muslim majority, the white stripe for religious minorities. The crescent is progress and the star is light and knowledge."],
+["ps","Palestine",AS,"Ramallah (de facto)","The Arab Revolt flag of 1916: black, white and green stripes with a red triangle. Jordan's is identical but adds a white seven-pointed star in the triangle."],
+["ph","Philippines",AS,"Manila","The sun's eight rays are the first eight provinces that rose against Spain; the three stars are Luzon, Visayas and Mindanao. In wartime the flag is flown with the red stripe on top."],
+["qa","Qatar",AS,"Doha","Maroon (the natural dye darkened in the sun) with a nine-point serrated white band for the nine emirates that joined the British protectorate in 1916. Bahrain's is red with five points."],
+["sa","Saudi Arabia",AS,"Riyadh","Green with the shahada, the Islamic declaration of faith, above a sword. It is made identically on both sides so the text reads correctly either way, and it is never flown at half-mast."],
+["sg","Singapore",AS,"Singapore","Red for universal brotherhood, white for purity. The crescent is a young nation on the rise and the five stars are democracy, peace, progress, justice and equality. Without the crescent and stars it would be Indonesia's flag."],
+["kr","South Korea",AS,"Seoul","The red-and-blue taegeuk (the balance of yin and yang) surrounded by four black trigrams from the I Ching: heaven, earth, water and fire."],
+["lk","Sri Lanka",AS,"Sri Jayawardenepura Kotte","A gold lion holding a sword, for the Sinhalese people, on maroon with four bo-tree leaves for Buddhist virtues. The green and orange stripes stand for the Muslim and Tamil minorities."],
+["sy","Syria",AS,"Damascus","Green, white, black with three red stars: the flag of Syria's independence in 1946, readopted in 2025 after the fall of the Assad government. The three stars originally stood for the three districts of the 1930s state."],
+["tw","Taiwan",AS,"Taipei","'Blue sky, white sun, and a wholly red earth': the white sun with twelve rays (the twelve traditional hours) in a blue canton, from the Republic of China's 1928 flag."],
+["tj","Tajikistan",AS,"Dushanbe","Red, white, green like Iran's, but with a gold crown under seven stars at centre. White stands for cotton, green for the valleys."],
+["th","Thailand",AS,"Bangkok","Red for the nation, white for religion, blue for the monarchy. The blue centre band was added in 1917 to match the colours of the WWI Allies. Costa Rica is the same pattern with blue and red swapped."],
+["tl","Timor-Leste",AS,"Dili","A black triangle (obscurantism to be overcome) on a yellow one (the traces of colonialism) on red (the struggle), with a white star of hope."],
+["tr","Türkiye",AS,"Ankara","A white crescent and star on red, inherited from the Ottoman Empire. Tunisia's flag puts the same crescent and star in a white disc."],
+["tm","Turkmenistan",AS,"Ashgabat","Green with a vertical carpet stripe showing five guls, traditional carpet motifs of the five major tribes, plus a crescent and five stars. The most detailed national flag."],
+["ae","United Arab Emirates",AS,"Abu Dhabi","Pan-Arab colours with a red vertical band at the hoist, recalling the emirates' older red flags. Green for fertility, white for neutrality, black for oil wealth."],
+["uz","Uzbekistan",AS,"Tashkent","Blue for sky and water (and Timur's banner), white for peace, green for nature, with thin red lines for the life force. A crescent and twelve stars for the months."],
+["vn","Vietnam",AS,"Hanoi","A gold five-pointed star on revolutionary red; the points stand for workers, peasants, soldiers, intellectuals and youth."],
+["ye","Yemen",AS,"Sanaa","The plain Arab Liberation tricolour of red, white and black, adopted in 1990 when North and South Yemen united. The only one of the group with no emblem."],
+
+["dz","Algeria",AF,"Algiers","Green for Islam and white for purity, with a red crescent and star for the blood of those who died in the independence war."],
+["ao","Angola",AF,"Luanda","Red for blood shed and black for Africa. The emblem of a half gearwheel, machete and star was modelled on the hammer and sickle."],
+["bj","Benin",AF,"Porto-Novo","Pan-African colours: green for hope and the palm groves, yellow for the savannas of the north, red for courage."],
+["bw","Botswana",AF,"Gaborone","Light blue for water and rain ('pula', which is also the currency and a greeting), with black and white stripes for racial harmony and the zebra."],
+["bf","Burkina Faso",AF,"Ouagadougou","Red for the revolution and green for abundance, with a yellow star to guide it. Adopted in 1984 together with the country's new name."],
+["bi","Burundi",AF,"Gitega","A white diagonal cross for peace with three red stars for unity, work and progress (and the three peoples: Hutu, Tutsi, Twa). Red for the struggle, green for hope."],
+["cm","Cameroon",AF,"Yaoundé","Pan-African vertical tricolour with a gold star of unity. Green for the southern forests, yellow for the northern savanna, red for unity between them."],
+["cv","Cabo Verde",AF,"Praia","Blue for the ocean, white and red for peace and effort. The ring of ten stars is the ten main islands."],
+["cf","Central African Republic",AF,"Bangui","Pan-African and French colours together, crossed by a red stripe for the blood that binds them, with a yellow star of hope."],
+["td","Chad",AF,"N'Djamena","Blue for the sky and hope, yellow for the sun and the northern desert, red for sacrifice. Nearly identical to Romania's; Chad's blue is a darker indigo."],
+["km","Comoros",AF,"Moroni","Four stripes and four stars for the four islands, including Mayotte, which Comoros claims from France. The crescent is Islam."],
+["cg","Republic of the Congo",AF,"Brazzaville","Pan-African green, yellow and red arranged diagonally. Green for forests, yellow for friendship, red for the independence struggle."],
+["cd","DR Congo",AF,"Kinshasa","Sky blue for peace, crossed by a red diagonal (blood of martyrs) edged in yellow (mineral wealth), with a star for a radiant future."],
+["ci","Côte d'Ivoire",AF,"Yamoussoukro","Orange for the northern savanna and growth, white for peace, green for the forests and hope. It is Ireland's flag reversed: orange at the hoist."],
+["dj","Djibouti",AF,"Djibouti","Blue for the Issa (Somali) people and the sea, green for the Afar people and the earth, white for peace, and a red star for unity."],
+["eg","Egypt",AF,"Cairo","Arab Liberation red (revolution), white (bright future), black (the dark past), with the golden Eagle of Saladin at centre."],
+["gq","Equatorial Guinea",AF,"Malabo","Green, white, red with a blue triangle for the sea. The arms show a silk-cotton tree and six stars for the mainland plus five islands."],
+["er","Eritrea",AF,"Asmara","A red triangle (blood of the independence war) between green (agriculture) and blue (the Red Sea), with an olive wreath from the 1952 flag."],
+["sz","Eswatini",AF,"Mbabane","A black-and-white Emasotsha shield with two spears and a staff, on a crimson band for past battles between blue bands for peace. The shield's two colours show the races living together."],
+["et","Ethiopia",AF,"Addis Ababa","Green, yellow, red: the original pan-African colours, copied by many states after Ethiopia kept its independence. The blue disc with a star was added in 1996."],
+["ga","Gabon",AF,"Libreville","Green for the forests, yellow for the equator and the sun, blue for the sea."],
+["gm","The Gambia",AF,"Banjul","Blue for the River Gambia flowing between red (the sun and savanna) and green (the forests), with white lines for peace."],
+["gh","Ghana",AF,"Accra","The first independent sub-Saharan state (1957) to adopt pan-African red, yellow and green. The black star stands for African freedom and the Black Star shipping line."],
+["gn","Guinea",AF,"Conakry","Red for sacrifice, yellow for the sun and wealth, green for vegetation, in vertical stripes. Mali's flag is the mirror image."],
+["gw","Guinea-Bissau",AF,"Bissau","Pan-African colours with a black star for African unity on a red vertical band: the Ghana layout turned on its side."],
+["ke","Kenya",AF,"Nairobi","Black for the people, red for blood, green for the land, with white lines for peace. The Maasai shield and spears stand for the defence of freedom."],
+["ls","Lesotho",AF,"Maseru","A black Basotho hat (mokorotlo) on a white stripe for peace, between blue for rain and green for prosperity."],
+["lr","Liberia",AF,"Monrovia","Modelled on the US flag by settlers from America. Eleven stripes for the signers of the 1847 declaration of independence; one star for the first independent republic in Africa."],
+["ly","Libya",AF,"Tripoli","Red, black and green with a crescent and star. The black band is the Senussi banner of Cyrenaica. Restored in 2011 after four decades of Gaddafi's plain green flag."],
+["mg","Madagascar",AF,"Antananarivo","White and red from the flags of the Merina kingdom, with green for the coastal peoples and hope."],
+["mw","Malawi",AF,"Lilongwe","A red rising sun over black (the African people), red (blood) and green (nature): the dawn of freedom in Africa."],
+["ml","Mali",AF,"Bamako","Green, yellow, red vertical pan-African tricolour. Guinea's is the mirror image: red at the hoist."],
+["mr","Mauritania",AF,"Nouakchott","Green with a gold crescent and star for Islam and the Sahara. The red bands were added in 2017 for the blood of those who fought French rule."],
+["mu","Mauritius",AF,"Port Louis","Four stripes: red for the struggle, blue for the Indian Ocean, yellow for the new light of independence, green for agriculture. One of very few four-band flags."],
+["ma","Morocco",AF,"Rabat","Red, the colour of the Alaouite dynasty, with a green five-pointed Seal of Solomon for the five pillars of Islam."],
+["mz","Mozambique",AF,"Maputo","The only national flag with a modern firearm: an AK-47 crossed with a hoe over an open book, on a star for international solidarity."],
+["na","Namibia",AF,"Windhoek","A sun for life and energy over blue (sky and ocean), red (the people) and green (the land). The diagonal layout was meant to show a new direction."],
+["ne","Niger",AF,"Niamey","Orange for the Sahara, white for purity, green for the Niger valley and hope, with an orange sun disc. Same colours as India, which has a blue wheel instead."],
+["ng","Nigeria",AF,"Abuja","Green for agriculture and the land, white for peace and unity. Chosen in a 1959 competition; the judges removed the red sun from the winning entry."],
+["rw","Rwanda",AF,"Kigali","Blue for happiness and peace, yellow for economic development, green for prosperity, with a sun of enlightenment. Adopted in 2001 to drop the colours associated with the 1994 genocide."],
+["st","São Tomé and Príncipe",AF,"São Tomé","Pan-African colours with two black stars for the two islands and a red triangle for the independence struggle."],
+["sn","Senegal",AF,"Dakar","The same vertical tricolour as Mali, with a green star at centre for openness and hope."],
+["sc","Seychelles",AF,"Victoria","Five bands fanning out from the corner for a dynamic young nation: blue (sea and sky), yellow (sun), red (the people), white (justice), green (the land)."],
+["sl","Sierra Leone",AF,"Freetown","Green for agriculture and the mountains, white for unity and justice, blue for the natural harbour at Freetown."],
+["so","Somalia",AF,"Mogadishu","UN blue, as the UN oversaw its path to independence, with a white star whose five points are the five regions where Somalis live."],
+["za","South Africa",AF,"Pretoria","Six colours in a 'Y' shape, for diverse groups converging into one. Adopted in 1994 for the first democratic election."],
+["ss","South Sudan",AF,"Juba","Black for the people, red for blood, green for the land, with white lines for peace. The blue triangle is the Nile and the gold star is the Star of Bethlehem guiding the nation."],
+["sd","Sudan",AF,"Khartoum","Arab Liberation red, white, black with a green triangle for Islam and agriculture. Jordan and Palestine use a red triangle instead."],
+["tz","Tanzania",AF,"Dodoma","Green (land) and blue (Indian Ocean) split by a black diagonal (the people) edged in gold (minerals). It merges the flags of Tanganyika and Zanzibar."],
+["tg","Togo",AF,"Lomé","Five green and yellow stripes for the five regions, with a white star of hope on a red square. The flag's proportions follow the golden ratio."],
+["tn","Tunisia",AF,"Tunis","Red with a white disc holding a red crescent and star, derived from the Ottoman flag and adopted in 1831. Türkiye's crescent sits directly on red."],
+["ug","Uganda",AF,"Kampala","Black (the people), yellow (sunshine) and red (brotherhood), each repeated twice, with the grey crowned crane, the national bird, at centre."],
+["zm","Zambia",AF,"Lusaka","Green for nature with a block of red (the struggle), black (the people) and orange (copper) in the corner. The eagle in flight stands for rising above problems."],
+["zw","Zimbabwe",AF,"Harare","Seven stripes: green (agriculture), yellow (minerals), red (blood) and black (the people). The Zimbabwe Bird, a soapstone carving from Great Zimbabwe, sits on a red star."],
+
+["ag","Antigua and Barbuda",AM,"St. John's","A rising sun (a new era) over black (African heritage), blue (the sea) and white (sand), framed by a red 'V' for victory."],
+["ar","Argentina",AM,"Buenos Aires","Light blue and white from the cockades of the 1810 May Revolution. The Sun of May at centre is an Inca sun; Uruguay uses the same sun."],
+["bs","Bahamas",AM,"Nassau","Aquamarine for the sea, gold for the sand and sun, and a black triangle for the strength and determination of the people."],
+["bb","Barbados",AM,"Bridgetown","A black trident head for independence from Britain; the shaft is deliberately broken off. Blue for sea and sky, gold for the sand."],
+["bz","Belize",AM,"Belmopan","The only national flag with people on it: two woodcutters, one mestizo and one Afro-Belizean, beside a mahogany tree, under a wreath of 50 leaves for 1950, when the independence movement began."],
+["bo","Bolivia",AM,"Sucre (constitutional), La Paz (seat of government)","Red for the blood of heroes, yellow for mineral wealth, green for the fertility of the land. Ghana has the same order with a black star."],
+["br","Brazil",AM,"Brasília","Green and the yellow diamond come from the Braganza and Habsburg royal houses (and the forests and gold). The blue globe shows the Rio sky on 15 November 1889, one star per state, with the motto 'Order and Progress'."],
+["ca","Canada",AM,"Ottawa","The red maple leaf replaced a British ensign in 1965. Red and white have been Canada's official colours since 1921."],
+["cl","Chile",AM,"Santiago","Blue for the sky, white for the snow of the Andes, red for the blood shed for independence. A single star for the unitary state; the design predates the Texas flag."],
+["co","Colombia",AM,"Bogotá","Yellow (gold and the land) takes up half the flag, blue is the two oceans, red is blood. Venezuela and Ecuador share the pattern from the old Gran Colombia; Colombia's is the one with no emblem or stars."],
+["cr","Costa Rica",AM,"San José","Blue, white and red. The red centre band was added in 1848 in sympathy with that year's French revolution, on top of the Central American blue-white-blue. Thailand swaps blue and red."],
+["cu","Cuba",AM,"Havana","Three blue stripes for the island's old military departments, white for purity, a red triangle for the blood of independence and a lone star. Designed in 1849 by exiles in New York."],
+["dm","Dominica",AM,"Roseau","The sisserou parrot, the national bird, on green, with a cross of yellow, black and white for the Indigenous, African and European peoples. Ten stars for the ten parishes."],
+["do","Dominican Republic",AM,"Santo Domingo","The only national flag with a Bible in it. A white cross for salvation divides blue (liberty) and red (blood)."],
+["ec","Ecuador",AM,"Quito","Gran Colombia colours with the arms at centre: Chimborazo volcano, the Guayas river and a condor. Colombia has no arms; Venezuela has stars."],
+["sv","El Salvador",AM,"San Salvador","Central American blue-white-blue with the arms: a triangle with five volcanoes, a Phrygian cap of liberty and a rainbow, ringed by the country's full name."],
+["gd","Grenada",AM,"St. George's","A nutmeg, the island's famous export, sits at the hoist. Seven stars for the seven parishes; red for courage, yellow for sun, green for agriculture."],
+["gt","Guatemala",AM,"Guatemala City","Blue, white, blue in vertical stripes, with the resplendent quetzal (liberty) perched on a scroll dated 15 September 1821, the day of Central American independence."],
+["gy","Guyana",AM,"Georgetown","The 'Golden Arrowhead': green for forests, gold for mineral wealth, red for zeal, white for the rivers and black for endurance."],
+["ht","Haiti",AM,"Port-au-Prince","Blue and red from the French tricolour with the white stripe torn out in 1803 to reject French rule. The arms carry the motto 'Unity makes strength'. Liechtenstein's is blue over red with a crown."],
+["hn","Honduras",AM,"Tegucigalpa","Central American blue-white-blue with five stars for the five members of the former Federal Republic of Central America."],
+["jm","Jamaica",AM,"Kingston","Green for hope and agriculture, gold for sunlight, black for strength and creativity. The official gloss: 'hardships there are, but the land is green and the sun shineth'."],
+["mx","Mexico",AM,"Mexico City","Green, white, red from the 1821 independence army. The eagle on a cactus eating a snake is the Aztec legend of the founding of Tenochtitlan. Italy's tricolour has no emblem."],
+["ni","Nicaragua",AM,"Managua","Blue-white-blue with the Central American arms: five volcanoes between two oceans, a rainbow and a Phrygian cap. One of the few flags to include purple (in the rainbow)."],
+["pa","Panama",AM,"Panama City","Blue and red for the Conservative and Liberal parties, white for the peace between them; the blue star for purity and the red star for law."],
+["py","Paraguay",AM,"Asunción","Red, white, blue like the Netherlands, but the only national flag with different emblems on each side: the national arms on the front and the treasury seal on the back."],
+["pe","Peru",AM,"Lima","Red, white, red in vertical bands. Legend says General San Martín saw a flock of red-and-white flamingos take off and took it as a sign. Austria's is horizontal."],
+["kn","Saint Kitts and Nevis",AM,"Basseterre","A black diagonal for African heritage carrying two white stars for the two islands (hope and liberty). Green for fertile land, red for the struggle."],
+["lc","Saint Lucia",AM,"Castries","A gold and black triangle for the Pitons, the island's twin volcanic peaks, rising from a cerulean blue sea."],
+["vc","Saint Vincent and the Grenadines",AM,"Kingstown","Three green diamonds forming a 'V' for the 'Gems of the Antilles'. Blue for sky and sea, yellow for the sun."],
+["sr","Suriname",AM,"Paramaribo","Green for the fertile land, white for justice, red for progress, with a yellow star for unity and a golden future."],
+["tt","Trinidad and Tobago",AM,"Port of Spain","A black diagonal edged in white on red: the people, the sea and the warmth of the sun. Adopted at independence in 1962."],
+["us","United States",AM,"Washington, D.C.","Thirteen stripes for the original colonies and fifty stars for the states. The 50-star version dates from 1960."],
+["uy","Uruguay",AM,"Montevideo","Nine stripes for the nine original departments, with the Sun of May shared with Argentina. Greece has nine stripes too, with a cross instead."],
+["ve","Venezuela",AM,"Caracas","Gran Colombia colours with an arc of eight stars for the provinces that declared independence in 1811 (the eighth was added in 2006)."],
+
+["au","Australia",OC,"Canberra","The Union Jack for British ties, the Southern Cross for its place in the southern sky, and the seven-pointed Commonwealth Star for six states plus the territories. New Zealand's stars are red and it has no Commonwealth Star."],
+["fj","Fiji",OC,"Suva","The Union Jack on a light Pacific blue, with a shield showing sugar cane, a coconut palm, bananas and a dove of peace."],
+["ki","Kiribati",OC,"Tarawa","A frigatebird (power and freedom) over a rising sun above wavy blue-and-white stripes for the ocean and the three island groups."],
+["mh","Marshall Islands",OC,"Majuro","Two rays, orange for courage and white for peace, rise across blue. The star has 24 points for the municipalities; its four longer points form a cross."],
+["fm","Micronesia",OC,"Palikir","Four white stars for the four states on a UN blue field, the colour of the Pacific."],
+["nr","Nauru",OC,"Yaren (de facto)","A yellow line for the equator and a twelve-pointed star for the island's twelve original tribes, placed just below the line because that is where Nauru sits."],
+["nz","New Zealand",OC,"Wellington","The Union Jack with four red, white-bordered stars of the Southern Cross. Australia's has six white stars plus a large Commonwealth Star."],
+["pw","Palau",OC,"Ngerulmud","A golden full moon on light blue sea. The full moon is said to be the best time for fishing, planting and celebrating."],
+["pg","Papua New Guinea",OC,"Port Moresby","A bird-of-paradise in flight on red and the Southern Cross on black. Designed by a 15-year-old schoolgirl, Susan Karike, in 1971."],
+["ws","Samoa",OC,"Apia","Red for courage, white for purity and blue for freedom, with the Southern Cross in the canton."],
+["sb","Solomon Islands",OC,"Honiara","Blue (water) and green (land) divided by a thin yellow stripe (sunshine), with five stars for the five original provinces."],
+["to","Tonga",OC,"Nukuʻalofa","Red for the blood of Christ and a red cross in a white canton for Christianity. The constitution states the flag may never be changed."],
+["tv","Tuvalu",OC,"Funafuti","A British blue ensign with nine yellow stars arranged as a map of the nine islands."],
+["vu","Vanuatu",OC,"Port Vila","A boar's tusk (prosperity) around two namele fern fronds (peace) on black for the people, with a yellow 'Y' for the shape of the archipelago and the light of the Gospel. Red for blood, green for the land."]
+];
+const FLAGS=RAW.map(([c,n,r,cap,m])=>({c,n,r,cap,m}));
+const BY=Object.fromEntries(FLAGS.map(f=>[f.c,f]));
+const REGIONS=[EU,AS,AF,AM,OC];
+
+// Look-alike groups: codes plus a hint for telling them apart.
+const GROUPS=[
+ {t:"Chad & Romania",f:["td","ro","ad","md"],h:"Chad's blue is a dark indigo; Romania's is a brighter cobalt. Andorra and Moldova add a coat of arms (Moldova's has an eagle)."},
+ {t:"Red over white",f:["id","mc","pl","sg"],h:"Indonesia and Monaco are red on top (Indonesia is wider). Poland is white on top. Singapore adds a crescent and five stars."},
+ {t:"Nordic crosses",f:["dk","se","no","fi","is"],h:"Denmark: white on red. Sweden: yellow on blue. Finland: blue on white. Norway: red with a blue cross. Iceland: blue with a red cross."},
+ {t:"Australia & New Zealand",f:["au","nz"],h:"New Zealand has four red stars with white borders. Australia has white stars, one extra small star, and the large seven-pointed Commonwealth Star under the Union Jack."},
+ {t:"Red, white, blue stripes",f:["nl","lu","hr","py"],h:"Luxembourg's blue is a pale sky blue and the flag is longer. Croatia and Paraguay add a shield at centre; Croatia's is a checkerboard."},
+ {t:"Pan-Slavic white, blue, red",f:["ru","sk","si","rs"],h:"Russia is plain. Slovakia and Slovenia add a shield at the hoist (double cross on hills vs. Mount Triglav). Serbia is red on top with an eagle."},
+ {t:"Green, white, orange",f:["ie","ci","it","mx"],h:"Ireland is green at the hoist, Côte d'Ivoire orange at the hoist. Italy's third stripe is red, not orange; Mexico adds the eagle."},
+ {t:"Pan-African verticals",f:["gn","ml","sn","cm"],h:"Guinea is red first, Mali green first. Senegal is Mali with a green star. Cameroon is green-red-yellow with a gold star."},
+ {t:"Red, yellow, green stacks",f:["bo","gh","lt","et"],h:"Bolivia is red on top with no star; Ghana adds a black star. Lithuania is yellow on top. Ethiopia is green on top with a blue disc."},
+ {t:"Gran Colombia",f:["co","ec","ve"],h:"Colombia is plain. Ecuador carries its coat of arms. Venezuela has an arc of eight stars (and a smaller yellow band)."},
+ {t:"Central American blue-white-blue",f:["hn","sv","ni","ar","gt"],h:"Honduras: five stars. El Salvador and Nicaragua: coats of arms (Nicaragua's is ringed by text and a rainbow). Argentina: a sun face. Guatemala: vertical stripes with a quetzal."},
+ {t:"Arab Liberation stripes",f:["eg","iq","sy","ye"],h:"Yemen is the plain red-white-black. Egypt adds a gold eagle. Iraq adds green script. Syria's current flag is green on top with three red stars."},
+ {t:"Arab Revolt triangles",f:["jo","ps","kw","ae","sd"],h:"Palestine is plain; Jordan adds a white star in the red triangle. Kuwait's black is a trapezoid at the hoist. UAE's red band is vertical. Sudan's triangle is green."},
+ {t:"Qatar & Bahrain",f:["qa","bh"],h:"Bahrain is bright red with five points. Qatar is maroon with nine points and is much wider."},
+ {t:"Sun discs",f:["jp","bd","pw"],h:"Japan: red on white. Bangladesh: red on green, disc toward the hoist. Palau: yellow on light blue, also off-centre."},
+ {t:"India & Niger",f:["in","ne"],h:"India has a blue wheel at centre; Niger has a plain orange disc, and its flag is nearly square."},
+ {t:"Blue and red stripes",f:["th","cr","la"],h:"Thailand: blue centre, red outer. Costa Rica: red centre, blue outer. Laos: red outer with a white disc on blue."},
+ {t:"Stars and stripes",f:["us","lr","my"],h:"Liberia has one star and eleven stripes. Malaysia has a crescent and 14-point star on blue with fourteen stripes."},
+ {t:"Hungary, Bulgaria, Iran, Tajikistan",f:["hu","bg","ir","tj"],h:"Hungary: red on top. Bulgaria: white on top. Iran: green on top with an emblem. Tajikistan: red on top with a crown and stars."},
+ {t:"Türkiye & Tunisia",f:["tr","tn"],h:"Tunisia puts the crescent and star inside a white disc. Türkiye's sit directly on the red."},
+ {t:"Liechtenstein & Haiti",f:["li","ht"],h:"Liechtenstein has a gold crown in the corner; Haiti has its coat of arms on a white panel at centre."},
+ {t:"Nine stripes",f:["gr","uy"],h:"Greece has a white cross on blue in the canton; Uruguay has a sun face on white."},
+ {t:"Belgium & Germany",f:["be","de"],h:"Belgium's stripes are vertical and black-yellow-red. Germany's are horizontal and black-red-gold."},
+ {t:"Austria & Latvia",f:["at","lv","pe"],h:"Austria's bands are equal and bright red. Latvia's are a deep carmine with a thin white stripe. Peru's are vertical."},
+ {t:"Monaco-adjacent discs",f:["kp","vn","cn"],h:"Vietnam: one yellow star on red. China: one large and four small stars. North Korea: red star in a white disc on a red band with blue edges."}
+];
+const GROUP_OF={}; GROUPS.forEach((g,i)=>g.f.forEach(c=>{(GROUP_OF[c]=GROUP_OF[c]||[]).push(i)}));
+
+// ---------- STORAGE ----------
+const KEY="flaglore.v1";
+let prog={}; // code -> {c,w}
+function load(){try{const s=localStorage.getItem(KEY);if(s)prog=JSON.parse(s)||{}}catch(e){prog={}}
+  // migrate records from before scoring by difficulty
+  Object.values(prog).forEach(r=>{if(r.s===undefined)r.s=Math.max(-4,Math.min(8,(r.c-r.w)*2))})}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(prog))}catch(e){}}
+const rec=c=>prog[c]||{c:0,w:0,s:0};
+const PTS={easy:0,medium:1,hard:2,expert:3},MASTER=4;
+const mastered=c=>rec(c).s>=MASTER;
+const seen=c=>{const r=rec(c);return r.c+r.w>0};
+
+// Alternative names accepted in typed mode.
+const ALIASES={us:["usa","united states of america","america","u.s.","u.s.a."],gb:["uk","britain","great britain","england","united kingdom of great britain and northern ireland"],
+ cz:["czech republic"],tr:["turkey","turkiye"],ci:["ivory coast","cote d'ivoire"],mm:["burma"],sz:["swaziland"],tl:["east timor","timor leste"],cv:["cape verde"],
+ cd:["drc","democratic republic of the congo","congo kinshasa","dr congo","congo-kinshasa","zaire"],cg:["congo","congo brazzaville","congo-brazzaville","republic of congo"],
+ nl:["holland"],va:["vatican","holy see"],mk:["macedonia","north macedonia"],kp:["dprk","democratic people's republic of korea"],kr:["korea","republic of korea"],
+ ae:["uae","emirates"],ps:["palestinian territories","state of palestine"],tw:["republic of china","chinese taipei"],cn:["prc","people's republic of china"],
+ gm:["gambia"],bs:["the bahamas"],st:["sao tome","sao tome and principe"],fm:["federated states of micronesia"],ru:["russian federation"],ir:["persia"],
+ kn:["st kitts and nevis","saint kitts"],lc:["st lucia"],vc:["st vincent","st vincent and the grenadines","saint vincent"],bn:["brunei darussalam"],
+ la:["lao"],ba:["bosnia"],tt:["trinidad"],ag:["antigua"],sa:["ksa"],sy:["syrian arab republic"],eg:["misr"],my:["malaysia"],lk:["ceylon"],xk:["kosova"],
+ mh:["marshalls"],sb:["solomons"],pg:["png"],cf:["car"],dz:["algerie"],ma:["maroc"],md:["moldavia"],mc:["monaco"],by:["belorussia","byelorussia"],ge:["sakartvelo"],
+ do:["dominican rep"],gq:["ecuatorial guinea"],bo:["plurinational state of bolivia"],ve:["bolivarian republic of venezuela"],tz:["tanzania"],et:["abyssinia"],ug:["uganda"]};
+const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/^the\s+/,"").replace(/[^a-z0-9]/g,"");
+const NAMES=FLAGS.map(f=>({c:f.c,n:norm(f.n),d:f.n}));
+const ALIASN=Object.fromEntries(Object.entries(ALIASES).map(([c,a])=>[c,a.map(norm)]));
+function matchTyped(text){
+  const t=norm(text);if(!t)return null;
+  const exact=NAMES.find(x=>x.n===t);if(exact)return exact.c;
+  for(const [c,a] of Object.entries(ALIASN))if(a.includes(t))return c;
+  if(t.length>=4){const pre=NAMES.filter(x=>x.n.startsWith(t));if(pre.length===1)return pre[0].c}
+  return null;
+}
+function suggest(text){
+  const t=norm(text);if(t.length<2)return [];
+  const out=[];
+  NAMES.forEach(x=>{if(x.n.startsWith(t))out.push(x.c)});
+  NAMES.forEach(x=>{if(!out.includes(x.c)&&x.n.includes(t))out.push(x.c)});
+  Object.entries(ALIASN).forEach(([c,a])=>{if(!out.includes(c)&&a.some(y=>y.startsWith(t)))out.push(c)});
+  return out.slice(0,5);
+}
+
+// ---------- SETTINGS ----------
+const SKEY="flaglore.settings";
+let SET={len:10,diff:"medium",dir:"name"};
+function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
+function setOpt(k,v){SET[k]=v;if(SET.dir==="flag"&&SET.diff==="expert")SET.diff="hard";try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
+const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no mastery.",medium:"Options come from the same region. +1 mastery per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer."};
+
+// ---------- STATE ----------
+let S={view:"home",tab:"quiz"};
+const $=s=>document.querySelector(s);
+const app=$("#app");
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const img=(c,cls="flag")=>`<div class="${cls}"><img src="flags/${c}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div>`;
+const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+
+function poolFor(mode,arg){
+  if(mode==="region")return FLAGS.filter(f=>f.r===arg).map(f=>f.c);
+  if(mode==="all")return FLAGS.map(f=>f.c);
+  if(mode==="weak")return FLAGS.map(f=>f.c).filter(c=>rec(c).w>0&&!mastered(c));
+  if(mode==="group")return GROUPS[arg].f.slice();
+  return [];
+}
+function pickOrder(pool,n){
+  // unseen first, then weakest, then random; take n
+  const w=pool.map(c=>{const r=rec(c);let s=Math.random();if(!seen(c))s+=3;else s+=Math.max(0,r.w*1.5-r.c);if(mastered(c))s-=1;return [s,c]});
+  w.sort((a,b)=>b[0]-a[0]);
+  return w.slice(0,n).map(x=>x[1]);
+}
+function distractors(c,diff,mode){
+  const f=BY[c];const out=new Set();
+  const add=list=>list.forEach(x=>{if(out.size<3)out.add(x)});
+  const groups=GROUP_OF[c]||[];
+  const gm=shuffle(groups.flatMap(i=>GROUPS[i].f).filter(x=>x!==c));
+  const same=shuffle(FLAGS.filter(x=>x.r===f.r&&x.c!==c).map(x=>x.c));
+  const any=shuffle(FLAGS.map(x=>x.c).filter(x=>x!==c));
+  if(mode==="group"||diff==="hard"||diff==="expert"){add(gm);add(same)}
+  else if(diff==="medium"){add(same)}
+  add(any);
+  return [...out];
+}
+function startRound(mode,arg,label){
+  const pool=poolFor(mode,arg);
+  if(!pool.length)return;
+  const diff=SET.dir==="flag"&&SET.diff==="expert"?"hard":SET.diff;
+  let order;
+  if(mode==="group"){
+    const n=SET.len==="all"?pool.length*2:SET.len;
+    order=[];while(order.length<n)order.push(...shuffle(pool));order=order.slice(0,n);
+  } else {
+    const n=SET.len==="all"?pool.length:Math.min(SET.len,pool.length);
+    order=pickOrder(pool,n);
+  }
+  const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode)]),ans:null,typed:""}));
+  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:mode==="group"&&diff!=="expert"?"hard":diff,dir:SET.dir};
+  render();window.scrollTo(0,0);
+}
+function submitTyped(){
+  const inp=$("#typeIn");if(!inp)return;
+  const text=inp.value.trim();if(!text)return;
+  const k=matchTyped(text);
+  const q=S.qs[S.i];q.typed=text;
+  answer(k||"__wrong__");
+}
+function typeInput(v){
+  const q=S.qs[S.i];q.typed=v;
+  const box=$("#sugg");if(!box)return;
+  box.innerHTML=suggest(v).map(c=>`<button type="button" onclick="pickSugg('${c}')">${esc(BY[c].n)}</button>`).join("");
+}
+function pickSugg(c){const inp=$("#typeIn");if(inp)inp.value=BY[c].n;submitTyped()}
+function answer(k){
+  const q=S.qs[S.i];if(q.ans)return;
+  q.ans=k;const ok=k===q.c;
+  const r=rec(q.c);const pts=PTS[S.diff]||0;
+  if(ok){r.c++;r.s=Math.min(8,(r.s||0)+pts);q.pts=pts}else{r.w++;r.s=Math.max(-4,(r.s||0)-2);q.pts=-2}
+  q.nowMastered=ok&&r.s>=MASTER&&r.s-pts<MASTER;
+  prog[q.c]=r;save();
+  S.streak=ok?S.streak+1:0;S.best=Math.max(S.best,S.streak);
+  render();
+  requestAnimationFrame(()=>{const btns=app.querySelectorAll(".btn");const b=btns[btns.length-1];if(b)b.scrollIntoView({block:"end",behavior:"smooth"})});
+}
+function next(){ if(S.i+1<S.qs.length){S.i++;render();window.scrollTo(0,0)} else {S.view="done";render();window.scrollTo(0,0)} }
+
+// ---------- VIEWS ----------
+function render(){
+  if(S.view==="quiz"){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t&&!S.qs[S.i].ans)t.focus();return}
+  if(S.view==="done")return app.innerHTML=viewDone();
+  if(S.view==="study")return app.innerHTML=viewStudy();
+  return app.innerHTML=viewHome();
+}
+function tiles(){
+  return REGIONS.map(r=>{
+    const all=FLAGS.filter(f=>f.r===r);const m=all.filter(f=>mastered(f.c)).length;
+    return `<button class="tile" onclick="startRound('region','${r}','${r}')">
+      <span class="name">${r}</span>
+      <span class="count">${m} / ${all.length} mastered</span>
+      <span class="bar"><i style="width:${Math.round(100*m/all.length)}%"></i></span></button>`}).join("");
+}
+function viewHome(){
+  const total=FLAGS.length,m=FLAGS.filter(f=>mastered(f.c)).length,weak=poolFor("weak").length;
+  return `
+  <div class="top"><div><p class="eyebrow">Flags of the world</p><h1>Flag Lore</h1></div><span class="stat">${m}/${total}</span></div>
+  <div class="tabs"><button class="${S.tab==="quiz"?"on":""}" onclick="S.tab='quiz';render()">Quiz</button><button class="${S.tab==="study"?"on":""}" onclick="S.tab='study';S.view='study';S.region=S.region||'Europe';render()">Study</button><button onclick="S.tab='look';S.view='study';S.region='Look-alikes';render()">Look-alikes</button></div>
+  <p class="muted small">Each answer unlocks what the flag means, which is what makes it stick. Flags you miss come back more often. Mastery takes 4 points per flag: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert; a miss costs 2.</p>
+  <div class="card">
+    <div class="seg"><span class="label">Round length</span><div class="btns">
+      ${[[10,"10"],[25,"25"],["all","Full set"]].map(([v,l])=>`<button class="${SET.len===v?"on":""}" onclick="setOpt('len',${typeof v==="string"?"'all'":v})">${l}</button>`).join("")}</div></div>
+    <div class="seg"><span class="label">Difficulty</span><div class="btns">
+      ${["easy","medium","hard","expert"].map(d=>`<button class="${SET.diff===d?"on":""}${d==="expert"&&SET.dir==="flag"?" off":""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase()+d.slice(1)}</button>`).join("")}</div>
+      <span class="note">${SET.dir==="flag"&&SET.diff==="expert"?"Typed answers need the flag shown; switch to country names.":DIFF[SET.diff]}</span></div>
+    <div class="seg"><span class="label">Answer with</span><div class="btns">
+      <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
+      <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
+      <span class="note">${SET.dir==="flag"?"You see the country and choose among four flags.":"You see the flag and choose or type the country."}</span></div>
+  </div>
+  <div class="tiles">${tiles()}
+    <button class="tile wide" onclick="startRound('all',null,'Whole world')"><span class="name">Whole world</span><span class="count">${total} flags</span></button>
+    <button class="tile wide" onclick="startRound('weak',null,'Weak spots')" ${weak?"":"disabled style='opacity:.5'"}><span class="name">Weak spots</span><span class="count">${weak?weak+" to fix":"nothing missed yet"}</span></button>
+  </div>
+  <div class="card"><h3>Look-alike drills</h3><p class="small muted">The pairs everyone mixes up, quizzed against each other.</p>
+    <select id="groupSel" onchange="if(this.value!=='')startRound('group',+this.value,GROUPS[+this.value].t)">
+      <option value="">Pick a set…</option>${GROUPS.map((g,i)=>`<option value="${i}">${esc(g.t)}</option>`).join("")}</select>
+  </div>
+  <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>`;
+}
+function resetAsk(){
+  const f=app.querySelector(".foot");
+  f.innerHTML=`<span class="small">Clear all progress?</span><span class="row" style="flex:none"><button class="link" onclick="prog={};save();render()">Yes, clear</button><button class="link" onclick="render()">Keep</button></span>`;
+}
+function viewQuiz(){
+  const q=S.qs[S.i],f=BY[q.c],n=S.qs.length;
+  const dots=n>30?`<i class="now" style="flex:${S.i+1} 1 0"></i><i style="flex:${n-S.i-1} 1 0"></i>`:S.qs.map((x,i)=>`<i class="${x.ans?(x.ans===x.c?"ok":"bad"):(i===S.i?"now":"")}"></i>`).join("");
+  const letters="ABCD";
+  const reverse=S.dir==="flag",typed=S.diff==="expert"&&!reverse;
+  let prompt,opts;
+  if(reverse){
+    prompt=`<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
+    opts=`<div class="flagopts">${q.opts.map((c,i)=>{
+      let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
+      return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm")}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
+  } else if(typed){
+    prompt=`${img(q.c)}<p class="eyebrow">Which country? Type it.</p>`;
+    opts=q.ans?"":`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
+      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Country name" value="${esc(q.typed||"")}" oninput="typeInput(this.value)">
+      <div class="sugg" id="sugg"></div>
+      <div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div></form>`;
+  } else {
+    prompt=`${img(q.c)}<p class="eyebrow">Which country?</p>`;
+    opts=`<div class="opts">${q.opts.map((c,i)=>{
+      let cls="opt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
+      return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')"><span class="key">${letters[i]}</span><span>${esc(BY[c].n)}</span></button>`}).join("")}</div>`;
+  }
+  let reveal="";
+  if(q.ans){
+    const ok=q.ans===q.c,picked=BY[q.ans];
+    let miss="";
+    if(!ok){
+      const gi=GROUP_OF[q.c]&&GROUP_OF[q.c].find(i=>GROUPS[i].f.includes(q.ans));
+      const hint=gi!==undefined&&gi!==null?esc(GROUPS[gi].h):"";
+      if(picked)miss=`<div class="row" style="align-items:center"><div style="flex:0 0 72px">${img(q.ans,"flag sm")}</div><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
+      else miss=`<p class="small muted">${q.typed?`"${esc(q.typed)}" didn't match a country.`:"Revealed."}</p>`;
+    }
+    reveal=`<div class="card lore">
+      <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} <span class="pill ${ok?(q.pts?"ok":""):"bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered?"mastered":q.pts>0?"+"+q.pts:q.pts===0?"no mastery on easy":q.pts}</span></p>
+      ${reverse?img(q.c):""}
+      <div><h2>${esc(f.n)}</h2><p class="capital">${esc(f.cap)} · ${f.r}</p></div>
+      <p>${esc(f.m)}</p>
+      ${miss}
+    </div>
+    <button class="btn" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
+  }
+  const right=S.qs.filter(x=>x.ans===x.c).length;
+  return `
+  <div class="top"><button class="back" onclick="S.view='home';render()">‹ ${esc(S.label)}</button><span class="stat">${right} right · ${S.i+1} / ${n}</span></div>
+  <div class="progress">${dots}</div>
+  ${prompt}
+  ${opts}
+  ${reveal}`;
+}
+function viewDone(){
+  const right=S.qs.filter(q=>q.ans===q.c).length,n=S.qs.length;
+  const missed=S.qs.filter(q=>q.ans!==q.c);
+  const word=right===n?"Perfect round":right>=n*.7?"Strong round":right>=n*.4?"Getting there":"Keep at it";
+  return `
+  <div class="top"><button class="back" onclick="S.view='home';render()">‹ Home</button><span class="stat">${esc(S.label)}</span></div>
+  <div class="card" style="align-items:flex-start">
+    <p class="eyebrow">${word}</p>
+    <p class="score">${right}<span class="muted" style="font-size:24px"> / ${n}</span></p>
+    <p class="small muted">Best streak this round: ${S.best}</p>
+  </div>
+  ${missed.length?`<div class="card"><h3>Missed</h3><div class="missed">${missed.map(q=>`<span class="chip">${img(q.c,"flag")}${esc(BY[q.c].n)}</span>`).join("")}</div></div>`:""}
+  <button class="btn" onclick="startRound(S.mode,S.arg,S.label)">Play again</button>
+  <button class="btn ghost" onclick="S.view='home';render()">Choose another set</button>`;
+}
+function viewStudy(){
+  const r=S.region;
+  const opts=[...REGIONS,"Look-alikes"].map(x=>`<option ${x===r?"selected":""}>${x}</option>`).join("");
+  let body;
+  if(r==="Look-alikes"){
+    body=GROUPS.map((g,i)=>`<div class="group"><h3>${esc(g.t)}</h3><div class="flags">${g.f.map(c=>`<figure>${img(c,"flag sm")}<figcaption>${esc(BY[c].n)}</figcaption></figure>`).join("")}</div><p class="hint">${esc(g.h)}</p><button class="btn line" onclick="startRound('group',${i},GROUPS[${i}].t)">Drill this set</button></div>`).join("");
+  } else {
+    body=FLAGS.filter(f=>f.r===r).map(f=>`<div class="entry">${img(f.c,"flag sm")}<div class="t"><span class="name">${esc(f.n)} ${mastered(f.c)?'<span class="pill ok">mastered</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${esc(f.cap)}</span><p>${esc(f.m)}</p></div></div>`).join("");
+  }
+  return `
+  <div class="top"><button class="back" onclick="S.view='home';S.tab='quiz';render()">‹ Home</button><span class="stat">${r==="Look-alikes"?GROUPS.length+" sets":FLAGS.filter(f=>f.r===r).length+" flags"}</span></div>
+  <select id="studySel" onchange="S.region=this.value;render();window.scrollTo(0,0)">${opts}</select>
+  <div class="study">${body}</div>
+  ${r!=="Look-alikes"?`<button class="btn" onclick="startRound('region','${r}','${r}')">Quiz me on ${r}</button>`:""}`;
+}
+
+// ---------- BOOT ----------
+load();loadSet();
+function start(data){ if(data&&data.S)S=data.S; render(); }
+if(window.claude?.hot?.snapshot)window.claude.hot.snapshot(()=>({S}));
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+</script>
+</body>
+</html>
