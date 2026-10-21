@@ -292,7 +292,7 @@ function viewHome(){
     ${card({wide:true,name:"Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>
-  <p class="ver" id="ver"><span class="stamp">${typeof VERSION==="object"?"updated "+VERSION.at:""}</span></p>`;
+  <p class="ver" id="ver"><span class="stamp">${typeof VERSION==="object"?"updated "+VERSION.at:""}<button class="refresh" onclick="location.reload()" title="Reload the page" aria-label="Reload">↻</button></span></p>`;
 }
 // Compare this build with the one on GitHub; say so if a newer one exists. Fails silently where the network is blocked.
 let VER_CHECKED=null;
