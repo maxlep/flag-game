@@ -304,15 +304,15 @@ window.addEventListener("scroll",shade,{passive:true});window.addEventListener("
 // On a phone the keyboard halves the screen and the browser centres the answer box, pushing the flag off the top.
 // When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
 // scrolled to the top, so flag and box share the screen.
+// The state follows the viewport height alone, not focus, so tapping a button can't toggle it and resize the flag.
 function keyboard(){
-  const vv=window.visualViewport,inp=$("#typeIn"),open=!!(vv&&inp&&document.activeElement===inp&&vv.height<window.innerHeight-120);
+  const vv=window.visualViewport,open=!!(vv&&vv.height<window.innerHeight-120),was=document.body.classList.contains("kb");
   document.documentElement.style.setProperty("--vvh",vv?vv.height+"px":"");
   document.body.classList.toggle("kb",open);
-  if(open)window.scrollTo(0,0);
+  if(open&&!was&&S.view==="quiz")window.scrollTo(0,0);
 }
 if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard)}
 document.addEventListener("focusin",e=>{if(e.target.id==="typeIn")setTimeout(keyboard,350)});
-document.addEventListener("focusout",e=>{if(e.target.id==="typeIn")setTimeout(keyboard,100)});
 function render(){
   requestAnimationFrame(shade);
   if(S.view==="quiz"){
