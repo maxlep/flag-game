@@ -765,6 +765,7 @@ function showLore(){const q=S.qs[S.i];q.lore=true;render()}
 document.addEventListener("keydown",e=>{
   if(LB){if(e.key==="Escape")closeFlag();return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
   if(S.view==="setup"){if(e.key==="Enter"){e.preventDefault();startRound(S.pick.mode,S.pick.arg,S.pick.label)}else if(e.key==="Escape")goBack();return}
   if(S.view==="study"||S.view==="look"||S.view==="badges"){if(e.key==="Escape")goBack();return}
@@ -872,7 +873,7 @@ function viewQuiz(){
   } else if(typed){
     prompt=`${img(q.c)}<p class="eyebrow">Which country? Type it.</p>`;
     opts=q.ans?"":`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
-      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Country name" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){const sg=suggest(this.value);if(sg.length){event.preventDefault();this.value=BY[sg[0]].n;typeInput(this.value)}}">
+      <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Country name" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}}">
       <div class="sugg" id="sugg"></div>
       <div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div></form>`;
   } else {
