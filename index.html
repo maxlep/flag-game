@@ -185,6 +185,13 @@ select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px soli
 .kbd{display:none;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 @media (hover:hover) and (pointer:fine){.kbd{display:flex}}
 kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.alpha{position:fixed;right:max(2px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;align-items:center;
+  padding:6px 3px;border-radius:12px;background:color-mix(in srgb,var(--bg) 70%,transparent);touch-action:none;user-select:none;-webkit-user-select:none}
+.alpha span{font:600 11px/1.35 var(--mono);color:var(--accent);width:16px;text-align:center;cursor:pointer}
+.alpha.hot{background:var(--tint)}
+.alpha-bubble{position:fixed;right:40px;top:50%;transform:translateY(-50%);z-index:21;width:56px;height:56px;border-radius:14px;background:var(--accent);color:var(--accent-ink);
+  font:800 28px/56px var(--display);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3);pointer-events:none}
+.study.indexed{padding-right:20px}
 .lb{position:fixed;inset:0;z-index:50;background:rgba(8,12,20,.96);display:flex;flex-direction:column;
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 .lb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;color:#eef1f7}
@@ -766,7 +773,7 @@ function render(){
   if(S.view==="quiz"){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t&&!S.qs[S.i].ans)t.focus();return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
-  if(S.view==="study")return app.innerHTML=viewStudy();
+  if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
   if(S.view==="look")return app.innerHTML=viewLook();
   if(S.view==="badges")return app.innerHTML=viewBadges();
   return app.innerHTML=viewHome();
@@ -951,12 +958,30 @@ function viewDone(){
 }
 function viewStudy(){
   const r=S.region;
-  const list=r==="Whole world"?COUNTRIES.slice().sort((a,b)=>a.n.localeCompare(b.n)):r==="Everything"?FLAGS.slice().sort((a,b)=>a.n.localeCompare(b.n)):FLAGS.filter(f=>f.r===r);
-  const body=list.map(f=>`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
+  const base=r==="Whole world"?COUNTRIES:r==="Everything"?FLAGS:FLAGS.filter(f=>f.r===r);
+  const list=base.slice().sort((a,b)=>a.n.localeCompare(b.n));
+  const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();
+  const letters=[...new Set(list.map(letter))];
+  const index=list.length>15?`<div class="alpha" id="alpha">${letters.map(l=>`<span data-l="${l}">${l}</span>`).join("")}</div>`:"";
+  let lastL="";
+  const body=list.map(f=>`<div class="entry"${(l=>l!==lastL?` data-l="${lastL=l}"`:"")(letter(f))}><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
   const mode=r==="Whole world"?"all":r==="Everything"?"everything":"region",arg=mode==="region"?r:null;
-  return `${shell({title:r,stat:list.length+" flags"})}
-  <div class="study">${body}</div>
+  return `${shell({title:r,stat:list.length+" flags"})}${index}
+  <div class="study${index?" indexed":""}">${body}</div>
   <button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${r}')">Quiz me on ${esc(r)}</button>`;
+}
+// Alphabet index: tap or drag along the letters to jump the list, like a phone's contacts list.
+function wireAlpha(){
+  const a=$("#alpha");if(!a)return;let bubble=null;
+  const jump=(x,y)=>{const el=document.elementFromPoint(x,y);const l=el&&el.dataset&&el.dataset.l;if(!l)return;
+    const target=app.querySelector(`.entry[data-l="${l}"]`);if(!target)return;
+    const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8;
+    window.scrollTo(0,target.getBoundingClientRect().top+window.scrollY-off);
+    if(!bubble){bubble=document.createElement("div");bubble.className="alpha-bubble";document.body.appendChild(bubble)}bubble.textContent=l};
+  const end=()=>{a.classList.remove("hot");if(bubble){bubble.remove();bubble=null}};
+  a.addEventListener("pointerdown",e=>{a.setPointerCapture(e.pointerId);a.classList.add("hot");jump(e.clientX,e.clientY);e.preventDefault()});
+  a.addEventListener("pointermove",e=>{if(a.classList.contains("hot"))jump(e.clientX,e.clientY)});
+  a.addEventListener("pointerup",end);a.addEventListener("pointercancel",end);
 }
 function viewLook(){
   const order=["Horizontal stripes","Vertical stripes","Cantons & crosses","Discs & stars","Triangles & serrations"];
