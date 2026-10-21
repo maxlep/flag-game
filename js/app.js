@@ -7,7 +7,7 @@ function load(){try{const s=localStorage.getItem(KEY);if(s)prog=JSON.parse(s)||{
   Object.values(prog).forEach(r=>{if(r.s===undefined)r.s=Math.max(-4,Math.min(8,(r.c-r.w)*2))})}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(prog))}catch(e){}}
 const rec=c=>prog[c]||{c:0,w:0,s:0};
-const PTS={easy:0,medium:1,hard:2,expert:3,master:3},MASTER=4;
+const PTS={easy:0,medium:1,hard:2,expert:3,master:4},MASTER=4; // typed Master: one unaided correct answer = learned
 const mastered=c=>rec(c).s>=MASTER;
 const seen=c=>{const r=rec(c);return r.c+r.w>0};
 
@@ -67,7 +67,7 @@ let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true"};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
 const TYPED=d=>d==="expert"||d==="master";
 function setOpt(k,v){SET[k]=v;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
-const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no points.",medium:"Options come from the same region. +1 point per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer.",master:"Type the exact name, with no suggestions or typo help. Common names still count. +3 per correct answer."};
+const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no points.",medium:"Options come from the same region. +1 point per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer.",master:"Type the exact name, with no suggestions or typo help. Common names still count. +4: one correct answer marks the flag learned."};
 
 // ---------- BADGES ----------
 const BKEY="flaglore.badges";let badges={};
@@ -224,7 +224,7 @@ function pickSugg(c){const inp=$("#typeIn");if(inp)inp.value=BY[c].n;submitTyped
 function answer(k){
   const q=S.qs[S.i];if(q.ans)return;
   q.ans=k;const ok=k===q.c;
-  const r=rec(q.c);const pts=PTS[S.diff]||0;
+  const r=rec(q.c);const pts=S.diff==="master"&&S.dir==="flag"?3:(PTS[S.diff]||0);
   if(ok){r.c++;r.s=Math.min(8,(r.s||0)+pts);q.pts=pts}else{r.w++;r.s=Math.max(-4,(r.s||0)-2);q.pts=-2}
   q.nowMastered=ok&&r.s>=MASTER&&r.s-pts<MASTER;
   prog[q.c]=r;save();
@@ -347,7 +347,7 @@ function viewBadges(){
   const nb=BADGES.filter(b=>badges[b.id]).length;
   return `${shell({title:"Badges",stat:nb+" of "+BADGES.length+" earned"})}
   <div class="badges">${BADGES.map(b=>`<div class="badge${badges[b.id]?" on":""}${b.big?" big":""}"><span class="be">${b.e}</span><span class="bn">${b.n}</span><span class="bh">${b.h}${badges[b.id]?" Earned "+fmtDate(badges[b.id])+".":""}</span></div>`).join("")}</div>
-  <p class="small muted">A flag counts as learned at 4 points: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert; a miss costs 2. Badges are kept once earned.</p>`;
+  <p class="small muted">A flag counts as learned at 4 points: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert, 4 on Master (3 when picking the flag); a miss costs 2. Badges are kept once earned.</p>`;
 }
 function viewQuiz(){
   const q=S.qs[S.i],f=BY[q.c],n=S.qs.length;
