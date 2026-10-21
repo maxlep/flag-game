@@ -521,6 +521,14 @@ function viewLook(){
   ${sorted.length?`<button class="btn" onclick="openSetup('lookmix',null,'Look-alikes',S.flt||null)">Mixed round across ${flt?"these":"all"} sets</button>`:""}`;
 }
 
+// Swipe in from the left edge = back. Matters in the home-screen app, which has no browser chrome.
+(()=>{let sx=null,sy=null,fired=false;
+  document.addEventListener("touchstart",e=>{const t=e.touches[0];if(e.touches.length===1&&t.clientX<=24){sx=t.clientX;sy=t.clientY;fired=false}else sx=null},{passive:true});
+  document.addEventListener("touchmove",e=>{if(sx===null||fired)return;const t=e.touches[0],dx=t.clientX-sx,dy=Math.abs(t.clientY-sy);
+    if(dx>70&&dy<60){fired=true;if(LB)closeFlag();else if(S.view!=="home")goBack()}else if(dy>60)sx=null},{passive:true});
+  document.addEventListener("touchend",()=>{sx=null},{passive:true});
+})();
+
 // ---------- FLAG VIEWER ----------
 let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
 function openFlag(c){
