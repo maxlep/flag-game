@@ -316,13 +316,24 @@ document.addEventListener("focusout",e=>{if(e.target.id==="typeIn")setTimeout(ke
 function render(){
   requestAnimationFrame(shade);
   if(S.view==="quiz"){
-    const old=document.activeElement,keep=old&&old.id==="typeIn"&&app.contains(old);
-    if(!keep){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t)t.focus({preventScroll:true});return}
-    // Mobile browsers only keep the keyboard open if focus moves straight from one field to another, so the
-    // new screen is added beside the old one, focus is handed over, and only then is the old screen removed.
-    const was=[...app.childNodes];const tmp=document.createElement("template");tmp.innerHTML=viewQuiz();
-    old.id="typeOld";app.appendChild(tmp.content);const t=$("#typeIn");if(t)t.focus({preventScroll:true});was.forEach(n=>n.remove());
-    if(document.body.classList.contains("kb")){window.scrollTo(0,0);setTimeout(()=>window.scrollTo(0,0),250)}return}
+    const old=document.activeElement,oldForm=old&&old.id==="typeIn"&&app.contains(old)?old.closest("form.typebox"):null;
+    const html=viewQuiz();
+    if(!oldForm){app.innerHTML=html;const t=$("#typeIn");if(t)t.focus({preventScroll:true});return}
+    // A focused answer box is never replaced: phones close the keyboard, or scroll, when focus moves. The box is
+    // patched in place (read-only, placeholder, value) and everything around it is swapped for the new screen.
+    const tmp=document.createElement("template");tmp.innerHTML=html;
+    const newForm=tmp.content.querySelector("form.typebox");
+    if(!newForm){app.innerHTML=html;return}
+    const ni=newForm.querySelector("#typeIn");
+    for(const a of ["readonly","placeholder","enterkeyhint"]){if(ni.hasAttribute(a))old.setAttribute(a,ni.getAttribute(a));else old.removeAttribute(a)}
+    if(old.value!==ni.value)old.value=ni.value;
+    [...oldForm.children].forEach(c=>{if(c!==old)c.remove()});
+    [...newForm.children].forEach(c=>{if(c.id!=="typeIn")oldForm.appendChild(c)});
+    const nodes=[...tmp.content.childNodes],fi=nodes.indexOf(newForm);
+    [...app.childNodes].forEach(n=>{if(n!==oldForm)n.remove()});
+    nodes.slice(0,fi).forEach(n=>app.insertBefore(n,oldForm));
+    nodes.slice(fi+1).forEach(n=>app.appendChild(n));
+    return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
   if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
