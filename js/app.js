@@ -491,16 +491,22 @@ function viewStudy(){
 }
 // Alphabet index: tap or drag along the letters to jump the list, like a phone's contacts list.
 function wireAlpha(){
-  const a=$("#alpha");if(!a)return;let bubble=null;
-  const jump=(x,y)=>{const el=document.elementFromPoint(x,y);const l=el&&el.dataset&&el.dataset.l;if(!l)return;
+  const a=$("#alpha");if(!a)return;let bubble=null,active=false,lastL="";
+  const spans=[...a.querySelectorAll("span")];
+  // Letter from the finger's vertical position only, so sideways drift during a fast scrub doesn't lose it.
+  const letterAt=y=>{const r=a.getBoundingClientRect();const i=Math.min(spans.length-1,Math.max(0,Math.floor((y-r.top)/(r.height/spans.length))));return spans[i].dataset.l};
+  const jump=y=>{const l=letterAt(y);if(!l||l===lastL)return;lastL=l;
     const target=app.querySelector(`.entry[data-l="${l}"]`);if(!target)return;
     const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8;
     window.scrollTo(0,target.getBoundingClientRect().top+window.scrollY-off);
     if(!bubble){bubble=document.createElement("div");bubble.className="alpha-bubble";document.body.appendChild(bubble)}bubble.textContent=l};
-  const end=()=>{a.classList.remove("hot");if(bubble){bubble.remove();bubble=null}};
-  a.addEventListener("pointerdown",e=>{a.setPointerCapture(e.pointerId);a.classList.add("hot");jump(e.clientX,e.clientY);e.preventDefault()});
-  a.addEventListener("pointermove",e=>{if(a.classList.contains("hot"))jump(e.clientX,e.clientY)});
-  a.addEventListener("pointerup",end);a.addEventListener("pointercancel",end);
+  const end=()=>{active=false;lastL="";a.classList.remove("hot");if(bubble){bubble.remove();bubble=null}};
+  a.addEventListener("pointerdown",e=>{active=true;a.classList.add("hot");try{a.setPointerCapture(e.pointerId)}catch(x){}jump(e.clientY);e.preventDefault()});
+  a.addEventListener("pointermove",e=>{if(active)jump(e.clientY)});
+  // Touch events as a fallback: iOS may cancel pointer events once the page scrolls under the finger.
+  a.addEventListener("touchmove",e=>{if(active){e.preventDefault();jump(e.touches[0].clientY)}},{passive:false});
+  a.addEventListener("pointerup",end);a.addEventListener("touchend",end);a.addEventListener("touchcancel",end);
+  a.addEventListener("pointercancel",e=>{if(e.pointerType!=="touch")end()});
 }
 function viewLook(){
   const flt=S.flt||null;
