@@ -7,7 +7,7 @@ What the project is and where files live: see README.md. This file holds the rul
 - This repo is canonical. `index.html` is a complete document; open it from disk to run the app. No build step, no bundler, no dependencies.
 - Two deploy targets from the same files:
   - GitHub Pages: push to `main`; it serves the repo as-is.
-  - The claude.ai artifact: it needs a bare fragment, not a full document. Generate it with `tools/artifact_fragment.py index.html` and publish that fragment together with `css/`, `js/`, `flags/`, `flags-true/`, `icons/`, `favicon.ico` and `manifest.webmanifest` as supporting files.
+  - The claude.ai artifact: it needs a bare fragment, not a full document. Generate it with `tools/artifact_fragment.py index.html` and publish that fragment together with `css/`, `js/`, `flags-true/`, `icons/`, `favicon.ico` and `manifest.webmanifest` as supporting files. From `flags/` publish only the files with no `flags-true/` counterpart; the artifact holds at most 511 files.
 - Keep both targets in sync: every change is published to the artifact and pushed to GitHub in the same step.
 - Before each commit run `tools/stamp_version.py` and stage `js/version.js`. The home screen shows the time in small print and checks GitHub for a newer stamp.
 
