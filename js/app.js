@@ -496,7 +496,8 @@ function openFlag(c){
     <div class="lb-stage" id="lbStage">${img(c,"flag").replace('loading="lazy"','')}</div>
     <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset</p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
-  LB={c,scale:1,x:0,y:0,pts:new Map(),el,fl:el.querySelector(".flag"),stage:el.querySelector("#lbStage")};
+  LB={c,scale:1,x:0,y:0,pts:new Map(),el,fl:el.querySelector(".flag .fl"),stage:el.querySelector("#lbStage")};
+  LB.baseW=LB.fl.getBoundingClientRect().width;
   const st=LB.stage;
   st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};LB.moved=false;st.classList.add("drag")});
   st.addEventListener("pointermove",e=>{if(!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start;
@@ -519,7 +520,8 @@ function lbCenter(){const r=LB.stage.getBoundingClientRect();return {x:r.left+r.
 function lbZoom(f,P){if(!LB)return;const ns=Math.min(8,Math.max(1,LB.scale*f));f=ns/LB.scale;if(f===1)return;
   const C=lbCenter();P=P||C;LB.x=(1-f)*(P.x-C.x)+f*LB.x;LB.y=(1-f)*(P.y-C.y)+f*LB.y;LB.scale=ns;
   if(ns===1){LB.x=0;LB.y=0}lbApply()}
-function lbApply(){if(!LB)return;LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px) scale(${LB.scale})`}
+// Zoom by resizing the element rather than transform:scale, so the SVG is re-rendered sharp at every level.
+function lbApply(){if(!LB)return;LB.fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px)`}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
 // ---------- BOOT ----------

@@ -187,7 +187,8 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
 .lb-top button:focus-visible{outline:3px solid #8fb0ff}
 .lb-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none;cursor:grab;padding:12px}
 .lb-stage.drag{cursor:grabbing}
-.lb .flag{width:min(100%,calc((100vh - 140px) * 4 / 3));max-width:100%;transform-origin:center;will-change:transform;user-select:none}
+.lb .flag{width:min(100%,calc((100vh - 140px) * 4 / 3));max-width:100%;user-select:none;overflow:visible}
+.lb .flag .fl{max-width:none;max-height:none;flex:none;will-change:transform}
 .lb .flag .fl{box-shadow:0 0 0 1px rgba(255,255,255,.15),0 20px 60px rgba(0,0,0,.5)}
 .lb .flag img{pointer-events:none;-webkit-user-drag:none}
 .lb-hint{text-align:center;font-size:12px;color:#a3adc2;padding:0 16px 10px}
