@@ -63,7 +63,7 @@ function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t,true
 
 // ---------- SETTINGS ----------
 const SKEY="flaglore.settings";
-let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true",terr:false};
+let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true",scope:"countries"};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
 const TYPED=d=>d==="expert"||d==="master";
 function setOpt(k,v){SET[k]=v;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
@@ -79,7 +79,7 @@ const BADGES=[ // roughly in the order people earn them
  {id:"streak25",e:"🔥",n:"On a Roll",h:"25 correct in a row."},
  {id:"m50",e:"🎖️",n:"Collector",h:"50 flags learned."},
  {id:"tour",e:"🌍",n:"World Tour",h:"Finish a full Whole World round at any difficulty."},
- {id:"explorer",e:"🧭",n:"Explorer",h:"Finish a full round of each of the five sets beyond the countries."},
+ {id:"explorer",e:"🧭",n:"Explorer",h:"Finish a full All-territories round at any difficulty."},
  {id:"sharp25",e:"🎯",n:"Sharp Eye",h:"A perfect round of 25 or more on Hard or harder."},
  {id:"mirror",e:"🪞",n:"Mirror Image",h:"A perfect round of 25 or more in Pick-the-flag on Hard."},
  {id:"twins",e:"👯",n:"Twin Spotter",h:"Perfect rounds in 10 different look-alike sets."},
@@ -106,15 +106,15 @@ function checkBadges(){
   if(perfect&&n>=25&&typed)award("typed25");
   if(perfect&&n>=25&&S.diff==="master"&&S.dir==="name")award("purist");
   if(perfect&&n>=25&&S.dir==="flag"&&D>=2)award("mirror");
-  if(S.mode==="all"&&S.full)award("tour");
+  if(S.mode==="all"&&S.full&&S.scope==="countries")award("tour");
+  if(S.mode==="all"&&S.full&&S.scope==="territories")award("explorer");
   if(S.mode==="group"&&perfect){const t=badges._twins=badges._twins||[];if(!t.includes(S.arg))t.push(S.arg);if(t.length>=10)award("twins")}
   if(S.best>=25)award("streak25");if(S.best>=50)award("streak50");if(S.best>=100)award("streak100");
   if(mc>=50)award("m50");if(mc>=100)award("m100");if(mc>=COUNTRIES.length)award("m197");
   if(FLAGS.filter(f=>!f.sov).every(f=>mastered(f.c)))award("carto");
-  if(S.mode==="region"&&S.full&&perfect&&strict)award("lord-"+S.arg);
-  if(S.mode==="all"&&S.full&&perfect&&strict)award("lord");
-  if(S.mode==="everything"&&S.full&&perfect&&strict)award("emperor");
-  if(S.mode==="region"&&S.full&&SETS.includes(S.arg)){const d=badges._sets=badges._sets||[];if(!d.includes(S.arg))d.push(S.arg);if(SETS.every(x=>d.includes(x)))award("explorer")}
+  if(S.mode==="region"&&S.full&&perfect&&strict&&REGIONS.includes(S.arg)&&S.scope!=="territories")award("lord-"+S.arg);
+  if(S.mode==="all"&&S.full&&perfect&&strict&&S.scope==="countries")award("lord");
+  if(S.mode==="all"&&S.full&&perfect&&strict&&S.scope==="all")award("emperor");
   saveB();return earned;
 }
 // Wikipedia article names where they differ from the display name; THE marks "Flag of the …".
@@ -129,7 +129,8 @@ const wl=(url,text,title="Wikipedia")=>`<a class="wl" href="${url}" target="_bla
 // Country name as a quiet link; capital line carries the capital and flag-article links.
 function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
 function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";const y=typeof ADOPTED==="object"&&ADOPTED[c];
-  return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+f.r:""} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
+  const where=f.sov?f.r:geoOf(f)+" · territory";
+  return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+where:""} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
@@ -146,18 +147,22 @@ const img=(c,cls="flag")=>{
   return `<div class="${cls}"><div class="fl${BARE.has(c)?" bare":""}" style="--r:${r};--w:${w.toFixed(1)}%"><img src="${src}/${c}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
-// Look-alike filter: a region name, a set name, "countries", or null for everything.
-const inFilter=(c,flt)=>!flt||(flt==="countries"?BY[c].sov:BY[c].r===flt||(SET.terr&&GEO[c]===flt));
-// Territories, nations and regions that sit in a geographic region (see GEO), added to region rounds and lists when the setting is on.
-const terrOf=r=>FLAGS.filter(f=>!f.sov&&GEO[f.c]===r).map(f=>f.c);
+// Look-alike filter: a region name or null for all regions. The scope setting applies on top.
+// Scope (Countries / All / Territories) is one saved setting that filters every list and round. geoOf places every flag in a region.
+const geoOf=f=>f.sov?f.r:GEO[f.c];
+const inScope=f=>SET.scope==="all"||(SET.scope==="countries"?f.sov:!f.sov);
+const SCOPED=()=>FLAGS.filter(inScope);
+const ALLREGIONS=[...REGIONS,"Antarctic","Organisations"];
+const regionFlags=r=>SCOPED().filter(f=>geoOf(f)===r);
+const scopeName=()=>SET.scope==="countries"?"Whole world":SET.scope==="all"?"Everything":"All territories";
+const inFilter=(c,flt)=>!flt||geoOf(BY[c])===flt;
 const filterLabel=flt=>!flt?"":flt==="countries"?"Countries":flt;
 function poolFor(mode,arg,flt){
-  if(mode==="region")return FLAGS.filter(f=>f.r===arg).map(f=>f.c).concat(SET.terr&&REGIONS.includes(arg)?terrOf(arg):[]);
-  if(mode==="all")return COUNTRIES.map(f=>f.c);
-  if(mode==="everything")return FLAGS.map(f=>f.c);
-  if(mode==="weak")return FLAGS.map(f=>f.c).filter(c=>rec(c).w>0&&!mastered(c));
-  if(mode==="group")return GROUPS[arg].f.filter(c=>inFilter(c,flt));
-  if(mode==="lookmix")return [...new Set(GROUPS.flatMap(g=>g.f))].filter(c=>inFilter(c,flt));
+  if(mode==="region")return regionFlags(arg).map(f=>f.c);
+  if(mode==="all")return SCOPED().map(f=>f.c);
+  if(mode==="weak")return SCOPED().map(f=>f.c).filter(c=>rec(c).w>0&&!mastered(c));
+  if(mode==="group")return GROUPS[arg].f.filter(c=>inScope(BY[c])&&inFilter(c,flt));
+  if(mode==="lookmix")return [...new Set(GROUPS.flatMap(g=>g.f))].filter(c=>inScope(BY[c])&&inFilter(c,flt));
   return [];
 }
 function pickOrder(pool,n){
@@ -173,7 +178,7 @@ function distractors(c,diff,mode,n=3){
   const add=list=>list.forEach(x=>{if(out.size<n)out.add(x)});
   const groups=GROUP_OF[c]||[];
   const gm=shuffle(groups.flatMap(i=>GROUPS[i].f).filter(x=>x!==c));
-  const same=shuffle(FLAGS.filter(x=>x.r===f.r&&x.c!==c).map(x=>x.c));
+  const same=shuffle(FLAGS.filter(x=>geoOf(x)===geoOf(f)&&x.c!==c).map(x=>x.c));
   const any=shuffle(FLAGS.map(x=>x.c).filter(x=>x!==c));
   if(mode==="group"||mode==="lookmix"||diff==="hard"||TYPED(diff)){add(gm);add(same)}
   else if(diff==="medium"){add(same)}
@@ -184,7 +189,7 @@ const here=()=>({view:S.view,region:S.region,pick:S.pick,flt:S.flt,scroll:window
 // The round in progress (and its results screen) is kept in localStorage so a refresh resumes it.
 const RKEY="flaglore.round";
 function saveRound(){try{if(S.view==="quiz"||S.view==="done"){const {timer,...rest}=S;localStorage.setItem(RKEY,JSON.stringify(rest))}else localStorage.removeItem(RKEY)}catch(e){}}
-function loadRound(){try{const s=localStorage.getItem(RKEY);if(!s)return null;const r=JSON.parse(s);return r&&r.qs&&r.qs.length?r:null}catch(e){return null}}
+function loadRound(){try{const s=localStorage.getItem(RKEY);if(!s)return null;const r=JSON.parse(s);if(r&&r.mode==="everything"){r.mode="all";r.scope="all"}if(r&&!r.scope)r.scope=r.mode==="region"&&!REGIONS.includes(r.arg)?"all":"countries";return r&&r.qs&&r.qs.length?r:null}catch(e){return null}}
 // Leaving mid-round asks first; a second Esc or the Leave button confirms.
 function goBack(){
   if(S.view==="quiz"&&S.qs.some(q=>q.ans)&&!S.confirmLeave){S.confirmLeave=true;render();return}
@@ -217,7 +222,7 @@ function startRound(mode,arg,label,flt=null){
   }
   const nOpt=optCount(diff,SET.dir);
   const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode,nOpt-1)]),ans:null,typed:""}));
-  S={view:"quiz",mode,arg,label,flt,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,nOpt,pace:SET.pace,from,full};
+  S={view:"quiz",mode,arg,label,flt,scope:SET.scope,qs,i:0,streak:0,best:0,diff:grp&&!TYPED(diff)?"hard":diff,dir:SET.dir,nOpt,pace:SET.pace,from,full};
   saveRound();render();window.scrollTo(0,0);
 }
 function submitTyped(){
@@ -253,7 +258,7 @@ document.addEventListener("keydown",e=>{
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
-  if(S.view==="setup"){if(e.key==="Enter"){e.preventDefault();startRound(S.pick.mode,S.pick.arg,S.pick.label,S.pick.flt)}else if(e.key==="Escape")goBack();return}
+  if(S.view==="setup"){if(e.key==="Enter"&&$("#startBtn")){e.preventDefault();startRound(S.pick.mode,S.pick.arg,S.pick.label,S.pick.flt)}else if(e.key==="Escape")goBack();return}
   if(S.view==="study"||S.view==="look"||S.view==="badges"){if(e.key==="Escape")goBack();return}
   if(S.view!=="quiz")return;
   const q=S.qs[S.i];
@@ -288,26 +293,25 @@ function card(o){
   return `<div class="tile${o.wide?" wide":""}">${main}${study}</div>`;
 }
 function setCards(list){
-  return list.map(r=>{const all=FLAGS.filter(f=>f.r===r),m=all.filter(f=>mastered(f.c)).length;
-    return card({name:r,count:badges["lord-"+r]?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
+  return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
+    return card({name:r,count:badges["lord-"+r]&&SET.scope!=="territories"?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
 }
+const SCOPES=[["countries","Countries"],["all","All"],["territories","Territories"]];
+const scopeSeg=note=>`<div class="seg"><span class="label">Flags</span><div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
 function viewHome(){
-  const total=FLAGS.length,weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
+  const weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
   const learned=l=>l.filter(f=>mastered(f.c)).length;
   return `${shell()}
   <p class="muted small">Name the flag, then read what it stands for. Tap a set to play it, or Study to read through it. Flags you miss come back sooner.</p>
   <div class="kbd"><span class="eyebrow">Keyboard</span><span><kbd>A</kbd>–<kbd>D</kbd> or <kbd>1</kbd>–<kbd>4</kbd> answer</span><span><kbd>Enter</kbd> starts and continues</span><span><kbd>Esc</kbd> goes back</span></div>
-  <p class="eyebrow">Countries</p>
-  <div class="tiles">${setCards(REGIONS)}
-    ${card({wide:true,name:"Whole world",count:learned(COUNTRIES)+" / "+COUNTRIES.length+" learned",go:"openSetup('all',null,'Whole world')",study:"openStudy('Whole world')"})}
-  </div>
-  <p class="eyebrow" style="padding-top:4px">Beyond the countries</p>
-  <div class="tiles">${setCards(SETS)}
-    ${card({wide:true,name:"Everything",count:learned(FLAGS)+" / "+total+" learned",go:"openSetup('everything',null,'Everything')",study:"openStudy('Everything')"})}
+  ${scopeSeg()}
+  <p class="eyebrow">Regions</p>
+  <div class="tiles">${setCards(ALLREGIONS)}
+    ${card({wide:true,name:scopeName(),count:learned(SCOPED())+" / "+SCOPED().length+" learned",go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`})}
   </div>
   <p class="eyebrow" style="padding-top:4px">Practice</p>
   <div class="tiles">
-    ${card({wide:true,name:"Look-alikes",count:GROUPS.length+" sets · mixed round",go:"openSetup('lookmix',null,'Look-alikes')",study:"openLook()"})}
+    ${card({wide:true,name:"Look-alikes",count:GROUPS.filter(g=>g.f.filter(c=>inScope(BY[c])).length>=2).length+" sets · mixed round",go:"openSetup('lookmix',null,'Look-alikes')",study:"openLook()"})}
     ${weak?card({wide:true,name:"Weak spots",count:weak+" to fix",go:"openSetup('weak',null,'Weak spots')"}):`<div class="tile wide dim"><span class="tmain"><span class="name">Weak spots</span><span class="count">nothing missed yet</span></span></div>`}
     ${card({wide:true,name:"Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
   </div>
@@ -333,6 +337,7 @@ function viewSetup(){
   const eff=grp&&!TYPED(SET.diff)?"hard":SET.diff;
   const PICK={expert:"Find the flag among nine, drawn from its look-alikes and region. +3 per correct answer.",master:"Find the flag among sixteen look-alikes and neighbours. +3 per correct answer."};
   const diffNote=grp&&!TYPED(SET.diff)?"Options always come from the look-alike set itself (Hard); Expert and Master "+(SET.dir==="flag"?"show more of them.":"ask you to type."):SET.dir==="flag"&&PICK[SET.diff]?PICK[SET.diff]:DIFF[SET.diff];
+  if(p.mode==="all")p.label=scopeName();
   return `${shell({title:p.label,stat:pool.length+(p.mode==="group"?" flags in the set":" flags"),back:S.from&&S.from.view==="look"?"Look-alikes":"Home"})}
   <div class="card">
     <div class="seg"><span class="label">Round length</span><div class="btns">
@@ -344,10 +349,7 @@ function viewSetup(){
       <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
       <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
       <span class="note">${SET.dir==="flag"?"You see the name and choose among four flags.":"You see the flag and choose or type the name."}</span></div>
-    ${p.mode==="region"&&REGIONS.includes(p.arg)&&terrOf(p.arg).length?`<div class="seg"><span class="label">Territories</span><div class="btns">
-      <button class="${SET.terr?"on":""}" onclick="setOpt('terr',true)">Include</button>
-      <button class="${!SET.terr?"on":""}" onclick="setOpt('terr',false)">Countries only</button></div>
-      <span class="note">${SET.terr?`Adds the ${terrOf(p.arg).length} territories and regions in ${esc(p.arg)}. Applies to region lists and the look-alike filter too.`:`${terrOf(p.arg).length} territories and regions sit in ${esc(p.arg)}; include them to quiz the whole area.`}</span></div>`:""}
+    ${p.mode==="region"||p.mode==="all"||p.mode==="lookmix"?scopeSeg("The same setting as on the home screen; changing it here changes it there."):""}
     <div class="seg"><span class="label">Flag shapes</span><div class="btns">
       <button class="${SET.shape==="true"?"on":""}" onclick="setOpt('shape','true')">True</button>
       <button class="${SET.shape==="uniform"?"on":""}" onclick="setOpt('shape','uniform')">Uniform</button></div>
@@ -357,7 +359,7 @@ function viewSetup(){
       <button class="${SET.pace==="drill"?"on":""}" onclick="setOpt('pace','drill')">Drill</button></div>
       <span class="note">${SET.pace==="drill"?"Correct answers advance automatically.":"Shows what the flag means after each answer."}</span></div>
   </div>
-  <button class="btn" id="startBtn" onclick="startRound(S.pick.mode,S.pick.arg,S.pick.label,S.pick.flt)">Start · ${n} questions</button>`;
+  ${n?`<button class="btn" id="startBtn" onclick="startRound(S.pick.mode,S.pick.arg,S.pick.label,S.pick.flt)">Start · ${n} questions</button>`:`<p class="muted small">No flags here for this scope. Pick another scope above.</p>`}`;
 }
 function viewBadges(){
   const nb=BADGES.filter(b=>badges[b.id]).length;
@@ -481,21 +483,21 @@ function viewDone(){
 }
 function viewStudy(){
   const r=S.region;
-  const isRegion=REGIONS.includes(r),tcount=isRegion?terrOf(r).length:0;
-  const base=r==="Whole world"?COUNTRIES:r==="Everything"?FLAGS:FLAGS.filter(f=>f.r===r).concat(isRegion&&SET.terr?FLAGS.filter(f=>terrOf(r).includes(f.c)):[]);
+  const wide=["Whole world","Everything","All territories"].includes(r);
+  const base=wide?SCOPED():regionFlags(r);
   const list=base.slice().sort((a,b)=>a.n.localeCompare(b.n));
   const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();
   const letters=[...new Set(list.map(letter))];
   const index=list.length>15?`<div class="alpha" id="alpha">${letters.map(l=>`<span data-l="${l}">${l}</span>`).join("")}</div>`:"";
   let lastL="";
-  const mixed=r==="Whole world"||r==="Everything"||(isRegion&&SET.terr);
+  const mixed=wide||SET.scope!=="countries";
   const status=f=>mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
   const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span><p>${esc(f.m)}</p></div></div>`}).join("");
-  const mode=r==="Whole world"?"all":r==="Everything"?"everything":"region",arg=mode==="region"?r:null;
-  const toggle=tcount?`<button class="chipbtn${SET.terr?" on":""}" onclick="setOpt('terr',${!SET.terr})">${SET.terr?"Territories included":"+ "+tcount+" territories"}</button>`:"";
-  return `${shell({title:r,stat:list.length+" flags",extra:toggle})}${index}
+  const mode=wide?"all":"region",arg=mode==="region"?r:null;
+  const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
+  return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
-  <button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${r}')">Quiz me on ${esc(r)}</button>`;
+  ${list.length?`<button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${wide?scopeName():r}')">Quiz me on ${esc(wide?scopeName():r)}</button>`:'<p class="muted small">No flags in this region for the current scope.</p>'}`;
 }
 // Alphabet index: tap or drag along the letters to jump the list, like a phone's contacts list.
 function wireAlpha(){
@@ -519,12 +521,12 @@ function wireAlpha(){
 function viewLook(){
   const flt=S.flt||null;
   const order=["Horizontal stripes","Vertical stripes","Cantons & crosses","Discs & stars","Triangles & serrations"];
-  const sorted=GROUPS.map((g,i)=>({g,i,r:g.k,f:g.f.filter(c=>inFilter(c,flt))})).filter(x=>x.f.length>=2).sort((a,b)=>order.indexOf(a.r)-order.indexOf(b.r)||a.g.t.localeCompare(b.g.t));
+  const sorted=GROUPS.map((g,i)=>({g,i,r:g.k,f:g.f.filter(c=>inScope(BY[c])&&inFilter(c,flt))})).filter(x=>x.f.length>=2).sort((a,b)=>order.indexOf(a.r)-order.indexOf(b.r)||a.g.t.localeCompare(b.g.t));
   let lastR="";
   const body=sorted.map(({g,i,r,f})=>(r!==lastR?`<p class="eyebrow" style="padding-top:6px">${esc(lastR=r)}</p>`:"")+`<div class="group"><h3>${esc(g.t)}</h3><div class="flags">${f.map(c=>`<figure><button class="flink" type="button" onclick="openFlag('${c}')" title="View large">${img(c,"flag sm")}</button><figcaption>${esc(BY[c].n)}</figcaption></figure>`).join("")}</div><p class="hint">${esc(g.h)}</p><button class="btn line" onclick="openSetup('group',${i},GROUPS[${i}].t,S.flt||null)">Quiz me on this set</button></div>`).join("");
   const opt=(v,l)=>`<option value="${v}" ${(flt||"")===v?"selected":""}>${l}</option>`;
-  const sel=`<select id="lookSel" onchange="S.flt=this.value||null;render();window.scrollTo(0,0)">${opt("","All flags")}<optgroup label="Countries">${REGIONS.map(r=>opt(r,r)).join("")}${opt("countries","All countries")}</optgroup><optgroup label="Beyond the countries">${SETS.map(x=>opt(x,x)).join("")}</optgroup></select>`;
-  return `${shell({title:"Look-alikes",stat:sorted.length+" sets",extra:sel})}
+  const sel=`<select id="lookSel" onchange="S.flt=this.value||null;render();window.scrollTo(0,0)">${opt("","All regions")}${ALLREGIONS.map(r=>opt(r,r)).join("")}</select>`;
+  return `${shell({title:"Look-alikes",stat:sorted.length+" sets · "+SCOPES.find(x=>x[0]===SET.scope)[1].toLowerCase(),extra:sel})}
   <div class="study">${body||'<p class="muted small">No look-alike sets have two or more flags in this filter.</p>'}</div>
   ${sorted.length?`<button class="btn" onclick="openSetup('lookmix',null,'Look-alikes',S.flt||null)">Mixed round across ${flt?"these":"all"} sets</button>`:""}`;
 }
