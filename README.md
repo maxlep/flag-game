@@ -4,4 +4,4 @@ A quiz for learning the flags of the world. Every answer shows what the flag's c
 
 Built by prompting Claude: the ideas, testing and bug reports are mine; the code is Claude's.
 
-Flag images from [flag-icons](https://github.com/lipis/flag-icons) (MIT).
+Flag images from [flag-icons](https://github.com/lipis/flag-icons) (MIT) and, for official proportions, [svg-country-flags](https://github.com/hampusborgos/country-flags) (public domain).

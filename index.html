@@ -65,11 +65,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .top .stat{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 
 .flag{width:100%;max-width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
-.flag .fl{height:100%;aspect-ratio:var(--r,4/3);max-width:100%;border-radius:6px;overflow:hidden;background:var(--surface);
+.flag .fl{width:var(--w,100%);aspect-ratio:var(--r,4/3);max-width:100%;max-height:100%;border-radius:6px;overflow:hidden;background:var(--surface);
   box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(10,20,40,.12)}
-.flag .fl.wide{height:auto;width:100%}
 .flag .fl.bare{background:transparent;box-shadow:none;border-radius:0}
-.flag img{display:block;width:100%;height:100%;object-fit:fill}
+.flag img{display:block;width:100%;height:100%;object-fit:contain}
 .flag.sm .fl{border-radius:4px;box-shadow:0 0 0 1px var(--line)}
 .flag.sm .fl.bare{box-shadow:none}
 
@@ -325,7 +324,7 @@ const RAW=[
 ["td","Chad",AF,"N'Djamena","Indigo blue for Lake Chad and the country's Black African heritage, yellow for the sands of the Sahara, red for the blood shed for independence. Nearly identical to Romania's; officially Chad's blue is indigo and Romania's cobalt."],
 ["km","Comoros",AF,"Moroni","Four stripes and four stars for the four islands, including Mayotte, which Comoros claims from France. The crescent is Islam."],
 ["cg","Republic of the Congo",AF,"Brazzaville","Pan-African green, yellow and red arranged diagonally. Green for forests and farming, yellow for friendship and nobility; the meaning of red was never officially explained."],
-["cd","DR Congo",AF,"Kinshasa","Sky blue for peace, crossed by a red diagonal (blood of martyrs) edged in yellow (the country's wealth), with a star for the future."],
+["cd","Democratic Republic of the Congo",AF,"Kinshasa","Sky blue for peace, crossed by a red diagonal (blood of martyrs) edged in yellow (the country's wealth), with a star for the future."],
 ["ci","Côte d'Ivoire",AF,"Yamoussoukro","Orange for the northern savanna and growth, white for peace, green for the forests and hope. It is Ireland's flag reversed: orange at the hoist."],
 ["dj","Djibouti",AF,"Djibouti","Blue for the Issa (Somali) people and the sea, green for the Afar people and the earth, white for peace, and a red star for unity."],
 ["eg","Egypt",AF,"Cairo","Arab Liberation red (blood shed against colonial rule), white (purity of heart), black (darkness overcome), with the gold Eagle of Saladin at centre."],
@@ -595,7 +594,7 @@ function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t,true
 
 // ---------- SETTINGS ----------
 const SKEY="flaglore.settings";
-let SET={len:10,diff:"medium",dir:"name",pace:"learn"};
+let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true"};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
 function setOpt(k,v){SET[k]=v;if(SET.dir==="flag"&&SET.diff==="expert")SET.diff="hard";try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
 const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no points.",medium:"Options come from the same region. +1 point per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer."};
@@ -669,10 +668,15 @@ let S={view:"home"};
 const $=s=>document.querySelector(s);
 const app=$("#app");
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-// True proportions where they are part of the flag's identity (the icon set normalises everything to 4:3).
-const RATIO={ch:1,va:1,id:1.5,mc:1.25,pl:1.6,qa:28/11,bh:5/3,np:"bare"};
-const img=(c,cls="flag")=>{const r=RATIO[c];const k=r==="bare"?" bare":(r&&r>4/3?" wide":"");const st=r&&r!=="bare"?` style="--r:${r}"`:"";
-  return `<div class="${cls}"><div class="fl${k}"${st}><img src="flags/${c}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
+// Official width:height ratios of the true-proportion artwork (flags-true/). Flags missing there fall back to the 4:3 set.
+const TRUER={"ad":1.4286,"ae":2.0,"af":1.5,"ag":1.5,"ai":2.0,"al":1.4,"am":2.0,"ao":1.5,"aq":1.5,"ar":1.6,"as":2.0,"at":1.5,"au":2.0,"aw":1.5,"ax":1.5294,"az":2.0,"ba":2.0,"bb":1.5,"bd":1.6667,"be":1.1538,"bf":1.5,"bg":1.6667,"bh":1.6667,"bi":1.6667,"bj":1.5,"bm":2.0,"bn":2.0,"bo":1.4667,"br":1.4286,"bs":2.0,"bt":1.5,"bw":1.5,"by":2.0,"bz":1.6667,"ca":2.0,"cc":2.0,"cd":1.3333,"cf":1.5,"cg":1.5,"ch":1.0,"ci":1.5,"ck":2.0,"cl":1.5,"cm":1.5,"cn":1.5,"co":1.5,"cr":1.6667,"cu":2.0,"cv":1.7,"cw":1.5,"cx":2.0,"cy":1.5,"cz":1.5,"de":1.6667,"dj":1.5,"dk":1.3214,"dm":2.0,"do":1.5,"dz":1.5,"ec":1.5,"ee":1.5714,"eg":1.5,"eh":2.0,"er":2.0,"es":1.5,"et":2.0,"eu":1.5,"fi":1.6364,"fj":2.0,"fk":2.0,"fm":1.9,"fo":1.375,"fr":1.5,"ga":1.3333,"gb-eng":1.6667,"gb-nir":2.0,"gb-sct":1.6667,"gb-wls":1.6667,"gb":2.0,"gd":1.6667,"ge":1.5,"gg":1.5,"gh":1.5,"gi":2.0,"gl":1.5,"gm":1.5,"gn":1.5,"gq":1.5,"gr":1.5,"gs":2.0,"gt":1.6,"gu":1.8636,"gw":2.0,"gy":1.6667,"hk":1.5,"hn":2.0,"hr":2.0,"ht":1.6667,"hu":2.0,"id":1.5,"ie":2.0,"il":1.375,"im":2.0,"in":1.5,"io":2.0,"iq":1.5,"ir":1.75,"is":1.3889,"it":1.5,"je":1.6667,"jm":2.0,"jo":2.0,"jp":1.5,"ke":1.5,"kg":1.6667,"kh":1.5625,"ki":2.0,"km":1.6667,"kn":1.5,"kp":2.0,"kr":1.5,"kw":2.0,"ky":2.0,"kz":2.0,"la":1.5,"lb":1.5,"lc":2.0,"li":1.6667,"lk":2.0,"lr":1.9,"ls":1.5,"lt":1.6667,"lu":1.6667,"lv":2.0,"ly":2.0,"ma":1.5,"mc":1.25,"md":2.0,"me":2.0,"mg":1.5,"mh":1.9,"mk":2.0,"ml":1.5,"mm":1.5,"mn":2.0,"mo":1.5,"mp":2.0,"mq":1.5,"mr":1.5,"ms":2.0,"mt":1.5,"mu":1.5,"mv":1.5,"mw":1.5,"mx":1.75,"my":2.0,"mz":1.5,"na":1.5,"nc":2.0,"ne":1.1667,"nf":2.0,"ng":2.0,"ni":1.6667,"nl":1.5,"no":1.375,"np":0.8203,"nr":2.0,"nu":2.0,"nz":2.0,"om":2.0,"pa":1.5,"pe":1.5,"pf":1.5,"pg":1.3333,"ph":2.0,"pk":1.5,"pl":1.6,"pn":2.0,"pr":1.5,"ps":2.0,"pt":1.5,"pw":1.6,"py":1.8182,"qa":2.5455,"ro":1.5,"rs":1.5,"ru":1.5,"rw":1.5,"sa":1.5,"sb":2.0,"sc":2.0,"sd":2.0,"se":1.6,"sg":1.5,"si":2.0,"sk":1.5,"sl":1.5,"sm":1.3333,"sn":1.5,"so":1.5,"sr":1.5,"ss":2.0,"st":2.0,"sv":1.7725,"sx":1.5,"sy":1.5,"sz":1.5,"tc":2.0,"td":1.5,"tf":1.5,"tg":1.618,"th":1.5,"tj":2.0,"tk":2.0,"tl":2.0,"tm":1.5,"tn":1.5,"to":2.0,"tr":1.5,"tt":1.6667,"tv":2.0,"tw":1.5,"tz":1.5,"ua":1.5,"ug":1.5,"us":1.9,"uy":1.5,"uz":2.0,"va":1.0,"vc":1.5,"ve":1.5,"vg":2.0,"vi":1.5,"vn":1.5,"vu":1.6667,"wf":1.5,"ws":2.0,"xk":1.4,"ye":1.5,"za":1.5,"zm":1.5,"zw":2.0};
+const BARE=new Set(["np"]); // non-rectangular: no box or shadow
+// Each flag sits in a 4:3 slot. Uniform mode fills it. True mode sizes flags to roughly equal area, capped by the slot,
+// so a wide flag like Qatar reads as wider rather than merely shorter.
+const img=(c,cls="flag")=>{
+  const tru=SET.shape==="true"&&TRUER[c];const r=tru?TRUER[c]:4/3;const src=tru?"flags-true":"flags";
+  const w=tru?Math.min(100,75*r,100*Math.sqrt(0.62*r)):100;
+  return `<div class="${cls}"><div class="fl${BARE.has(c)?" bare":""}" style="--r:${r};--w:${w.toFixed(1)}%"><img src="${src}/${c}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
 function poolFor(mode,arg){
@@ -846,6 +850,10 @@ function viewSetup(){
       <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
       <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
       <span class="note">${SET.dir==="flag"?"You see the name and choose among four flags.":"You see the flag and choose or type the name."}</span></div>
+    <div class="seg"><span class="label">Flag shapes</span><div class="btns">
+      <button class="${SET.shape==="true"?"on":""}" onclick="setOpt('shape','true')">True</button>
+      <button class="${SET.shape==="uniform"?"on":""}" onclick="setOpt('shape','uniform')">Uniform</button></div>
+      <span class="note">${SET.shape==="true"?"Each flag in its official proportions, sized to roughly equal area. Applies everywhere in the app.":"Every flag drawn at 4:3, the same size."}</span></div>
     <div class="seg"><span class="label">Pace</span><div class="btns">
       <button class="${SET.pace==="learn"?"on":""}" onclick="setOpt('pace','learn')">Learn</button>
       <button class="${SET.pace==="drill"?"on":""}" onclick="setOpt('pace','drill')">Drill</button></div>
