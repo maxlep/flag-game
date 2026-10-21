@@ -191,11 +191,7 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
   .btn.ghost:hover{background:color-mix(in srgb,var(--tint) 80%,var(--accent) 20%);filter:none}
   .opt:not([disabled]):hover,.fopt:not([disabled]):hover{border-color:var(--accent);background:color-mix(in srgb,var(--surface) 88%,var(--accent) 12%)}
   .tile .tmain:hover{background:var(--tint)}
-  .seg .btns button:not(.on):hover{background:color-mix(in srgb,var(--tint) 60%,var(--surface) 40%)}
   .top .back:hover,.link:hover{text-decoration:underline}
   .sugg button:hover{background:var(--accent);color:var(--accent-ink)}
-  .lb-top button:hover{background:rgba(255,255,255,.2)}
-  .alpha span:hover{color:var(--ink)}
-  .flink:hover .fl{box-shadow:0 0 0 2px var(--accent)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
