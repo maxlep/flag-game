@@ -106,6 +106,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .progress i.ok{background:var(--ok)} .progress i.bad{background:var(--bad)} .progress i.now{background:var(--accent)}
 
 .study{display:flex;flex-direction:column;gap:12px}
+.study .letter{display:flex;align-items:center;gap:10px;padding-top:10px;font-size:12px}
+.study .letter::after{content:"";flex:1;height:1px;background:var(--line)}
+.study .letter:first-child{padding-top:0}
 .entry{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
 .entry .flag .fl{border-radius:4px}
 .entry .t{min-width:0;display:flex;flex-direction:column;gap:4px}

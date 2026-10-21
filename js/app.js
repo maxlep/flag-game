@@ -483,7 +483,7 @@ function viewStudy(){
   let lastL="";
   const mixed=r==="Whole world"||r==="Everything";
   const status=f=>mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>`<div class="entry"${(l=>l!==lastL?` data-l="${lastL=l}"`:"")(letter(f))}><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span><p>${esc(f.m)}</p></div></div>`).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span><p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=r==="Whole world"?"all":r==="Everything"?"everything":"region",arg=mode==="region"?r:null;
   return `${shell({title:r,stat:list.length+" flags"})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
@@ -496,7 +496,7 @@ function wireAlpha(){
   // Letter from the finger's vertical position only, so sideways drift during a fast scrub doesn't lose it.
   const letterAt=y=>{const r=a.getBoundingClientRect();const i=Math.min(spans.length-1,Math.max(0,Math.floor((y-r.top)/(r.height/spans.length))));return spans[i].dataset.l};
   const jump=y=>{const l=letterAt(y);if(!l||l===lastL)return;lastL=l;
-    const target=app.querySelector(`.entry[data-l="${l}"]`);if(!target)return;
+    const target=app.querySelector(`.study [data-l="${l}"]`);if(!target)return;
     const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8;
     window.scrollTo(0,target.getBoundingClientRect().top+window.scrollY-off);
     if(!bubble){bubble=document.createElement("div");bubble.className="alpha-bubble";document.body.appendChild(bubble)}bubble.textContent=l};
