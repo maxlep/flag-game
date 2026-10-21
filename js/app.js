@@ -253,7 +253,7 @@ function render(){
   if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
   if(S.view==="look")return app.innerHTML=viewLook();
   if(S.view==="badges")return app.innerHTML=viewBadges();
-  return app.innerHTML=viewHome();
+  app.innerHTML=viewHome();checkVersion();
 }
 function shell(sub){
   const total=FLAGS.length,m=FLAGS.filter(f=>mastered(f.c)).length,lord=!!badges.lord;
@@ -291,7 +291,18 @@ function viewHome(){
     ${weak?card({wide:true,name:"Weak spots",count:weak+" to fix",go:"openSetup('weak',null,'Weak spots')"}):`<div class="tile wide dim"><span class="tmain"><span class="name">Weak spots</span><span class="count">nothing missed yet</span></span></div>`}
     ${card({wide:true,name:"Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
   </div>
-  <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>`;
+  <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>
+  <p class="small muted" id="ver">Build ${typeof VERSION==="object"?VERSION.n+" · "+VERSION.at:"?"}</p>`;
+}
+// Compare this build with the one on GitHub; say so if a newer one exists. Fails silently where the network is blocked.
+let VER_CHECKED=null;
+async function checkVersion(){
+  if(typeof VERSION!=="object"||VER_CHECKED!==null)return;VER_CHECKED=false;
+  try{const r=await fetch("https://raw.githubusercontent.com/maxlep/flag-game/main/js/version.js?"+Date.now(),{cache:"no-store"});
+    const m=(await r.text()).match(/n:(\d+)/);if(!m)return;VER_CHECKED=+m[1];
+    const el=$("#ver");if(el&&VER_CHECKED>VERSION.n)el.innerHTML+=` · <a class="wl" href="javascript:location.reload(true)">Build ${VER_CHECKED} is available, reload</a>`;
+    else if(el)el.textContent+=" · up to date";
+  }catch(e){}
 }
 function resetAsk(){
   const f=app.querySelector(".foot");
