@@ -17,6 +17,7 @@ What the project is and where files live: see README.md. This file holds the rul
 - Descriptions (the `blurb` field): two or three plain sentences for a learner, no bullet points, legends labelled as legends, no superlatives ("the only flag that…") unless the Wikipedia flag article states them. Every description shipped so far has been checked against the English Wikipedia "Flag of …" article; keep that bar for edits and additions, and record what was verified. Blurbs are JavaScript string literals in double quotes, so they must not contain a double quote.
 - Capitals: the conventional choice; where disputed, say so in the field itself ("Sucre (constitutional), La Paz (seat of government)", "None").
 - The 197 countries (193 UN members plus Vatican City, Palestine, Kosovo, Taiwan) are `sov: true`; everything else is a set in `SETS`. "Whole world" and the Flag Lord badge mean the 197; "Everything" means all flags.
+- Each non-country flag has a geographic region in `GEO` (`js/data/names.js`), or none for organisations and the Antarctic. With the "Territories: Include" setting on, region rounds, region study lists and the look-alike region filter add those flags; the region cards and "Whole world" stay countries only.
 - Look-alike sets (`js/data/groups.js`): each needs a `k` kind from the five used, and a hint that states a concrete visual difference for every flag in the set. Hints were fact-checked too.
 
 ## Adding or changing flag artwork

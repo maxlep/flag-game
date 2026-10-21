@@ -63,7 +63,7 @@ function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t,true
 
 // ---------- SETTINGS ----------
 const SKEY="flaglore.settings";
-let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true"};
+let SET={len:10,diff:"medium",dir:"name",pace:"learn",shape:"true",terr:false};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
 const TYPED=d=>d==="expert"||d==="master";
 function setOpt(k,v){SET[k]=v;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
@@ -147,10 +147,12 @@ const img=(c,cls="flag")=>{
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
 // Look-alike filter: a region name, a set name, "countries", or null for everything.
-const inFilter=(c,flt)=>!flt||(flt==="countries"?BY[c].sov:BY[c].r===flt);
+const inFilter=(c,flt)=>!flt||(flt==="countries"?BY[c].sov:BY[c].r===flt||(SET.terr&&GEO[c]===flt));
+// Territories, nations and regions that sit in a geographic region (see GEO), added to region rounds and lists when the setting is on.
+const terrOf=r=>FLAGS.filter(f=>!f.sov&&GEO[f.c]===r).map(f=>f.c);
 const filterLabel=flt=>!flt?"":flt==="countries"?"Countries":flt;
 function poolFor(mode,arg,flt){
-  if(mode==="region")return FLAGS.filter(f=>f.r===arg).map(f=>f.c);
+  if(mode==="region")return FLAGS.filter(f=>f.r===arg).map(f=>f.c).concat(SET.terr&&REGIONS.includes(arg)?terrOf(arg):[]);
   if(mode==="all")return COUNTRIES.map(f=>f.c);
   if(mode==="everything")return FLAGS.map(f=>f.c);
   if(mode==="weak")return FLAGS.map(f=>f.c).filter(c=>rec(c).w>0&&!mastered(c));
@@ -342,6 +344,10 @@ function viewSetup(){
       <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
       <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
       <span class="note">${SET.dir==="flag"?"You see the name and choose among four flags.":"You see the flag and choose or type the name."}</span></div>
+    ${p.mode==="region"&&REGIONS.includes(p.arg)&&terrOf(p.arg).length?`<div class="seg"><span class="label">Territories</span><div class="btns">
+      <button class="${SET.terr?"on":""}" onclick="setOpt('terr',true)">Include</button>
+      <button class="${!SET.terr?"on":""}" onclick="setOpt('terr',false)">Countries only</button></div>
+      <span class="note">${SET.terr?`Adds the ${terrOf(p.arg).length} territories and regions in ${esc(p.arg)}. Applies to region lists and the look-alike filter too.`:`${terrOf(p.arg).length} territories and regions sit in ${esc(p.arg)}; include them to quiz the whole area.`}</span></div>`:""}
     <div class="seg"><span class="label">Flag shapes</span><div class="btns">
       <button class="${SET.shape==="true"?"on":""}" onclick="setOpt('shape','true')">True</button>
       <button class="${SET.shape==="uniform"?"on":""}" onclick="setOpt('shape','uniform')">Uniform</button></div>
@@ -475,17 +481,19 @@ function viewDone(){
 }
 function viewStudy(){
   const r=S.region;
-  const base=r==="Whole world"?COUNTRIES:r==="Everything"?FLAGS:FLAGS.filter(f=>f.r===r);
+  const isRegion=REGIONS.includes(r),tcount=isRegion?terrOf(r).length:0;
+  const base=r==="Whole world"?COUNTRIES:r==="Everything"?FLAGS:FLAGS.filter(f=>f.r===r).concat(isRegion&&SET.terr?FLAGS.filter(f=>terrOf(r).includes(f.c)):[]);
   const list=base.slice().sort((a,b)=>a.n.localeCompare(b.n));
   const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();
   const letters=[...new Set(list.map(letter))];
   const index=list.length>15?`<div class="alpha" id="alpha">${letters.map(l=>`<span data-l="${l}">${l}</span>`).join("")}</div>`:"";
   let lastL="";
-  const mixed=r==="Whole world"||r==="Everything";
+  const mixed=r==="Whole world"||r==="Everything"||(isRegion&&SET.terr);
   const status=f=>mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
   const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span><p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=r==="Whole world"?"all":r==="Everything"?"everything":"region",arg=mode==="region"?r:null;
-  return `${shell({title:r,stat:list.length+" flags"})}${index}
+  const toggle=tcount?`<button class="chipbtn${SET.terr?" on":""}" onclick="setOpt('terr',${!SET.terr})">${SET.terr?"Territories included":"+ "+tcount+" territories"}</button>`:"";
+  return `${shell({title:r,stat:list.length+" flags",extra:toggle})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
   <button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${r}')">Quiz me on ${esc(r)}</button>`;
 }
