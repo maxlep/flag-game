@@ -301,6 +301,18 @@ function shade(){const st=app.querySelector(".sticky"),dk=app.querySelector(".do
   if(st)st.classList.toggle("scrolled",window.scrollY>4);
   if(dk)dk.classList.toggle("lift",document.documentElement.scrollHeight-window.innerHeight-window.scrollY>4)}
 window.addEventListener("scroll",shade,{passive:true});window.addEventListener("resize",shade);
+// On a phone the keyboard halves the screen and the browser centres the answer box, pushing the flag off the top.
+// When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
+// scrolled to the top, so flag and box share the screen.
+function keyboard(){
+  const vv=window.visualViewport,inp=$("#typeIn"),open=!!(vv&&inp&&document.activeElement===inp&&vv.height<window.innerHeight-120);
+  document.documentElement.style.setProperty("--vvh",vv?vv.height+"px":"");
+  document.body.classList.toggle("kb",open);
+  if(open)window.scrollTo(0,0);
+}
+if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard)}
+document.addEventListener("focusin",e=>{if(e.target.id==="typeIn")setTimeout(keyboard,350)});
+document.addEventListener("focusout",e=>{if(e.target.id==="typeIn")setTimeout(keyboard,100)});
 function render(){
   requestAnimationFrame(shade);
   if(S.view==="quiz"){
@@ -419,7 +431,7 @@ function viewQuiz(){
       let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
-    prompt=`${img(q.c,"flag",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country? Type it.</p>`;
+    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country? Type it.</p>`;
     // After the answer the box stays, read-only, so the keyboard stays open; Enter in it moves on.
     opts=`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" type="text" enterkeyhint="${q.ans?"next":"go"}" ${q.ans?"readonly":""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans?"Enter for next":strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
