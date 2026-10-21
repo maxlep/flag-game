@@ -17,7 +17,7 @@
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark }
 
 *{box-sizing:border-box}
-html{scrollbar-gutter:stable}
+html{scrollbar-gutter:stable;overflow-x:clip}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 24px}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
@@ -34,13 +34,20 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .small{font-size:14px}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.sticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;flex-direction:column;gap:12px;padding-block:12px 10px;margin-top:-12px;
-  border-bottom:1px solid transparent;transition:border-color .15s,box-shadow .15s}
-.sticky.scrolled{border-bottom-color:var(--line);box-shadow:0 10px 24px -12px rgba(10,20,40,.35)}
-:root[data-theme="dark"] .sticky.scrolled{box-shadow:0 10px 24px -12px rgba(0,0,0,.7)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sticky.scrolled{box-shadow:0 10px 24px -12px rgba(0,0,0,.7)}}
-.dock{position:sticky;bottom:0;z-index:5;background:var(--bg);margin-bottom:-24px;padding:10px 0 calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid transparent;transition:border-color .15s,box-shadow .15s}
-.dock.lift{border-top-color:var(--line);box-shadow:0 -10px 24px -12px rgba(10,20,40,.35)}
+.sticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;flex-direction:column;gap:12px;padding-block:12px 10px;margin-top:-12px;
+  background:none}
+/* The pinned bars' backdrop, line and shadow span the whole viewport, not just the column. */
+.sticky::before,.dock::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:var(--bg);z-index:-1;
+  border:0 solid transparent;transition:border-color .15s,box-shadow .15s}
+.sticky::before{border-bottom-width:1px;bottom:-1px}
+.dock::before{border-top-width:1px;top:-1px}
+.sticky.scrolled::before{border-color:var(--line);box-shadow:0 10px 24px -12px rgba(10,20,40,.35)}
+.dock.lift::before{border-color:var(--line);box-shadow:0 -10px 24px -12px rgba(10,20,40,.35)}
+:root[data-theme="dark"] .sticky.scrolled::before{box-shadow:0 10px 24px -12px rgba(0,0,0,.7)}
+:root[data-theme="dark"] .dock.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sticky.scrolled::before{box-shadow:0 10px 24px -12px rgba(0,0,0,.7)}
+  :root:not([data-theme="light"]) .dock.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}}
+.dock{position:sticky;bottom:0;z-index:5;margin-bottom:-24px;padding:10px 0 calc(14px + env(safe-area-inset-bottom,0px))}
 .more{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
 .more summary{display:flex;align-items:baseline;gap:10px;cursor:pointer;list-style:none;user-select:none}
 .more summary::-webkit-details-marker{display:none}
