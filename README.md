@@ -16,6 +16,6 @@ Flag images from [flag-icons](https://github.com/lipis/flag-icons) (MIT) and, fo
 - `js/data/names.js` – typed-answer aliases, Wikipedia title overrides, official proportions, adoption years, regions of the non-country flags, flag variants
 - `js/version.js` – commit time, written by `tools/stamp_version.py` before each commit
 - `flags-true/` – artwork in official proportions, with civil, state and reverse variants as `<code>-<kind>.svg`; `flags/` – 4:3 fallback
-- `tools/` – SVG edge snapping and the claude.ai artifact fragment generator
+- `tools/` – SVG edge snapping, data checks, version stamp and the claude.ai artifact fragment generator
 
 Working conventions are in CLAUDE.md.

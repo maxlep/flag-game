@@ -111,7 +111,7 @@ function checkBadges(){
   if(S.mode==="group"&&perfect){const t=badges._twins=badges._twins||[];if(!t.includes(S.arg))t.push(S.arg);if(t.length>=10)award("twins")}
   if(S.best>=25)award("streak25");if(S.best>=50)award("streak50");if(S.best>=100)award("streak100");
   if(mc>=50)award("m50");if(mc>=100)award("m100");if(mc>=COUNTRIES.length)award("m197");
-  if(FLAGS.filter(f=>!f.sov).every(f=>mastered(f.c)))award("carto");
+  if(QUIZ.filter(f=>!f.sov).every(f=>mastered(f.c)))award("carto");
   if(S.mode==="region"&&S.full&&perfect&&strict&&REGIONS.includes(S.arg)&&S.scope!=="territories")award("lord-"+S.arg);
   if(S.mode==="all"&&S.full&&perfect&&strict&&S.scope==="countries")award("lord");
   if(S.mode==="all"&&S.full&&perfect&&strict&&S.scope==="all")award("emperor");
@@ -170,9 +170,11 @@ const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&q
 // Scope (Countries / All / Territories) is one saved setting that filters every list and round. geoOf places every flag in a region.
 const geoOf=f=>f.sov?f.r:GEO[f.c];
 const inScope=f=>SET.scope==="all"||(SET.scope==="countries"?f.sov:!f.sov);
-const SCOPED=()=>FLAGS.filter(inScope);
+// Pools leave out study-only flags (NOQUIZ); study lists ask for them with all=true.
+const QUIZ=FLAGS.filter(f=>!NOQUIZ.has(f.c));
+const SCOPED=all=>(all?FLAGS:QUIZ).filter(inScope);
 const ALLREGIONS=[...REGIONS,"Antarctic","Organisations"];
-const regionFlags=r=>SCOPED().filter(f=>geoOf(f)===r);
+const regionFlags=(r,all)=>SCOPED(all).filter(f=>geoOf(f)===r);
 const scopeName=()=>SET.scope==="countries"?"Whole world":SET.scope==="all"?"Everything":"All territories";
 const inFilter=(c,flt)=>!flt||geoOf(BY[c])===flt;
 const filterLabel=flt=>!flt?"":flt==="countries"?"Countries":flt;
@@ -197,8 +199,8 @@ function distractors(c,diff,mode,n=3){
   const add=list=>list.forEach(x=>{if(out.size<n)out.add(x)});
   const groups=GROUP_OF[c]||[];
   const gm=shuffle(groups.flatMap(i=>GROUPS[i].f).filter(x=>x!==c));
-  const same=shuffle(FLAGS.filter(x=>geoOf(x)===geoOf(f)&&x.c!==c).map(x=>x.c));
-  const any=shuffle(FLAGS.map(x=>x.c).filter(x=>x!==c));
+  const same=shuffle(QUIZ.filter(x=>geoOf(x)===geoOf(f)&&x.c!==c).map(x=>x.c));
+  const any=shuffle(QUIZ.map(x=>x.c).filter(x=>x!==c));
   if(mode==="group"||mode==="lookmix"||diff==="hard"||TYPED(diff)){add(gm);add(same)}
   else if(diff==="medium"){add(same)}
   add(any);
@@ -307,7 +309,7 @@ function render(){
   app.innerHTML=viewHome();checkVersion();
 }
 function shell(sub){
-  const total=FLAGS.length,m=FLAGS.filter(f=>mastered(f.c)).length,lord=!!badges.lord;
+  const total=QUIZ.length,m=QUIZ.filter(f=>mastered(f.c)).length,lord=!!badges.lord;
   if(!sub)return `<div class="sticky"><div class="top"><div><h1 class="brand">Flags of the world</h1>${lord?`<p class="eyebrow" style="color:var(--gold)">Flag Lord · since ${fmtDate(badges.lord)}</p>`:""}</div><span class="stat">${m}/${total}</span></div></div>`;
   return `<div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ ${esc(sub.back||"Home")}</button><span class="stat">${esc(sub.stat||"")}</span></div>${sub.extra?`<div class="top titlerow"><h2 class="subtitle">${esc(sub.title)}</h2>${sub.extra}</div>`:`<h2 class="subtitle">${esc(sub.title)}</h2>`}</div>`;
 }
@@ -516,15 +518,15 @@ function studyVar(btn,i){const en=btn.closest(".entry");en.dataset.v=i;showVaria
 function viewStudy(){
   const r=S.region;
   const wide=["Whole world","Everything","All territories"].includes(r);
-  const base=wide?SCOPED():regionFlags(r);
+  const base=wide?SCOPED(true):regionFlags(r,true);
   const list=base.slice().sort((a,b)=>a.n.localeCompare(b.n));
   const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();
   const letters=[...new Set(list.map(letter))];
   const index=list.length>15?`<div class="alpha" id="alpha">${letters.map(l=>`<span data-l="${l}">${l}</span>`).join("")}</div>`:"";
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
-  const status=f=>mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
+  const status=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}

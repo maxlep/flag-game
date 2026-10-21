@@ -19,6 +19,8 @@ What the project is and where files live: see README.md. This file holds the rul
 - The 197 countries (193 UN members plus Vatican City, Palestine, Kosovo, Taiwan) are `sov: true`; everything else is a territory in the app's sense (territories, nations and regions, organisations, the Antarctic). `SETS` in `js/data/flags.js` only labels where a non-country row came from.
 - Every non-country flag has a region in `GEO` (`js/data/names.js`): one of the five continents, "Antarctic" or "Organisations". `geoOf()` in `js/app.js` is the one place that decides a flag's region.
 - Scope is one saved setting (`SET.scope`: countries, all, territories) shown on the home screen and the setup screen. It filters every region, the wide card ("Whole world", "Everything", "All territories"), study lists, weak spots and look-alikes; empty region cards are dropped. Rounds record the scope they ran under. Flag Lord and the region Lords mean the 197 countries, Flag Emperor means all flags, Explorer means a full All-territories round.
+- A flag with no design of its own (Northern Ireland, which flies the Union Jack) goes in `NOQUIZ` (`js/data/names.js`): it appears in study lists with a "not quizzed" pill and its `USE` line explains why, and it is never asked, never a distractor and never counted.
+- Run `tools/check_data.py` before committing data or artwork changes. It fails on missing artwork, two flags with identical artwork, a `TRUER` ratio that disagrees with the file's viewBox, and a `VARIANTS` entry without its file.
 - Look-alike sets (`js/data/groups.js`): each needs a `k` kind from the five used, and a hint that states a concrete visual difference for every flag in the set. Hints were fact-checked too.
 
 ## Adding or changing flag artwork
