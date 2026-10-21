@@ -152,13 +152,10 @@ const img=(c,cls="flag",vi=0)=>{
   const tru=TRUER[c];const r=ve&&ve.r||(tru?TRUER[c]:4/3);const src=tru?"flags-true":"flags";
   const w=tru?Math.min(100,75*r,100*Math.sqrt(0.62*r)):100;
   return `<div class="${cls}"><div class="fl${BARE.has(c)||ve&&ve.bare?" bare":""}" style="--r:${r};--w:${w.toFixed(1)}%"><img src="${src}/${stem}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
-// One line naming the design on screen, with chips to switch when the flag has more than one.
-function variantLine(c,vi,onpick){
-  const v=VARS(c);
-  if(!v)return `<p class="vline small muted">${esc(useLabel(c))}</p>`;
-  const cur=v[vi];
-  return `<div class="vline"><span class="small muted">${esc(cur.l)}${cur.d?" · "+esc(cur.d):""}</span><span class="vchips">${v.map((x,i)=>`<button type="button" class="chipbtn${i===vi?" on":""}" onclick="${onpick.replace("%i",i)}">${esc(x.k[0].toUpperCase()+x.k.slice(1))}</button>`).join("")}</span></div>`;
-}
+// One line naming the design on screen (text only), and a separate row of chips to switch designs. Keeping them apart
+// means the chips sit in a fixed spot under the flag and never move with the length of the label.
+function useLine(c,vi){const v=VARS(c),cur=v&&v[vi];return `<p class="vline small muted">${cur?esc(cur.l)+(cur.d?" · "+esc(cur.d):""):esc(useLabel(c))}</p>`}
+function vchips(c,vi,onpick,hidden){const v=VARS(c);if(!v)return "";return `<div class="vchips${hidden?" hide":""}">${v.map((x,i)=>`<button type="button" class="chipbtn${i===vi?" on":""}" onclick="${onpick.replace("%i",i)}">${esc(x.k[0].toUpperCase()+x.k.slice(1))}</button>`).join("")}</div>`}
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
 // Look-alike filter: a region name or null for all regions. The scope setting applies on top.
@@ -269,7 +266,7 @@ function showLore(){const q=S.qs[S.i];q.lore=true;render()}
 function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();render()}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
-  if(LB){if(e.key==="Escape")closeFlag();else if((e.key==="ArrowLeft"||e.key==="ArrowRight")&&VARS(LB.c)){const k=VARS(LB.c).length;lbVar((LB.vi+(e.key==="ArrowRight"?1:k-1))%k)}return}
+  if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbGo(LB.vi+(e.key==="ArrowRight"?1:-1));return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
@@ -393,13 +390,13 @@ function viewQuiz(){
       let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
-    prompt=`${img(q.c,"flag",q.v||0)}<p class="eyebrow">Which country? Type it.</p>`;
+    prompt=`${img(q.c,"flag",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country? Type it.</p>`;
     opts=q.ans?"":`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
       ${strict?"":'<div class="sugg" id="sugg"></div>'}
       <div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div></form>`;
   } else {
-    prompt=`${img(q.c,"flag",q.v||0)}<p class="eyebrow">Which country?</p>`;
+    prompt=`${img(q.c,"flag",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
       let cls="opt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')"><span class="key">${letters[i]}</span><span>${esc(BY[c].n)}</span></button>`}).join("")}</div>`;
@@ -427,8 +424,8 @@ function viewQuiz(){
     } else
     reveal=`<div class="card lore">
       <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
-      ${reverse?img(q.c,"flag",q.v||0):""}
-      <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p>${variantLine(q.c,q.v||0,"setQVar(%i)")}</div>
+      ${reverse?img(q.c,"flag",q.v||0)+vchips(q.c,q.v||0,"setQVar(%i)"):""}
+      <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p>${useLine(q.c,q.v||0)}</div>
       <p>${esc(f.m)}</p>
       ${miss}
     </div>
@@ -497,7 +494,7 @@ function viewDone(){
   <button class="btn" onclick="startRound(S.mode,S.arg,S.label,S.flt)">Play again</button>
   <button class="btn ghost" onclick="goBack()">Choose another set</button>`;
 }
-function studyVar(btn,i){const en=btn.closest(".entry"),c=en.dataset.c;en.dataset.v=i;en.querySelector(".flink").innerHTML=img(c,"flag sm",i);en.querySelector(".vline").outerHTML=variantLine(c,i,"studyVar(this,%i)")}
+function studyVar(btn,i){const en=btn.closest(".entry"),c=en.dataset.c;en.dataset.v=i;en.querySelector(".flink").innerHTML=img(c,"flag sm",i);en.querySelector(".vchips").outerHTML=vchips(c,i,"studyVar(this,%i)");en.querySelector(".vline").outerHTML=useLine(c,i)}
 function viewStudy(){
   const r=S.region;
   const wide=["Whole world","Everything","All territories"].includes(r);
@@ -509,7 +506,7 @@ function viewStudy(){
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
   const status=f=>mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.parentElement.dataset.v)" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)?variantLine(f.c,0,`studyVar(this,%i)`):""}<p>${esc(f.m)}</p></div></div>`}).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL&&list.length>15?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
@@ -561,37 +558,43 @@ let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
 function openFlag(c,vi=0){
   closeFlag();
   const el=document.createElement("div");el.className="lb";el.id="lb";
-  const v=VARS(c);
+  const v=VARS(c),n=v?v.length:1;
   el.innerHTML=`<div class="lb-top"><span class="nm">${esc(BY[c].n)}</span><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-stage" id="lbStage">${img(c,"flag",vi).replace('loading="lazy"','')}</div>
-    <div class="lb-var" id="lbVar">${variantLine(c,vi,"lbVar(%i)")}</div>
+    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack">${Array.from({length:n},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("")}</div></div>
+    <div class="lb-var" id="lbVar">${useLine(c,vi)}${vchips(c,vi,"lbGo(%i)")}</div>
     <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset${v?" · swipe for the other design":""}</p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
-  LB={c,vi,scale:1,x:0,y:0,pts:new Map(),el,fl:el.querySelector(".flag .fl"),stage:el.querySelector("#lbStage")};
-  LB.baseW=LB.fl.getBoundingClientRect().width;
-  const st=LB.stage;
-  st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};LB.moved=false;st.classList.add("drag")});
+  const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
+  LB={c,vi,n,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track,fls:[...el.querySelectorAll(".lb-slide .flag .fl")]};
+  LB.fl=LB.fls[vi];LB.baseW=LB.fl.getBoundingClientRect().width;
+  lbTrack(false);
+  const st=stage;
+  st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:Date.now()});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};LB.moved=false;st.classList.add("drag")});
   st.addEventListener("pointermove",e=>{if(!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start;
-    if(cur.length===1&&s0.pts.length===1){LB.x=s0.x+(cur[0].x-s0.pts[0].x);LB.y=s0.y+(cur[0].y-s0.pts[0].y)}
+    if(cur.length===1&&s0.pts.length===1){
+      const dx=cur[0].x-s0.pts[0].x,dy=cur[0].y-s0.pts[0].y;
+      if(LB.scale===1&&LB.n>1){
+        // At normal size the strip of designs follows the finger; it resists past the first and last.
+        const W=st.clientWidth,atEnd=(LB.vi===0&&dx>0)||(LB.vi===LB.n-1&&dx<0);LB.sx=atEnd?dx*0.3:dx;lbTrack(false);if(Math.abs(dx)>6)LB.moved=true}
+      else if(LB.scale>1){LB.x=s0.x+dx;LB.y=s0.y+dy;if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;lbApply()}
+    }
     else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));const ns=Math.min(8,Math.max(1,want)),r=ns/s0.scale;
       const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},C=lbCenter();
       // keep the point under the fingers' midpoint fixed while scaling, then follow the midpoint
-      LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y)}
-    if(Math.abs(LB.x-s0.x)+Math.abs(LB.y-s0.y)>6||LB.scale!==s0.scale)LB.moved=true;
-    lbApply()});
+      LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y);LB.sx=0;LB.moved=true;lbApply();lbTrack(false)}
+  });
   // Double tap by hand: touch devices don't send dblclick. Two quick taps near the same spot, with no drag between.
   const up=e=>{LB.pts.delete(e.pointerId);const s0=LB.start;
-    // At normal size a sideways drag flips to the next design instead of panning.
-    if(VARS(LB.c)&&s0&&s0.scale===1&&s0.pts.length===1&&LB.scale===1&&Math.abs(LB.x)>40&&Math.abs(LB.x)>Math.abs(LB.y)){const d=LB.x<0?1:-1;LB.x=0;LB.y=0;lbApply();lbVar((LB.vi+d+VARS(LB.c).length)%VARS(LB.c).length);LB.moved=true}
-    else if(s0&&s0.scale===1&&LB.scale===1&&(LB.x||LB.y)){LB.x=0;LB.y=0;lbApply()}
-    LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};if(!LB.pts.size)st.classList.remove("drag");
+    if(LB.sx){const W=st.clientWidth,dt=Math.max(1,Date.now()-s0.at),fast=Math.abs(LB.sx)/dt>0.5;
+      const go=(Math.abs(LB.sx)>W*0.2||fast)?(LB.sx<0?1:-1):0;LB.sx=0;lbGo(Math.min(LB.n-1,Math.max(0,LB.vi+go)))}
+    LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};if(!LB.pts.size)st.classList.remove("drag");
     if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
       if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){LB.lastTap=null;lbToggle({x:e.clientX,y:e.clientY})}else LB.lastTap={at:now,x:e.clientX,y:e.clientY}}};
   st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
   st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
   st.addEventListener("dblclick",e=>{if(e.pointerType==="touch"||e.sourceCapabilities?.firesTouchEvents)return;lbToggle({x:e.clientX,y:e.clientY})});
-  el.addEventListener("click",e=>{if(e.target===st&&!LB.moved)closeFlag()});
+  el.addEventListener("click",e=>{if((e.target===st||e.target.classList.contains("lb-slide"))&&!LB.moved)closeFlag()});
 }
 // The flag is centred in the stage and transformed as translate(x,y) scale(s) about its own centre C, so a local
 // offset q shows at C+t+s·q. Zooming by f about a screen point P keeps the point under P fixed: t' = (1-f)(P-C) + f·t.
@@ -602,7 +605,9 @@ function lbZoom(f,P){if(!LB)return;const ns=Math.min(8,Math.max(1,LB.scale*f));f
   if(ns===1){LB.x=0;LB.y=0}lbApply()}
 // Zoom by resizing the element rather than transform:scale, so the SVG is re-rendered sharp at every level.
 function lbApply(){if(!LB)return;LB.fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px)`}
-function lbVar(i){if(!LB||!VARS(LB.c))return;LB.vi=i;LB.scale=1;LB.x=0;LB.y=0;LB.stage.innerHTML=img(LB.c,"flag",i).replace('loading="lazy"','');LB.fl=LB.stage.querySelector(".flag .fl");LB.baseW=LB.fl.getBoundingClientRect().width;$("#lbVar").innerHTML=variantLine(LB.c,i,"lbVar(%i)")}
+// The strip of designs: slide vi is in view, offset by the finger while dragging. Animated only when snapping.
+function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(calc(${-100*LB.vi}% + ${LB.sx}px))`}
+function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();$("#lbVar").innerHTML=useLine(LB.c,i)+vchips(LB.c,i,"lbGo(%i)")}LB.sx=0;lbTrack(true)}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
 // ---------- BOOT ----------
