@@ -11,6 +11,7 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 <title>Flags of the World</title>
+<link rel="icon" href="icons/favicon.ico" sizes="32x32 48x48">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="icon" type="image/png" sizes="64x64" href="icons/icon-64.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -97,7 +98,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0;transition:transform .08s}
 .tile:active,.opt:active,.fopt:active{transform:scale(.985)}
-.tile .name{font-family:var(--display);font-weight:700;font-size:18px}
+.tile .name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15}
+.tile .name.sm{font-size:15px}
 .tile .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .bar{height:6px;background:var(--tint);border-radius:3px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
@@ -149,7 +151,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .wl{color:inherit;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);transition:text-decoration-color .12s}
 .wl:hover,.wl:focus-visible{text-decoration-color:var(--accent);color:var(--accent)}
 .capital .wl{text-decoration-thickness:1px}
-a.flink{display:block;border-radius:4px}
+.flink{display:block;width:100%;border-radius:4px;text-align:left}
 .tabs{display:flex;gap:6px;background:var(--tint);padding:4px;border-radius:10px}
 .tabs button{flex:1;padding:8px;border-radius:7px;font-weight:600;font-size:14px;transition:background .12s}
 .tabs button.on,.seg .btns button.on{color:var(--accent-ink);background:var(--accent)}
@@ -177,6 +179,20 @@ select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px soli
 .kbd{display:none;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 @media (hover:hover) and (pointer:fine){.kbd{display:flex}}
 kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(8,12,20,.96);display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.lb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;color:#eef1f7}
+.lb-top .nm{font-family:var(--display);font-weight:700;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-top .ctl{display:flex;gap:6px;flex:none}
+.lb-top button{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.1);color:#eef1f7;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center}
+.lb-top button:focus-visible{outline:3px solid #8fb0ff}
+.lb-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none;cursor:grab;padding:12px}
+.lb-stage.drag{cursor:grabbing}
+.lb .flag{width:min(100%,calc((100vh - 140px) * 4 / 3));max-width:100%;transform-origin:center;will-change:transform;user-select:none}
+.lb .flag .fl{box-shadow:0 0 0 1px rgba(255,255,255,.15),0 20px 60px rgba(0,0,0,.5)}
+.lb .flag img{pointer-events:none;-webkit-user-drag:none}
+.lb-hint{text-align:center;font-size:12px;color:#a3adc2;padding:0 16px 10px}
+.flink{cursor:zoom-in}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -390,7 +406,72 @@ const RAW=[
 ["tv","Tuvalu",OC,"Funafuti","A light blue field with the Union Jack in the canton and nine yellow stars in the fly, one for each of the nine islands."],
 ["vu","Vanuatu",OC,"Port Vila","A boar's tusk (prosperity) around two namele fern fronds (peace) on black for the people, with a yellow 'Y' for the shape of the archipelago and the light of the Gospel. Red for blood, green for the land."]
 ];
-const FLAGS=RAW.map(([c,n,r,cap,m])=>({c,n,r,cap,m}));
+const T1="Caribbean & Atlantic territories",T2="Pacific territories",T3="Europe, Asia & Indian Ocean territories",T4="Nations & regions",T5="Organisations";
+const SETS=[T1,T2,T3,T4,T5]; // territories, regions and organisations: not countries, so outside Flag Lord and the country count
+// Extra flags: [code, name, set, capital/seat, blurb]
+const EXTRA=[
+["ai","Anguilla",T1,"The Valley","A British Blue Ensign with the territory's arms: three orange dolphins circling on white above a turquoise band, for endurance, unity and strength, and the sea. The dolphins come from a 1967 flag flown during Anguilla's break from Saint Kitts."],
+["aw","Aruba",T1,"Oranjestad","Light blue for the sea around the island, two narrow yellow stripes for abundance and the prosperity brought by gold, aloe and tourism, and a red four-pointed star edged in white for the island itself, the four points of the compass and the many origins of its people. White stands for peace and the beaches. Adopted in 1976."],
+["bm","Bermuda",T1,"Hamilton","Unusually for a British territory, a Red Ensign rather than blue. The shield shows a red lion holding a smaller shield on which the Sea Venture wrecks on Bermuda's rocks in 1609, the event that led to settlement."],
+["cw","Curaçao",T1,"Willemstad","Blue for the sea and sky, split by a yellow stripe for the sun, with two white stars for Curaçao and its small neighbour Klein Curaçao. The stars' five points stand for the five continents the islanders came from."],
+["ky","Cayman Islands",T1,"George Town","A British Blue Ensign with the arms: three green stars on blue-and-white waves for the three islands, a gold lion for England, a turtle and pineapple above, and the motto 'He hath founded it upon the seas'."],
+["fk","Falkland Islands",T1,"Stanley","A British Blue Ensign with the arms: a ram for the sheep farming that long sustained the islands, above the ship Desire, whose captain John Davis is credited with the first sighting in 1592, and the motto 'Desire the right'."],
+["gl","Greenland",T1,"Nuuk","Erfalasorput, 'our flag': a disc split red over white on a field split white over red. The red half-disc is the sun sinking into the ocean and the white half is icebergs and pack ice, on a white band for the ice cap and a red band for the sea. Adopted in 1985 using the colours of Denmark's flag."],
+["gs","South Georgia and the South Sandwich Islands",T1,"King Edward Point","A British Blue Ensign with the arms: a lion holding a torch, a reindeer (introduced by whalers), a fur seal and a macaroni penguin as supporters, and the motto 'Leo terram propriam protegat', the lion shall protect his own land."],
+["ms","Montserrat",T1,"Brades (de facto)","A British Blue Ensign with a shield showing a woman in green holding a cross and a harp: Erin, the personification of Ireland, recalling the Irish settlers of the 1600s who gave the island its 'Emerald Isle of the Caribbean' nickname."],
+["pr","Puerto Rico",T1,"San Juan","Five red and white stripes with a white star on a blue triangle, designed in 1895 by exiles in New York as a deliberate colour-swap of Cuba's flag. Red for the blood of patriots, white for liberty, the triangle for the three branches of government."],
+["sx","Sint Maarten",T1,"Philipsburg","Red over blue with a white triangle at the hoist, the Philippines layout in Dutch colours, with the arms: the courthouse, a sprig of sage, the monument to Dutch-French friendship, and a pelican with the sun."],
+["tc","Turks and Caicos Islands",T1,"Cockburn Town","A British Blue Ensign with a yellow shield showing a conch shell, a spiny lobster and a Turk's head cactus, the local products that replaced an earlier badge of salt piles, one of which was mistaken for an igloo at the Admiralty and given a door."],
+["vg","British Virgin Islands",T1,"Road Town","A British Blue Ensign with the arms: Saint Ursula in white holding a lamp, surrounded by eleven lamps for her companions, and the motto 'Vigilate', be watchful. Columbus named the islands for the saint and her virgins."],
+["vi","United States Virgin Islands",T1,"Charlotte Amalie","A simplified American eagle on white holding a sprig of laurel and three arrows, for the three main islands, between the blue letters V and I. The eagle's shield uses the blue of the US flag."],
+["mq","Martinique",T1,"Fort-de-France","Red, green and black, the pan-African colours, in a design used by Martinican independence activists since 1968 and adopted by the island's Assembly in February 2023 after a public vote whose winning entry was withdrawn. It is flown alongside the French tricolour; the old snake flag, from a 1766 edict and linked to the slave trade, was dropped in 2018."],
+["sh-hl","Saint Helena",T1,"Jamestown","A British Blue Ensign with a shield: a three-masted ship flying the St George's cross between two cliffs, with the Saint Helena plover, the island's endemic wirebird, in the chief."],
+["sh-ac","Ascension Island",T1,"Georgetown","A British Blue Ensign with the arms, granted in 2012 and flown from 2013: a shield of three white terns on a wavy sea with a green chevron, supported by two green turtles, with a sailing ship on a green mound in the crest."],
+["sh-ta","Tristan da Cunha",T1,"Edinburgh of the Seven Seas","A British Blue Ensign with the arms: a Tristan longboat above a crown, flanked by two rock lobsters, the island's main export, and the motto 'Our faith is our strength'. The arms date from 2002."],
+
+["as","American Samoa",T2,"Pago Pago","A bald eagle on white flies across a blue field, holding a fue (fly whisk, for wisdom) and an uatogi (war club, for the government's power), traditional Samoan symbols of chiefly authority, in the red, white and blue of the United States."],
+["ck","Cook Islands",T2,"Avarua","A British Blue Ensign with a ring of fifteen white stars, one for each of the fifteen islands. The islands are self-governing in free association with New Zealand."],
+["gu","Guam",T2,"Hagåtña","A dark blue field with a red border and, at centre, an almond-shaped seal showing a proa sailing in Agana Bay beneath a coconut palm, with the island's name across it. The shape recalls a Chamorro slingstone."],
+["mp","Northern Mariana Islands",T2,"Saipan","On blue for the Pacific, a white star for the United States sits on a grey latte stone, the pillar of ancient Chamorro houses, ringed by a mwarmwar, the Carolinian flower garland."],
+["nc","New Caledonia",T2,"Nouméa","The Kanak flag flies alongside the French tricolour. Blue for the sky and ocean, red for the blood of the independence struggle, green for the land, with a yellow disc for the sun bearing a black flèche faîtière, the carved spire of a chief's house."],
+["nf","Norfolk Island",T2,"Kingston","A Norfolk Island pine in dark green on white between two green bands, in the vertical layout of Canada's flag. The tree is the island's native symbol."],
+["nu","Niue",T2,"Alofi","A golden-yellow field, unusual among British-style flags, with the Union Jack in the canton bearing a blue disc and a yellow star, flanked by four more stars for the Southern Cross. Yellow stands for the people's warmth and their ties to New Zealand."],
+["pf","French Polynesia",T2,"Papeete","Red and white bands around a disc showing a Polynesian outrigger canoe on blue-and-white waves under a sun, its crew of five drawn as stars standing for the five archipelagos. Flown alongside the French tricolour."],
+["pn","Pitcairn Islands",T2,"Adamstown","A British Blue Ensign with arms showing the anchor and Bible of HMS Bounty, whose mutineers settled the island in 1790, on a shield of blue, yellow and green, topped by a wheelbarrow and a miro plant."],
+["tk","Tokelau",T2,"None","A Tokelauan canoe in yellow sails toward the Southern Cross on blue, the stars guiding the territory's journey toward the best form of government for its people. Adopted in 2009; Tokelau is administered by New Zealand."],
+["wf","Wallis and Futuna",T2,"Mata-Utu","An unofficial local flag: red with four white triangles arranged around the centre, formed by a white saltire, and the French tricolour in the canton. The French flag is the official one."],
+["cx","Christmas Island",T2,"Flying Fish Cove","Green and blue divided diagonally, for the land and the sea, with the Southern Cross on the blue, a golden bosun bird (the island's white-tailed tropicbird) on the green, and a gold disc showing a map of the island."],
+["cc","Cocos (Keeling) Islands",T2,"West Island","Green and gold, Australia's national colours, with a gold disc holding a palm tree for the islands' tropical plants, a crescent for the islands' Malay Muslim population, and the Southern Cross for Australia, which administers the territory."],
+
+["ax","Åland",T3,"Mariehamn","A red Nordic cross outlined in yellow on blue: Sweden's colours with Finland's red added, for a Swedish-speaking autonomous region of Finland. Officially adopted in 1954."],
+["fo","Faroe Islands",T3,"Tórshavn","Merkið, 'the banner': a red Nordic cross outlined in blue on white. White for the sea foam and the clear sky, red and blue for the traditional Faroese colours and the other Nordic flags. First raised in 1919, recognised in 1940."],
+["gi","Gibraltar",T3,"Gibraltar","A white field over a red band, with a red three-towered castle and a gold key hanging from its gate: Gibraltar as the key to the Mediterranean. The arms were granted by Spain in 1502."],
+["gg","Guernsey",T3,"St Peter Port","The red cross of St George with a gold Norman cross inside it, added in 1985 to distinguish it from England's flag and to recall the island's ties to the Duchy of Normandy, which gave it the gold cross of William the Conqueror's banner."],
+["im","Isle of Man",T3,"Douglas","The triskelion, three armoured legs joined at the thigh, on red. The symbol dates from the 13th century and comes with the motto 'Quocunque jeceris stabit', whichever way you throw it, it will stand."],
+["je","Jersey",T3,"St Helier","A red saltire on white, in use since at least the 18th century, with the arms of Jersey, three gold leopards on red, added above the centre under a Plantagenet crown in 1981."],
+["hk","Hong Kong",T3,"Hong Kong","A white five-petalled Bauhinia blakeana flower, Hong Kong's emblem, on red, with a red star in each petal. Red matches China's flag; the flower stands for harmony between Hong Kong and the mainland. Adopted in 1990 and first flown at the 1997 handover."],
+["mo","Macau",T3,"Macau","A white lotus flower above a stylised bridge and water, with five gold stars from China's flag, on green. The lotus is Macau's symbol, and the bridge is the Governor Nobre de Carvalho Bridge. Approved in 1993 and first flown at the 1999 handover from Portugal."],
+["io","British Indian Ocean Territory",T3,"Diego Garcia","A British ensign whose field is blue-and-white wavy lines for the Indian Ocean, with the Union Jack in the canton and a palm tree rising above a crown. Granted by Queen Elizabeth II in 1990 for the territory's 25th anniversary."],
+["tf","French Southern and Antarctic Lands",T3,"Saint-Pierre, Réunion","The French tricolour in the canton of a blue field, with the territory's monogram TAAF in white and five stars, usually read as its five districts, including the Kerguelen and Crozet islands and Adélie Land in Antarctica."],
+["eh","Western Sahara",T3,"Laayoune (claimed); Tifariti (provisional)","The flag of the Sahrawi Arab Democratic Republic: the Palestinian-style black, white and green stripes with a red triangle, plus a red crescent for Islam and a red star for the Arab republic at centre. Used by the Polisario Front, which claims the territory Morocco controls."],
+["aq","Antarctica",T3,"None","No official flag, but one widely seen design is a white map of the continent on a UN-style blue field, created by Graham Bartram in 1996, flown at some Antarctic bases and used as the Antarctica emoji. The blue stands for neutrality; the continent is governed by treaty."],
+
+["gb-eng","England",T4,"London","The red cross of Saint George on white, England's patron saint since the 1300s. It is one of the three crosses layered into the Union Jack."],
+["gb-sct","Scotland",T4,"Edinburgh","The Saltire: a white diagonal cross on blue for Saint Andrew, who was said to have been crucified on an X-shaped cross. Legend dates it to a battle in 832; it is one of the oldest national flags in use."],
+["gb-wls","Wales",T4,"Cardiff","Y Ddraig Goch, the red dragon, on a field split white over green, the Tudor colours. The dragon is a symbol of Wales going back to Welsh legend; the flag was made official only in 1959. Wales is the one home nation not represented on the Union Jack."],
+["gb-nir","Northern Ireland",T4,"Belfast","The Ulster Banner: the red cross of St George bearing a white six-pointed star with the Red Hand of Ulster and a crown. It was the government flag from 1953 until 1972 and has no official status now, though it is still used in sport."],
+["es-ct","Catalonia",T4,"Barcelona","The Senyera: four red stripes on gold, one of the oldest heraldic designs in Europe, from the arms of the medieval Counts of Barcelona and Crown of Aragon. The same red and gold bars appear today on the coat of arms of Spain."],
+["es-ga","Galicia",T4,"Santiago de Compostela","A white field crossed by a diagonal light-blue band, said to echo the old maritime flag of the port of A Coruña. The official version adds the Galician arms: a gold chalice and crosses on blue."],
+["es-pv","Basque Country",T4,"Vitoria-Gasteiz","The Ikurriña: a white cross over a green saltire on red, designed in 1894 by the Arana brothers for Biscay. Red for the people, green for the Oak of Gernika and the Basque laws, the white cross for Catholicism."],
+["ic","Canary Islands",T4,"Las Palmas and Santa Cruz de Tenerife","White, blue and yellow vertical stripes, with the arms at centre on the official version: seven islands on a shield between two dogs, which the islands' name may come from (Latin canariae, 'of dogs'). Adopted in 1982."],
+
+["eu","European Union",T5,"Brussels","A circle of twelve gold stars on blue, adopted by the Council of Europe in 1955 and taken up by the EU in 1985. The number twelve is a symbol of completeness, not a count of members; it never changes."],
+["un","United Nations",T5,"New York","A world map centred on the North Pole, enclosed by olive branches of peace, in white on light blue, a colour chosen as the opposite of red, the colour of war. The emblem was adopted in 1946 and the flag in 1947."],
+["arab","Arab League",T5,"Cairo","A gold chain of 22 links, one per member state, surrounding a crescent and the League's name in Arabic, with two olive branches, on green."],
+["asean","ASEAN",T5,"Jakarta","Ten rice stalks bound together in a red circle on blue, one for each of the ten members of the Association of Southeast Asian Nations when the flag was adopted in 1997; Timor-Leste became the eleventh member in 2025. Blue for peace and stability, red for courage, white for purity and yellow for prosperity."]
+];
+const FLAGS=[...RAW.map(([c,n,r,cap,m])=>({c,n,r,cap,m,sov:true})),...EXTRA.map(([c,n,r,cap,m])=>({c,n,r,cap,m,sov:false}))];
+const COUNTRIES=FLAGS.filter(f=>f.sov);
 const BY=Object.fromEntries(FLAGS.map(f=>[f.c,f]));
 const REGIONS=[AF,AM,AS,EU,OC]; // alphabetical; drives the Quiz tiles and the Study dropdown
 
@@ -437,7 +518,7 @@ const mastered=c=>rec(c).s>=MASTER;
 const seen=c=>{const r=rec(c);return r.c+r.w>0};
 
 // Alternative names accepted in typed mode.
-const ALIASES={us:["usa","united states of america","america","u.s.","u.s.a."],gb:["uk","britain","great britain","england","united kingdom of great britain and northern ireland"],
+const ALIASES={vg:["bvi"],vi:["usvi","us virgin islands"],eh:["sahrawi arab democratic republic","sadr","sahrawi republic"],tf:["taaf","french southern territories"],io:["biot","chagos islands","chagos"],arab:["league of arab states"],eu:["eu"],un:["un","united nations organization"],"es-pv":["euskadi","basque"],"es-ct":["catalunya"],"es-ga":["galiza"],"gb-wls":["cymru"],"gb-sct":["alba"],mp:["northern marianas","cnmi"],"sh-hl":["st helena"],pn:["pitcairn"],cc:["cocos islands","keeling islands"],fo:["faroes","faeroe islands"],ax:["aland","aland islands"],gl:["kalaallit nunaat"],pf:["tahiti"],nc:["kanaky"],mq:["martinica"],gs:["south georgia"],"sh-ta":["tristan"],"sh-ac":["ascension"],us:["usa","united states of america","america","u.s.","u.s.a."],gb:["uk","britain","great britain","england","united kingdom of great britain and northern ireland"],
  cz:["czech republic"],tr:["turkey","turkiye"],ci:["ivory coast","cote d'ivoire"],mm:["burma"],sz:["swaziland"],tl:["east timor","timor leste"],cv:["cape verde"],
  cd:["drc","democratic republic of the congo","congo kinshasa","dr congo","congo-kinshasa","zaire"],cg:["congo","congo brazzaville","congo-brazzaville","republic of congo"],
  nl:["holland"],va:["vatican","holy see"],mk:["macedonia","north macedonia"],kp:["dprk","democratic people's republic of korea"],kr:["korea","republic of korea"],
@@ -491,14 +572,15 @@ const BADGES=[
  {id:"streak100",e:"💯",n:"Centurion",h:"100 correct in a row."},
  {id:"m50",e:"🎖️",n:"Collector",h:"50 flags learned."},
  {id:"m100",e:"📚",n:"Vexillologist",h:"100 flags learned."},
- {id:"m197",e:"🏆",n:"Completionist",h:"Every flag learned."},
+ {id:"m197",e:"🏆",n:"Completionist",h:"Every country's flag learned."},
+ {id:"carto",e:"🗺️",n:"Cartographer",h:"Every territory, region and organisation flag learned."},
  {id:"first",e:"🚩",n:"First Steps",h:"Finish a round."}
 ];
 const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
 function checkBadges(){
   const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length,perfect=right===n;
   const D={easy:0,medium:1,hard:2,expert:3}[S.diff]||0,typed=S.diff==="expert"&&S.dir==="name";
-  const mc=FLAGS.filter(f=>mastered(f.c)).length,earned=[];
+  const mc=COUNTRIES.filter(f=>mastered(f.c)).length,earned=[];
   const award=id=>{if(!badges[id]){badges[id]=Date.now();earned.push(id)}};
   award("first");
   if(perfect&&n>=10&&D>=1)award("clean10");
@@ -508,16 +590,17 @@ function checkBadges(){
   if(S.mode==="all"&&S.full)award("tour");
   if(S.mode==="group"&&perfect){const t=badges._twins=badges._twins||[];if(!t.includes(S.arg))t.push(S.arg);if(t.length>=10)award("twins")}
   if(S.best>=25)award("streak25");if(S.best>=50)award("streak50");if(S.best>=100)award("streak100");
-  if(mc>=50)award("m50");if(mc>=100)award("m100");if(mc>=FLAGS.length)award("m197");
+  if(mc>=50)award("m50");if(mc>=100)award("m100");if(mc>=COUNTRIES.length)award("m197");
+  if(FLAGS.filter(f=>!f.sov).every(f=>mastered(f.c)))award("carto");
   if(S.mode==="region"&&S.full&&perfect&&typed)award("lord-"+S.arg);
   if(S.mode==="all"&&S.full&&perfect&&typed)award("lord");
   saveB();return earned;
 }
 // Wikipedia article names where they differ from the display name; THE marks "Flag of the …".
-const WIKI={us:"United_States",gb:"United_Kingdom",nl:"Netherlands",ph:"Philippines",gm:"The_Gambia",bs:"The_Bahamas",cz:"Czech_Republic",cd:"Democratic_Republic_of_the_Congo",cg:"Republic_of_the_Congo",ae:"United_Arab_Emirates",do:"Dominican_Republic",cf:"Central_African_Republic",mh:"Marshall_Islands",sb:"Solomon_Islands",mv:"Maldives",km:"Comoros",fm:"Federated_States_of_Micronesia",tw:"Taiwan",ps:"State_of_Palestine",ci:"Ivory_Coast",tr:"Turkey",tl:"East_Timor",va:"Vatican_City",kp:"North_Korea",kr:"South_Korea",cv:"Cape_Verde",st:"São_Tomé_and_Príncipe",ir:"Iran",sy:"Syria",ru:"Russia",ye:"Yemen",cn:"China",la:"Laos",bn:"Brunei",tz:"Tanzania",eg:"Egypt",vn:"Vietnam",bo:"Bolivia",ve:"Venezuela",xk:"Kosovo"};
+const WIKI={"sh-hl":"Saint_Helena","sh-ac":"Ascension_Island","sh-ta":"Tristan_da_Cunha","es-pv":"Basque_Country_(autonomous_community)","es-ga":"Galicia_(Spain)",eu:"European_Union",tf:"French_Southern_and_Antarctic_Lands",eh:"Western_Sahara",us:"United_States",gb:"United_Kingdom",nl:"Netherlands",ph:"Philippines",gm:"The_Gambia",bs:"The_Bahamas",cz:"Czech_Republic",cd:"Democratic_Republic_of_the_Congo",cg:"Republic_of_the_Congo",ae:"United_Arab_Emirates",do:"Dominican_Republic",cf:"Central_African_Republic",mh:"Marshall_Islands",sb:"Solomon_Islands",mv:"Maldives",km:"Comoros",fm:"Federated_States_of_Micronesia",tw:"Taiwan",ps:"State_of_Palestine",ci:"Ivory_Coast",tr:"Turkey",tl:"East_Timor",va:"Vatican_City",kp:"North_Korea",kr:"South_Korea",cv:"Cape_Verde",st:"São_Tomé_and_Príncipe",ir:"Iran",sy:"Syria",ru:"Russia",ye:"Yemen",cn:"China",la:"Laos",bn:"Brunei",tz:"Tanzania",eg:"Egypt",vn:"Vietnam",bo:"Bolivia",ve:"Venezuela",xk:"Kosovo"};
 const THE=new Set(["us","gb","nl","ph","gm","bs","cz","cd","cg","ae","do","cf","mh","sb","mv","km","fm"]);
-const FLAGWIKI={tw:"Flag_of_the_Republic_of_China",ps:"Flag_of_Palestine",gm:"Flag_of_the_Gambia",bs:"Flag_of_the_Bahamas"};
-const CAPWIKI={us:"Washington, D.C.",lu:"Luxembourg City",sc:"Victoria, Seychelles",gy:"Georgetown, Guyana",jm:"Kingston, Jamaica",ag:"St. John's, Antigua and Barbuda",gd:"St. George's, Grenada",cr:"San José, Costa Rica",dj:"Djibouti (city)",nr:"Yaren District",ki:"South Tarawa",ly:"Tripoli, Libya",bs:"Nassau, Bahamas",sm:"City of San Marino",sg:"Singapore",mc:"Monaco",va:"Vatican City",ps:"Ramallah",bo:"Sucre",cl:"Santiago",sv:"San Salvador",pa:"Panama City",gt:"Guatemala City",mx:"Mexico City",kw:"Kuwait City"};
+const FLAGWIKI={"ai":"Flag_of_Anguilla","aw":"Flag_of_Aruba","bm":"Flag_of_Bermuda","cw":"Flag_of_Curaçao","ky":"Flag_of_the_Cayman_Islands","fk":"Flag_of_the_Falkland_Islands","gl":"Flag_of_Greenland","gs":"Flag_of_South_Georgia_and_the_South_Sandwich_Islands","ms":"Flag_of_Montserrat","pr":"Flag_of_Puerto_Rico","sx":"Flag_of_Sint_Maarten","tc":"Flag_of_the_Turks_and_Caicos_Islands","vg":"Flag_of_the_British_Virgin_Islands","vi":"Flag_of_the_United_States_Virgin_Islands","mq":"Flag_of_Martinique","sh-hl":"Flag_of_Saint_Helena","sh-ac":"Flag_of_Ascension_Island","sh-ta":"Flag_of_Tristan_da_Cunha","as":"Flag_of_American_Samoa","ck":"Flag_of_the_Cook_Islands","gu":"Flag_of_Guam","mp":"Flag_of_the_Northern_Mariana_Islands","nc":"Flags_of_New_Caledonia","nf":"Flag_of_Norfolk_Island","nu":"Flag_of_Niue","pf":"Flag_of_French_Polynesia","pn":"Flag_of_the_Pitcairn_Islands","tk":"Flag_of_Tokelau","wf":"Flag_of_Wallis_and_Futuna","cx":"Flag_of_Christmas_Island","cc":"Flag_of_the_Cocos_(Keeling)_Islands","ax":"Flag_of_Åland","fo":"Flag_of_the_Faroe_Islands","gi":"Flag_of_Gibraltar","gg":"Flag_of_Guernsey","im":"Flag_of_the_Isle_of_Man","je":"Flag_of_Jersey","hk":"Flag_of_Hong_Kong","mo":"Flag_of_Macau","io":"Flag_of_the_British_Indian_Ocean_Territory","tf":"Flag_of_the_French_Southern_and_Antarctic_Lands","eh":"Flag_of_the_Sahrawi_Arab_Democratic_Republic","aq":"Flags_of_Antarctica","gb-eng":"Flag_of_England","gb-sct":"Flag_of_Scotland","gb-wls":"Flag_of_Wales","gb-nir":"Flag_of_Northern_Ireland","es-ct":"Flag_of_Catalonia","es-ga":"Flag_of_Galicia","es-pv":"Ikurriña","ic":"Flag_of_the_Canary_Islands","eu":"Flag_of_Europe","un":"Flag_of_the_United_Nations","arab":"Flag_of_the_Arab_League","asean":"Flag_of_ASEAN",tw:"Flag_of_the_Republic_of_China",ps:"Flag_of_Palestine",gm:"Flag_of_the_Gambia",bs:"Flag_of_the_Bahamas"};
+const CAPWIKI={ai:"The Valley, Anguilla",bm:"Hamilton, Bermuda",ky:"George Town, Cayman Islands",fk:"Stanley, Falkland Islands","sh-ac":"Georgetown, Ascension Island","sh-hl":"Jamestown, Saint Helena",nf:"Kingston, Norfolk Island",im:"Douglas, Isle of Man",un:"New York City",sx:"Philipsburg, Sint Maarten",pn:"Adamstown, Pitcairn Islands",cc:"West Island, Cocos (Keeling) Islands",tf:"Saint-Pierre, Réunion",ic:"Las Palmas",ms:"Brades",gu:"Hagåtña",us:"Washington, D.C.",lu:"Luxembourg City",sc:"Victoria, Seychelles",gy:"Georgetown, Guyana",jm:"Kingston, Jamaica",ag:"St. John's, Antigua and Barbuda",gd:"St. George's, Grenada",cr:"San José, Costa Rica",dj:"Djibouti (city)",nr:"Yaren District",ki:"South Tarawa",ly:"Tripoli, Libya",bs:"Nassau, Bahamas",sm:"City of San Marino",sg:"Singapore",mc:"Monaco",va:"Vatican City",ps:"Ramallah",bo:"Sucre",cl:"Santiago",sv:"San Salvador",pa:"Panama City",gt:"Guatemala City",mx:"Mexico City",kw:"Kuwait City"};
 function links(c){
   const name=(WIKI[c]||BY[c].n).replace(/ /g,"_");
   const flag="https://en.wikipedia.org/wiki/"+(FLAGWIKI[c]||"Flag_of_"+(THE.has(c)?"the_":"")+name);
@@ -528,7 +611,7 @@ function links(c){
 const wl=(url,text,title="Wikipedia")=>`<a class="wl" href="${url}" target="_blank" rel="noopener" title="${title}">${text}</a>`;
 // Country name as a quiet link; capital line carries the capital and flag-article links.
 function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
-function capLine(c){const L=links(c),f=BY[c];return `${L.sameCap?esc(f.cap):wl(L.cap,esc(f.cap))} · ${f.r} · ${wl(L.flag,"Flag","The flag on Wikipedia")}`}
+function capLine(c){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))} · ${f.r} · ${wl(L.flag,"Flag","The flag on Wikipedia")}`}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
@@ -544,7 +627,8 @@ const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&q
 
 function poolFor(mode,arg){
   if(mode==="region")return FLAGS.filter(f=>f.r===arg).map(f=>f.c);
-  if(mode==="all")return FLAGS.map(f=>f.c);
+  if(mode==="all")return COUNTRIES.map(f=>f.c);
+  if(mode==="everything")return FLAGS.map(f=>f.c);
   if(mode==="weak")return FLAGS.map(f=>f.c).filter(c=>rec(c).w>0&&!mastered(c));
   if(mode==="group")return GROUPS[arg].f.slice();
   return [];
@@ -619,6 +703,7 @@ function next(){ clearTimeout(S.timer);S.timer=null; if(S.i+1<S.qs.length){S.i++
 function showLore(){const q=S.qs[S.i];q.lore=true;render()}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
+  if(LB){if(e.key==="Escape")closeFlag();return}
   if(S.view!=="quiz"||e.metaKey||e.ctrlKey||e.altKey)return;
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
   const q=S.qs[S.i];
@@ -638,11 +723,11 @@ function render(){
   if(S.view==="badges")return app.innerHTML=viewBadges();
   return app.innerHTML=viewHome();
 }
-function tiles(){
-  return REGIONS.map(r=>{
+function tiles(list=REGIONS){
+  return list.map(r=>{
     const all=FLAGS.filter(f=>f.r===r);const m=all.filter(f=>mastered(f.c)).length;
     return `<button class="tile" onclick="startRound('region','${r}','${r}')">
-      <span class="name">${r}</span>
+      <span class="name${r.length>14?" sm":""}">${r}</span>
       <span class="count">${badges["lord-"+r]?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned"}</span>
       <span class="bar"><i style="width:${Math.round(100*m/all.length)}%"></i></span></button>`}).join("");
 }
@@ -680,9 +765,13 @@ function viewHome(){
       <span class="note">${SET.pace==="drill"?"Correct answers advance automatically.":"Shows what the flag means after each answer."}</span></div>
   </div>
   <div class="tiles">${tiles()}
-    <button class="tile wide" onclick="startRound('all',null,'Whole world')"><span class="name">Whole world</span><span class="count">${total} flags</span></button>
+    <button class="tile wide" onclick="startRound('all',null,'Whole world')"><span class="name">Whole world</span><span class="count">${COUNTRIES.length} countries</span></button>
     <button class="tile wide" onclick="startRound('weak',null,'Weak spots')" ${weak?"":"disabled style='opacity:.5'"}><span class="name">Weak spots</span><span class="count">${weak?weak+" to fix":"nothing missed yet"}</span></button>
     <button class="tile wide" onclick="setTab('badges')"><span class="name">Badges</span><span class="count">${nb} / ${BADGES.length} earned ›</span></button>
+  </div>
+  <p class="eyebrow" style="padding-top:4px">Beyond the countries</p>
+  <div class="tiles">${tiles(SETS)}
+    <button class="tile wide" onclick="startRound('everything',null,'Everything')"><span class="name">Everything</span><span class="count">${total} flags</span></button>
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>`;
 }
@@ -790,7 +879,7 @@ function viewDone(){
 }
 function viewStudy(){
   const r=S.region;
-  const opts=[...REGIONS,"Whole world","Look-alikes"].map(x=>`<option value="${x}" ${x===r?"selected":""}>${x==="Look-alikes"?"Look-alikes · "+GROUPS.length+" sets":x==="Whole world"?"Whole world · "+FLAGS.length+" flags":x+" · "+FLAGS.filter(f=>f.r===x).length+" flags"}</option>`).join("");
+  const opts=[...REGIONS,"Whole world",...SETS,"Look-alikes"].map(x=>`<option value="${x}" ${x===r?"selected":""}>${x==="Look-alikes"?"Look-alikes · "+GROUPS.length+" sets":x==="Whole world"?"Whole world · "+COUNTRIES.length+" countries":x+" · "+FLAGS.filter(f=>f.r===x).length+" flags"}</option>`).join("");
   let body;
   if(r==="Look-alikes"){
     const order=["Horizontal stripes","Vertical stripes","Cantons & crosses","Discs & stars","Triangles & serrations"];
@@ -798,13 +887,42 @@ function viewStudy(){
     let lastR="";
     body=sorted.map(({g,i,r})=>(r!==lastR?`<p class="eyebrow" style="padding-top:6px">${esc(lastR=r)}</p>`:"")+`<div class="group"><h3>${esc(g.t)}</h3><div class="flags">${g.f.map(c=>`<figure>${img(c,"flag sm")}<figcaption>${esc(BY[c].n)}</figcaption></figure>`).join("")}</div><p class="hint">${esc(g.h)}</p><button class="btn line" onclick="startRound('group',${i},GROUPS[${i}].t)">Quiz me on this set</button></div>`).join("");
   } else {
-    const list=r==="Whole world"?FLAGS.slice().sort((a,b)=>a.n.localeCompare(b.n)):FLAGS.filter(f=>f.r===r);
-    body=list.map(f=>`<div class="entry"><a class="flink" href="${links(f.c).flag}" target="_blank" rel="noopener" title="The flag on Wikipedia">${img(f.c,"flag sm")}</a><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
+    const list=r==="Whole world"?COUNTRIES.slice().sort((a,b)=>a.n.localeCompare(b.n)):FLAGS.filter(f=>f.r===r);
+    body=list.map(f=>`<div class="entry"><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
   }
   return `${shell(`<select id="studySel" onchange="S.region=this.value;render();window.scrollTo(0,0)">${opts}</select>`)}
   <div class="study">${body}</div>
 `;
 }
+
+// ---------- FLAG VIEWER ----------
+let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
+function openFlag(c){
+  closeFlag();
+  const el=document.createElement("div");el.className="lb";el.id="lb";
+  el.innerHTML=`<div class="lb-top"><span class="nm">${esc(BY[c].n)}</span><div class="ctl">
+    <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
+    <div class="lb-stage" id="lbStage">${img(c,"flag").replace('loading="lazy"','')}</div>
+    <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset</p>`;
+  document.body.appendChild(el);document.body.style.overflow="hidden";
+  LB={c,scale:1,x:0,y:0,pts:new Map(),el,fl:el.querySelector(".flag"),stage:el.querySelector("#lbStage")};
+  const st=LB.stage;
+  st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};LB.moved=false;st.classList.add("drag")});
+  st.addEventListener("pointermove",e=>{if(!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start;
+    if(cur.length===1&&s0.pts.length===1){LB.x=s0.x+(cur[0].x-s0.pts[0].x);LB.y=s0.y+(cur[0].y-s0.pts[0].y)}
+    else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const r=d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));LB.scale=Math.min(8,Math.max(1,s0.scale*r));
+      const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};LB.x=s0.x+(m1.x-m0.x);LB.y=s0.y+(m1.y-m0.y)}
+    if(Math.abs(LB.x-s0.x)+Math.abs(LB.y-s0.y)>6||LB.scale!==s0.scale)LB.moved=true;
+    lbApply()});
+  const up=e=>{LB.pts.delete(e.pointerId);LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};if(!LB.pts.size)st.classList.remove("drag")};
+  st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
+  st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015))},{passive:false});
+  st.addEventListener("dblclick",()=>{LB.scale=LB.scale>1?1:2.5;if(LB.scale===1){LB.x=0;LB.y=0}lbApply()});
+  el.addEventListener("click",e=>{if(e.target===st&&!LB.moved)closeFlag()});
+}
+function lbZoom(f){if(!LB)return;LB.scale=Math.min(8,Math.max(1,LB.scale*f));if(LB.scale===1){LB.x=0;LB.y=0}lbApply()}
+function lbApply(){if(!LB)return;LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px) scale(${LB.scale})`}
+function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
 // ---------- BOOT ----------
 load();loadSet();loadB();
