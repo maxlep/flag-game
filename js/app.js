@@ -123,8 +123,8 @@ function links(c){
 const wl=(url,text,title="Wikipedia")=>`<a class="wl" href="${url}" target="_blank" rel="noopener" title="${title}">${text}</a>`;
 // Country name as a quiet link; capital line carries the capital and flag-article links.
 function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
-function capLine(c){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";const y=typeof ADOPTED==="object"&&ADOPTED[c];
-  return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))} · ${f.r} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
+function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";const y=typeof ADOPTED==="object"&&ADOPTED[c];
+  return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+f.r:""} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
@@ -445,7 +445,9 @@ function viewStudy(){
   const letters=[...new Set(list.map(letter))];
   const index=list.length>15?`<div class="alpha" id="alpha">${letters.map(l=>`<span data-l="${l}">${l}</span>`).join("")}</div>`:"";
   let lastL="";
-  const body=list.map(f=>`<div class="entry"${(l=>l!==lastL?` data-l="${lastL=l}"`:"")(letter(f))}><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
+  const mixed=r==="Whole world"||r==="Everything";
+  const status=f=>mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
+  const body=list.map(f=>`<div class="entry"${(l=>l!==lastL?` data-l="${lastL=l}"`:"")(letter(f))}><button class="flink" type="button" onclick="openFlag('${f.c}')" title="View large">${img(f.c,"flag sm")}</button><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span><p>${esc(f.m)}</p></div></div>`).join("");
   const mode=r==="Whole world"?"all":r==="Everything"?"everything":"region",arg=mode==="region"?r:null;
   return `${shell({title:r,stat:list.length+" flags"})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
