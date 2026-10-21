@@ -479,7 +479,12 @@ const REGIONS=[AF,AM,AS,EU,OC]; // alphabetical; drives the Quiz tiles and the S
 const GROUPS=[
  {t:"Chad & Romania",k:"Vertical stripes",f:["td","ro","ad","md"],h:"Chad's blue is officially indigo, Romania's cobalt; in practice they are nearly identical and Chad's shade varies. Andorra and Moldova add a coat of arms (Moldova's has an eagle)."},
  {t:"Red over white",k:"Horizontal stripes",f:["id","mc","pl","sg"],h:"Indonesia and Monaco are red on top (Indonesia is wider). Poland is white on top. Singapore adds a crescent and five stars."},
- {t:"Nordic crosses",k:"Cantons & crosses",f:["dk","se","no","fi","is"],h:"Denmark: white on red. Sweden: yellow on blue. Finland: blue on white. Norway: red with a blue cross. Iceland: blue with a red cross."},
+ {t:"Nordic crosses",k:"Cantons & crosses",f:["dk","se","no","fi","is","fo","ax"],h:"Denmark: white on red. Sweden: yellow on blue. Finland: blue on white. Norway: red with a blue cross. Iceland: blue with a red cross. Faroe Islands: white with a red cross edged in blue. Åland: blue with a red cross edged in yellow."},
+ {t:"Pacific ensigns",k:"Cantons & crosses",f:["au","nz","fj","tv","ck","nu"],h:"Australia: white stars plus the large Commonwealth Star. New Zealand: four red stars. Fiji: light blue with a shield. Tuvalu: light blue with nine stars. Cook Islands: a ring of fifteen stars. Niue: a yellow field."},
+ {t:"Caribbean & Atlantic ensigns",k:"Cantons & crosses",f:["ai","ky","fk","vg","ms","tc","sh-hl","sh-ac","sh-ta","gs","bm"],h:"Only the badge differs. Anguilla: three dolphins. Cayman Islands: three stars on waves. Falklands: a ram over a ship. British Virgin Islands: a woman with lamps. Montserrat: a woman with a harp. Turks and Caicos: a yellow shield with a conch and lobster. St Helena: a ship and a bird. Ascension: terns and turtles. Tristan da Cunha: a longboat and lobsters. South Georgia: a reindeer and a seal. Bermuda is the one on red."},
+ {t:"St George's crosses",k:"Cantons & crosses",f:["gb-eng","ge","gg","gb-nir"],h:"England: the plain red cross. Georgia: four small crosses in the quarters. Guernsey: a gold cross inside the red one. Northern Ireland: a star with a red hand at centre."},
+ {t:"Saltires",k:"Cantons & crosses",f:["gb-sct","je","jm","bi"],h:"Scotland: white on blue. Jersey: red on white with three leopards above the centre. Jamaica: gold with black and green quarters. Burundi: white on red and green with three stars."},
+ {t:"Cuba & Puerto Rico",k:"Triangles & serrations",f:["cu","pr"],h:"Cuba: blue stripes with a red triangle. Puerto Rico: red stripes with a blue triangle, a deliberate colour swap of Cuba's."},
  {t:"Australia & New Zealand",k:"Cantons & crosses",f:["au","nz"],h:"New Zealand has four red stars with white borders. Australia has white stars, one extra small star, and the large seven-pointed Commonwealth Star under the Union Jack."},
  {t:"Red, white, blue stripes",k:"Horizontal stripes",f:["nl","lu","hr","py"],h:"Luxembourg's blue is a lighter, bright blue and the flag is longer. Croatia and Paraguay add an emblem at centre: Croatia's is a checkerboard shield, Paraguay's a round seal that differs on each side."},
  {t:"Pan-Slavic white, blue, red",k:"Horizontal stripes",f:["ru","sk","si","rs"],h:"Russia is plain. Slovakia and Slovenia add a shield at the hoist (double cross on hills vs. Mount Triglav). Serbia is red on top with an eagle."},
@@ -559,6 +564,7 @@ const BKEY="flaglore.badges";let badges={};
 function loadB(){try{badges=JSON.parse(localStorage.getItem(BKEY))||{}}catch(e){badges={}}}
 function saveB(){try{localStorage.setItem(BKEY,JSON.stringify(badges))}catch(e){}}
 const BADGES=[
+ {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Expert with no misses. All 252, typed, no mistakes.",big:1},
  {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Expert with no misses. All 197, typed, no mistakes.",big:1},
  ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Expert with no misses."})),
  {id:"tour",e:"🌍",n:"World Tour",h:"Finish a full Whole World round at any difficulty."},
@@ -574,6 +580,7 @@ const BADGES=[
  {id:"m100",e:"📚",n:"Vexillologist",h:"100 flags learned."},
  {id:"m197",e:"🏆",n:"Completionist",h:"Every country's flag learned."},
  {id:"carto",e:"🗺️",n:"Cartographer",h:"Every territory, region and organisation flag learned."},
+ {id:"explorer",e:"🧭",n:"Explorer",h:"Finish a full round of each of the five sets beyond the countries."},
  {id:"first",e:"🚩",n:"First Steps",h:"Finish a round."}
 ];
 const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
@@ -594,6 +601,8 @@ function checkBadges(){
   if(FLAGS.filter(f=>!f.sov).every(f=>mastered(f.c)))award("carto");
   if(S.mode==="region"&&S.full&&perfect&&typed)award("lord-"+S.arg);
   if(S.mode==="all"&&S.full&&perfect&&typed)award("lord");
+  if(S.mode==="everything"&&S.full&&perfect&&typed)award("emperor");
+  if(S.mode==="region"&&S.full&&SETS.includes(S.arg)){const d=badges._sets=badges._sets||[];if(!d.includes(S.arg))d.push(S.arg);if(SETS.every(x=>d.includes(x)))award("explorer")}
   saveB();return earned;
 }
 // Wikipedia article names where they differ from the display name; THE marks "Flag of the …".
@@ -766,12 +775,14 @@ function viewHome(){
   </div>
   <div class="tiles">${tiles()}
     <button class="tile wide" onclick="startRound('all',null,'Whole world')"><span class="name">Whole world</span><span class="count">${COUNTRIES.length} countries</span></button>
-    <button class="tile wide" onclick="startRound('weak',null,'Weak spots')" ${weak?"":"disabled style='opacity:.5'"}><span class="name">Weak spots</span><span class="count">${weak?weak+" to fix":"nothing missed yet"}</span></button>
-    <button class="tile wide" onclick="setTab('badges')"><span class="name">Badges</span><span class="count">${nb} / ${BADGES.length} earned ›</span></button>
   </div>
   <p class="eyebrow" style="padding-top:4px">Beyond the countries</p>
   <div class="tiles">${tiles(SETS)}
     <button class="tile wide" onclick="startRound('everything',null,'Everything')"><span class="name">Everything</span><span class="count">${total} flags</span></button>
+  </div>
+  <div class="tiles" style="padding-top:4px">
+    <button class="tile wide" onclick="startRound('weak',null,'Weak spots')" ${weak?"":"disabled style='opacity:.5'"}><span class="name">Weak spots</span><span class="count">${weak?weak+" to fix":"nothing missed yet"}</span></button>
+    <button class="tile wide" onclick="setTab('badges')"><span class="name">Badges</span><span class="count">${nb} / ${BADGES.length} earned ›</span></button>
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>`;
 }
@@ -879,7 +890,8 @@ function viewDone(){
 }
 function viewStudy(){
   const r=S.region;
-  const opts=[...REGIONS,"Whole world",...SETS,"Look-alikes"].map(x=>`<option value="${x}" ${x===r?"selected":""}>${x==="Look-alikes"?"Look-alikes · "+GROUPS.length+" sets":x==="Whole world"?"Whole world · "+COUNTRIES.length+" countries":x+" · "+FLAGS.filter(f=>f.r===x).length+" flags"}</option>`).join("");
+  const opt=x=>`<option value="${x}" ${x===r?"selected":""}>${x==="Look-alikes"?"Look-alikes · "+GROUPS.length+" sets":x==="Whole world"?"Whole world · "+COUNTRIES.length+" flags":x+" · "+FLAGS.filter(f=>f.r===x).length+" flags"}</option>`;
+  const opts=`<optgroup label="Countries">${[...REGIONS,"Whole world"].map(opt).join("")}</optgroup><optgroup label="Beyond the countries">${SETS.map(opt).join("")}</optgroup><optgroup label="Practice">${opt("Look-alikes")}</optgroup>`;
   let body;
   if(r==="Look-alikes"){
     const order=["Horizontal stripes","Vertical stripes","Cantons & crosses","Discs & stars","Triangles & serrations"];
