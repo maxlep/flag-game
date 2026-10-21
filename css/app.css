@@ -183,4 +183,19 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
 .lb .flag img{pointer-events:none;-webkit-user-drag:none}
 .lb-hint{text-align:center;font-size:12px;color:#a3adc2;padding:0 16px 10px}
 .flink{cursor:zoom-in}
+/* Hover states, pointer devices only: a touch shouldn't leave a stuck hover. */
+@media (hover:hover){
+  .btn{transition:transform .08s,background .12s,filter .12s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.line:hover{background:var(--tint);filter:none}
+  .btn.ghost:hover{background:color-mix(in srgb,var(--tint) 80%,var(--accent) 20%);filter:none}
+  .opt:not([disabled]):hover,.fopt:not([disabled]):hover{border-color:var(--accent);background:color-mix(in srgb,var(--surface) 88%,var(--accent) 12%)}
+  .tile .tmain:hover{background:var(--tint)}
+  .seg .btns button:not(.on):hover{background:color-mix(in srgb,var(--tint) 60%,var(--surface) 40%)}
+  .top .back:hover,.link:hover{text-decoration:underline}
+  .sugg button:hover{background:var(--accent);color:var(--accent-ink)}
+  .lb-top button:hover{background:rgba(255,255,255,.2)}
+  .alpha span:hover{color:var(--ink)}
+  .flink:hover .fl{box-shadow:0 0 0 2px var(--accent)}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
