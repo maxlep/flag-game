@@ -74,9 +74,9 @@ const BKEY="flaglore.badges";let badges={};
 function loadB(){try{badges=JSON.parse(localStorage.getItem(BKEY))||{}}catch(e){badges={}}}
 function saveB(){try{localStorage.setItem(BKEY,JSON.stringify(badges))}catch(e){}}
 const BADGES=[
- {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Expert or Master with no misses. All 252, typed, no mistakes.",big:1},
- {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Expert or Master with no misses. All 197, typed, no mistakes.",big:1},
- ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Expert or Master with no misses."})),
+ {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Master with no misses. All 252, typed exactly, no mistakes.",big:1},
+ {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Master with no misses. All 197, typed exactly, no mistakes.",big:1},
+ ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Master with no misses."})),
  {id:"tour",e:"🌍",n:"World Tour",h:"Finish a full Whole World round at any difficulty."},
  {id:"clean10",e:"✨",n:"Clean Sheet",h:"A perfect round of 10 or more on Medium or harder."},
  {id:"sharp25",e:"🎯",n:"Sharp Eye",h:"A perfect round of 25 or more on Hard or harder."},
@@ -97,7 +97,7 @@ const BADGES=[
 const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
 function checkBadges(){
   const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length,perfect=right===n;
-  const D={easy:0,medium:1,hard:2,expert:3,master:4}[S.diff]||0,typed=TYPED(S.diff)&&S.dir==="name";
+  const D={easy:0,medium:1,hard:2,expert:3,master:4}[S.diff]||0,typed=TYPED(S.diff)&&S.dir==="name",strict=S.diff==="master"&&S.dir==="name";
   const mc=COUNTRIES.filter(f=>mastered(f.c)).length,earned=[];
   const award=id=>{if(!badges[id]){badges[id]=Date.now();earned.push(id)}};
   award("first");
@@ -111,9 +111,9 @@ function checkBadges(){
   if(S.best>=25)award("streak25");if(S.best>=50)award("streak50");if(S.best>=100)award("streak100");
   if(mc>=50)award("m50");if(mc>=100)award("m100");if(mc>=COUNTRIES.length)award("m197");
   if(FLAGS.filter(f=>!f.sov).every(f=>mastered(f.c)))award("carto");
-  if(S.mode==="region"&&S.full&&perfect&&typed)award("lord-"+S.arg);
-  if(S.mode==="all"&&S.full&&perfect&&typed)award("lord");
-  if(S.mode==="everything"&&S.full&&perfect&&typed)award("emperor");
+  if(S.mode==="region"&&S.full&&perfect&&strict)award("lord-"+S.arg);
+  if(S.mode==="all"&&S.full&&perfect&&strict)award("lord");
+  if(S.mode==="everything"&&S.full&&perfect&&strict)award("emperor");
   if(S.mode==="region"&&S.full&&SETS.includes(S.arg)){const d=badges._sets=badges._sets||[];if(!d.includes(S.arg))d.push(S.arg);if(SETS.every(x=>d.includes(x)))award("explorer")}
   saveB();return earned;
 }
