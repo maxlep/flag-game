@@ -3,21 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Flag quiz with the story behind each flag: regional levels, look-alike drills, four difficulty levels and saved progress.">
-<meta name="theme-color" content="#1e3f8f">
+<meta name="description" content="A quiz for learning the flags of the world, with the meaning behind each flag.">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{margin:0}
 img{max-width:100%}
 [hidden]{display:none!important}
 </style>
-<title>Flag Lore</title>
+<title>Flags of the World</title>
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/icon-64.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Flags">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1e3f8f">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: one narrow column like a field guide; the flag is always the largest thing on screen. */
 :root{
   --bg:#f2f4f7; --surface:#ffffff; --ink:#15223a; --muted:#5b6678; --line:#d6dbe4;
-  --accent:#1e3f8f; --accent-ink:#ffffff; --tint:#e3e9f6;
+  --accent:#1e3f8f; --accent-ink:#ffffff; --tint:#e3e9f6; --gold:#c9961a;
   --ok:#1f7a4c; --ok-tint:#dff3e7; --bad:#b4262b; --bad-tint:#fbe3e3;
   --display:"Bricolage Grotesque","Avenir Next",Helvetica,Arial,sans-serif;
   --body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
@@ -25,19 +32,21 @@ img{max-width:100%}
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
-  --accent:#8fb0ff; --accent-ink:#0f1521; --tint:#1f2b47;
+  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f;
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
-  --accent:#8fb0ff; --accent-ink:#0f1521; --tint:#1f2b47;
+  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f;
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark }
 
 *{box-sizing:border-box}
+html{scrollbar-gutter:stable}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
 h1{font-size:30px;font-weight:800;letter-spacing:-.01em}
+h1.brand{font-size:20px;font-weight:700;letter-spacing:0}
 h2{font-size:22px;font-weight:700}
 h3{font-size:17px;font-weight:700}
 p{margin:0}
@@ -48,18 +57,24 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .small{font-size:14px}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;flex-direction:column;gap:12px;padding-block:12px 10px;margin-top:-12px;
+  box-shadow:0 8px 12px -10px rgba(10,20,40,.25)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
 .top .back{font-weight:600;color:var(--accent);display:flex;align-items:center;gap:6px}
 .top .stat{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 
-.flag{width:100%;max-width:100%;aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:var(--surface);
+.flag{width:100%;max-width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+.flag .fl{height:100%;aspect-ratio:var(--r,4/3);max-width:100%;border-radius:6px;overflow:hidden;background:var(--surface);
   box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(10,20,40,.12)}
-.flag img{display:block;width:100%;height:100%;object-fit:cover}
-.flag.sm{aspect-ratio:4/3;box-shadow:0 0 0 1px var(--line)}
+.flag .fl.wide{height:auto;width:100%}
+.flag .fl.bare{background:transparent;box-shadow:none;border-radius:0}
+.flag img{display:block;width:100%;height:100%;object-fit:fill}
+.flag.sm .fl{border-radius:4px;box-shadow:0 0 0 1px var(--line)}
+.flag.sm .fl.bare{box-shadow:none}
 
 .opts{display:grid;gap:10px}
 .opt{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;
   padding:12px 14px;font-weight:600;font-size:16px;min-height:52px;transition:transform .08s}
-.opt:active{transform:scale(.985)}
 .opt .key{font-family:var(--mono);font-size:12px;color:var(--muted);width:18px;flex:none}
 .opt.right{border-color:var(--ok);background:var(--ok-tint)}
 .opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
@@ -74,12 +89,14 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .capital{font-family:var(--mono);font-size:13px;color:var(--muted)}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:var(--accent-ink);
-  font-weight:700;border-radius:10px;padding:14px 18px;min-height:50px;width:100%;font-family:var(--display);font-size:17px}
+  font-weight:700;border-radius:10px;padding:14px 18px;min-height:50px;width:100%;font-family:var(--display);font-size:17px;transition:transform .08s}
+.btn:active{transform:translateY(1px)}
 .btn.ghost{background:var(--tint);color:var(--ink)}
 .btn.line{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
 
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0;transition:transform .08s}
+.tile:active,.opt:active,.fopt:active{transform:scale(.985)}
 .tile .name{font-family:var(--display);font-weight:700;font-size:18px}
 .tile .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .bar{height:6px;background:var(--tint);border-radius:3px;overflow:hidden}
@@ -99,7 +116,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 
 .study{display:flex;flex-direction:column;gap:12px}
 .entry{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
-.entry .flag{border-radius:4px}
+.entry .flag .fl{border-radius:4px}
 .entry .t{min-width:0;display:flex;flex-direction:column;gap:4px}
 .entry .t .name{font-family:var(--display);font-weight:700;font-size:16px}
 .entry p{font-size:14px;color:var(--ink)}
@@ -109,25 +126,43 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .group .flags figcaption{font-size:12px;font-weight:600;line-height:1.2}
 .group .hint{font-size:14px;color:var(--ink);max-width:65ch}
 .missed{display:flex;flex-wrap:wrap;gap:8px}
+.badges{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.badge{display:grid;grid-template-columns:36px 1fr;column-gap:10px;row-gap:2px;align-items:start;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;opacity:.55}
+.badge .be{grid-row:1/3;font-size:28px;line-height:1.2;filter:grayscale(1);text-align:center}
+.badge.on .be{filter:none}
+.badge.big .be{font-size:40px}
+.badge.on{opacity:1;border-color:var(--gold);background:var(--surface)}
+.badge .bn{font-family:var(--display);font-weight:700;font-size:15px;line-height:1.2}
+.badge .bh{font-size:12px;color:var(--muted);line-height:1.35}
+.badge.on .bh{color:var(--ink)}
+.badge.big{grid-column:1/-1;grid-template-columns:56px 1fr}
+.newbadge{border-left:4px solid var(--gold)}
+.newbadge .be{font-size:40px;line-height:1}
 .chip{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 4px;font-size:14px;font-weight:600}
-.chip .flag{width:28px;aspect-ratio:4/3;border-radius:3px;box-shadow:none;border:1px solid var(--line)}
+.chip .flag{width:28px;aspect-ratio:4/3}
+.chip .flag .fl{border-radius:3px;box-shadow:0 0 0 1px var(--line)}
 .score{font-family:var(--display);font-weight:800;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
+.grid{font-size:18px;line-height:1.25;letter-spacing:1px;word-break:break-all;max-width:100%}
+.sharebox{width:100%;font:13px var(--mono);color:var(--ink);background:var(--tint);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:120px}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}
 .link{color:var(--accent);font-weight:600;font-size:14px}
+.wl{color:inherit;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);transition:text-decoration-color .12s}
+.wl:hover,.wl:focus-visible{text-decoration-color:var(--accent);color:var(--accent)}
+.capital .wl{text-decoration-thickness:1px}
+a.flink{display:block;border-radius:4px}
 .tabs{display:flex;gap:6px;background:var(--tint);padding:4px;border-radius:10px}
-.tabs button{flex:1;padding:8px;border-radius:7px;font-weight:600;font-size:14px}
-.tabs button.on{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tabs button{flex:1;padding:8px;border-radius:7px;font-weight:600;font-size:14px;transition:background .12s}
+.tabs button.on,.seg .btns button.on{color:var(--accent-ink);background:var(--accent)}
 select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
 .seg{display:flex;flex-direction:column;gap:6px}
 .seg .label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .seg .btns{display:flex;gap:6px;background:var(--tint);padding:4px;border-radius:10px}
-.seg .btns button{flex:1;padding:8px 4px;border-radius:7px;font-weight:600;font-size:14px;min-width:0}
-.seg .btns button.on{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg .btns button{flex:1;padding:8px 4px;border-radius:7px;font-weight:600;font-size:14px;min-width:0;transition:background .12s}
 .seg .btns button.off{opacity:.4}
 .seg .note{font-size:13px;color:var(--muted)}
 .flagopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fopt{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;min-width:0}
-.fopt .flag{box-shadow:0 0 0 1px var(--line)}
+.fopt .flag .fl{box-shadow:0 0 0 1px var(--line)}
 .fopt .key{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .fopt.right{border-color:var(--ok);background:var(--ok-tint)}
 .fopt.wrong{border-color:var(--bad);background:var(--bad-tint)}
@@ -139,6 +174,9 @@ select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px soli
 .typebox input:focus{outline:3px solid var(--accent);outline-offset:1px;border-color:transparent}
 .sugg{display:flex;flex-wrap:wrap;gap:6px;min-height:0}
 .sugg button{background:var(--tint);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
+.kbd{display:none;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+@media (hover:hover) and (pointer:fine){.kbd{display:flex}}
+kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -354,35 +392,35 @@ const RAW=[
 ];
 const FLAGS=RAW.map(([c,n,r,cap,m])=>({c,n,r,cap,m}));
 const BY=Object.fromEntries(FLAGS.map(f=>[f.c,f]));
-const REGIONS=[EU,AS,AF,AM,OC];
+const REGIONS=[AF,AM,AS,EU,OC]; // alphabetical; drives the Quiz tiles and the Study dropdown
 
 // Look-alike groups: codes plus a hint for telling them apart.
 const GROUPS=[
- {t:"Chad & Romania",f:["td","ro","ad","md"],h:"Chad's blue is a dark indigo; Romania's is a brighter cobalt. Andorra and Moldova add a coat of arms (Moldova's has an eagle)."},
- {t:"Red over white",f:["id","mc","pl","sg"],h:"Indonesia and Monaco are red on top (Indonesia is wider). Poland is white on top. Singapore adds a crescent and five stars."},
- {t:"Nordic crosses",f:["dk","se","no","fi","is"],h:"Denmark: white on red. Sweden: yellow on blue. Finland: blue on white. Norway: red with a blue cross. Iceland: blue with a red cross."},
- {t:"Australia & New Zealand",f:["au","nz"],h:"New Zealand has four red stars with white borders. Australia has white stars, one extra small star, and the large seven-pointed Commonwealth Star under the Union Jack."},
- {t:"Red, white, blue stripes",f:["nl","lu","hr","py"],h:"Luxembourg's blue is a pale sky blue and the flag is longer. Croatia and Paraguay add a shield at centre; Croatia's is a checkerboard."},
- {t:"Pan-Slavic white, blue, red",f:["ru","sk","si","rs"],h:"Russia is plain. Slovakia and Slovenia add a shield at the hoist (double cross on hills vs. Mount Triglav). Serbia is red on top with an eagle."},
- {t:"Green, white, orange",f:["ie","ci","it","mx"],h:"Ireland is green at the hoist, Côte d'Ivoire orange at the hoist. Italy's third stripe is red, not orange; Mexico adds the eagle."},
- {t:"Pan-African verticals",f:["gn","ml","sn","cm"],h:"Guinea is red first, Mali green first. Senegal is Mali with a green star. Cameroon is green-red-yellow with a gold star."},
- {t:"Red, yellow, green stacks",f:["bo","gh","lt","et"],h:"Bolivia is red on top with no star; Ghana adds a black star. Lithuania is yellow on top. Ethiopia is green on top with a blue disc."},
- {t:"Gran Colombia",f:["co","ec","ve"],h:"Colombia is plain. Ecuador carries its coat of arms. Venezuela has an arc of eight stars (and a smaller yellow band)."},
- {t:"Central American blue-white-blue",f:["hn","sv","ni","ar","gt"],h:"Honduras: five stars. El Salvador and Nicaragua: coats of arms (Nicaragua's is ringed by text and a rainbow). Argentina: a sun face. Guatemala: vertical stripes with a quetzal."},
- {t:"Arab Liberation stripes",f:["eg","iq","sy","ye"],h:"Yemen is the plain red-white-black. Egypt adds a gold eagle. Iraq adds green script. Syria's current flag is green on top with three red stars."},
- {t:"Arab Revolt triangles",f:["jo","ps","kw","ae","sd"],h:"Palestine is plain; Jordan adds a white star in the red triangle. Kuwait's black is a trapezoid at the hoist. UAE's red band is vertical. Sudan's triangle is green."},
- {t:"Qatar & Bahrain",f:["qa","bh"],h:"Bahrain is bright red with five points. Qatar is maroon with nine points and is much wider."},
- {t:"Sun discs",f:["jp","bd","pw"],h:"Japan: red on white. Bangladesh: red on green, disc toward the hoist. Palau: yellow on light blue, also off-centre."},
- {t:"India & Niger",f:["in","ne"],h:"India has a blue wheel at centre; Niger has a plain orange disc, and its flag is nearly square."},
- {t:"Blue and red stripes",f:["th","cr","la"],h:"Thailand: blue centre, red outer. Costa Rica: red centre, blue outer. Laos: red outer with a white disc on blue."},
- {t:"Stars and stripes",f:["us","lr","my"],h:"Liberia has one star and eleven stripes. Malaysia has a crescent and 14-point star on blue with fourteen stripes."},
- {t:"Hungary, Bulgaria, Iran, Tajikistan",f:["hu","bg","ir","tj"],h:"Hungary: red on top. Bulgaria: white on top. Iran: green on top with an emblem. Tajikistan: red on top with a crown and stars."},
- {t:"Türkiye & Tunisia",f:["tr","tn"],h:"Tunisia puts the crescent and star inside a white disc. Türkiye's sit directly on the red."},
- {t:"Liechtenstein & Haiti",f:["li","ht"],h:"Liechtenstein has a gold crown in the corner; Haiti has its coat of arms on a white panel at centre."},
- {t:"Nine stripes",f:["gr","uy"],h:"Greece has a white cross on blue in the canton; Uruguay has a sun face on white."},
- {t:"Belgium & Germany",f:["be","de"],h:"Belgium's stripes are vertical and black-yellow-red. Germany's are horizontal and black-red-gold."},
- {t:"Austria & Latvia",f:["at","lv","pe"],h:"Austria's bands are equal and bright red. Latvia's are a deep carmine with a thin white stripe. Peru's are vertical."},
- {t:"Monaco-adjacent discs",f:["kp","vn","cn"],h:"Vietnam: one yellow star on red. China: one large and four small stars. North Korea: red star in a white disc on a red band with blue edges."}
+ {t:"Chad & Romania",k:"Vertical stripes",f:["td","ro","ad","md"],h:"Chad's blue is a dark indigo; Romania's is a brighter cobalt. Andorra and Moldova add a coat of arms (Moldova's has an eagle)."},
+ {t:"Red over white",k:"Horizontal stripes",f:["id","mc","pl","sg"],h:"Indonesia and Monaco are red on top (Indonesia is wider). Poland is white on top. Singapore adds a crescent and five stars."},
+ {t:"Nordic crosses",k:"Cantons & crosses",f:["dk","se","no","fi","is"],h:"Denmark: white on red. Sweden: yellow on blue. Finland: blue on white. Norway: red with a blue cross. Iceland: blue with a red cross."},
+ {t:"Australia & New Zealand",k:"Cantons & crosses",f:["au","nz"],h:"New Zealand has four red stars with white borders. Australia has white stars, one extra small star, and the large seven-pointed Commonwealth Star under the Union Jack."},
+ {t:"Red, white, blue stripes",k:"Horizontal stripes",f:["nl","lu","hr","py"],h:"Luxembourg's blue is a pale sky blue and the flag is longer. Croatia and Paraguay add a shield at centre; Croatia's is a checkerboard."},
+ {t:"Pan-Slavic white, blue, red",k:"Horizontal stripes",f:["ru","sk","si","rs"],h:"Russia is plain. Slovakia and Slovenia add a shield at the hoist (double cross on hills vs. Mount Triglav). Serbia is red on top with an eagle."},
+ {t:"Green, white, orange",k:"Vertical stripes",f:["ie","ci","it","mx"],h:"Ireland is green at the hoist, Côte d'Ivoire orange at the hoist. Italy's third stripe is red, not orange; Mexico adds the eagle."},
+ {t:"Pan-African verticals",k:"Vertical stripes",f:["gn","ml","sn","cm"],h:"Guinea is red first, Mali green first. Senegal is Mali with a green star. Cameroon is green-red-yellow with a gold star."},
+ {t:"Red, yellow, green stacks",k:"Horizontal stripes",f:["bo","gh","lt","et"],h:"Bolivia is red on top with no star; Ghana adds a black star. Lithuania is yellow on top. Ethiopia is green on top with a blue disc."},
+ {t:"Gran Colombia",k:"Horizontal stripes",f:["co","ec","ve"],h:"Colombia is plain. Ecuador carries its coat of arms. Venezuela has an arc of eight stars (and a smaller yellow band)."},
+ {t:"Central American blue-white-blue",k:"Horizontal stripes",f:["hn","sv","ni","ar","gt"],h:"Honduras: five stars. El Salvador and Nicaragua: coats of arms (Nicaragua's is ringed by text and a rainbow). Argentina: a sun face. Guatemala: vertical stripes with a quetzal."},
+ {t:"Arab Liberation stripes",k:"Horizontal stripes",f:["eg","iq","sy","ye"],h:"Yemen is the plain red-white-black. Egypt adds a gold eagle. Iraq adds green script. Syria's current flag is green on top with three red stars."},
+ {t:"Arab Revolt triangles",k:"Triangles & serrations",f:["jo","ps","kw","ae","sd"],h:"Palestine is plain; Jordan adds a white star in the red triangle. Kuwait's black is a trapezoid at the hoist. UAE's red band is vertical. Sudan's triangle is green."},
+ {t:"Qatar & Bahrain",k:"Triangles & serrations",f:["qa","bh"],h:"Bahrain is bright red with five points. Qatar is maroon with nine points and is much wider."},
+ {t:"Sun discs",k:"Discs & stars",f:["jp","bd","pw"],h:"Japan: red on white. Bangladesh: red on green, disc toward the hoist. Palau: yellow on light blue, also off-centre."},
+ {t:"India & Niger",k:"Horizontal stripes",f:["in","ne"],h:"India has a blue wheel at centre; Niger has a plain orange disc, and its flag is nearly square."},
+ {t:"Blue and red stripes",k:"Horizontal stripes",f:["th","cr","la"],h:"Thailand: blue centre, red outer. Costa Rica: red centre, blue outer. Laos: red outer with a white disc on blue."},
+ {t:"Stars and stripes",k:"Cantons & crosses",f:["us","lr","my"],h:"Liberia has one star and eleven stripes. Malaysia has a crescent and 14-point star on blue with fourteen stripes."},
+ {t:"Hungary, Bulgaria, Iran, Tajikistan",k:"Horizontal stripes",f:["hu","bg","ir","tj"],h:"Hungary: red on top. Bulgaria: white on top. Iran: green on top with an emblem. Tajikistan: red on top with a crown and stars."},
+ {t:"Türkiye & Tunisia",k:"Discs & stars",f:["tr","tn"],h:"Tunisia puts the crescent and star inside a white disc. Türkiye's sit directly on the red."},
+ {t:"Liechtenstein & Haiti",k:"Horizontal stripes",f:["li","ht"],h:"Liechtenstein has a gold crown in the corner; Haiti has its coat of arms on a white panel at centre."},
+ {t:"Nine stripes",k:"Cantons & crosses",f:["gr","uy"],h:"Greece has a white cross on blue in the canton; Uruguay has a sun face on white."},
+ {t:"Belgium & Germany",k:"Vertical stripes",f:["be","de"],h:"Belgium's stripes are vertical and black-yellow-red. Germany's are horizontal and black-red-gold."},
+ {t:"Austria & Latvia",k:"Horizontal stripes",f:["at","lv","pe"],h:"Austria's bands are equal and bright red. Latvia's are a deep carmine with a thin white stripe. Peru's are vertical."},
+ {t:"Red with stars",k:"Discs & stars",f:["kp","vn","cn"],h:"Vietnam: one yellow star on red. China: one large and four small stars. North Korea: red star in a white disc on a red band with blue edges."}
 ];
 const GROUP_OF={}; GROUPS.forEach((g,i)=>g.f.forEach(c=>{(GROUP_OF[c]=GROUP_OF[c]||[]).push(i)}));
 
@@ -430,17 +468,78 @@ function suggest(text){
 
 // ---------- SETTINGS ----------
 const SKEY="flaglore.settings";
-let SET={len:10,diff:"medium",dir:"name"};
+let SET={len:10,diff:"medium",dir:"name",pace:"learn"};
 function loadSet(){try{const s=localStorage.getItem(SKEY);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}}
 function setOpt(k,v){SET[k]=v;if(SET.dir==="flag"&&SET.diff==="expert")SET.diff="hard";try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}render()}
-const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no mastery.",medium:"Options come from the same region. +1 mastery per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer."};
+const DIFF={easy:"Options come from anywhere in the world. Good for a first pass; earns no points.",medium:"Options come from the same region. +1 point per correct answer.",hard:"Options are the flags most often confused with this one. +2 per correct answer.",expert:"No options. Type the country; close spellings and common names count. +3 per correct answer."};
+
+// ---------- BADGES ----------
+const BKEY="flaglore.badges";let badges={};
+function loadB(){try{badges=JSON.parse(localStorage.getItem(BKEY))||{}}catch(e){badges={}}}
+function saveB(){try{localStorage.setItem(BKEY,JSON.stringify(badges))}catch(e){}}
+const BADGES=[
+ {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Expert with no misses. All 197, typed, no mistakes.",big:1},
+ ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Expert with no misses."})),
+ {id:"tour",e:"🌍",n:"World Tour",h:"Finish a full Whole World round at any difficulty."},
+ {id:"clean10",e:"✨",n:"Clean Sheet",h:"A perfect round of 10 or more on Medium or harder."},
+ {id:"sharp25",e:"🎯",n:"Sharp Eye",h:"A perfect round of 25 or more on Hard or harder."},
+ {id:"typed25",e:"🐝",n:"Spelling Bee",h:"A perfect typed round of 25 or more."},
+ {id:"mirror",e:"🪞",n:"Mirror Image",h:"A perfect round of 25 or more in Pick-the-flag on Hard."},
+ {id:"twins",e:"👯",n:"Twin Spotter",h:"Perfect rounds in 10 different look-alike sets."},
+ {id:"streak25",e:"🔥",n:"On a Roll",h:"25 correct in a row."},
+ {id:"streak50",e:"⚡",n:"Unstoppable",h:"50 correct in a row."},
+ {id:"streak100",e:"💯",n:"Centurion",h:"100 correct in a row."},
+ {id:"m50",e:"🎖️",n:"Collector",h:"50 flags learned."},
+ {id:"m100",e:"📚",n:"Vexillologist",h:"100 flags learned."},
+ {id:"m197",e:"🏆",n:"Completionist",h:"Every flag learned."},
+ {id:"first",e:"🚩",n:"First Steps",h:"Finish a round."}
+];
+const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
+function checkBadges(){
+  const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length,perfect=right===n;
+  const D={easy:0,medium:1,hard:2,expert:3}[S.diff]||0,typed=S.diff==="expert"&&S.dir==="name";
+  const mc=FLAGS.filter(f=>mastered(f.c)).length,earned=[];
+  const award=id=>{if(!badges[id]){badges[id]=Date.now();earned.push(id)}};
+  award("first");
+  if(perfect&&n>=10&&D>=1)award("clean10");
+  if(perfect&&n>=25&&D>=2)award("sharp25");
+  if(perfect&&n>=25&&typed)award("typed25");
+  if(perfect&&n>=25&&S.dir==="flag"&&D>=2)award("mirror");
+  if(S.mode==="all"&&S.full)award("tour");
+  if(S.mode==="group"&&perfect){const t=badges._twins=badges._twins||[];if(!t.includes(S.arg))t.push(S.arg);if(t.length>=10)award("twins")}
+  if(S.best>=25)award("streak25");if(S.best>=50)award("streak50");if(S.best>=100)award("streak100");
+  if(mc>=50)award("m50");if(mc>=100)award("m100");if(mc>=FLAGS.length)award("m197");
+  if(S.mode==="region"&&S.full&&perfect&&typed)award("lord-"+S.arg);
+  if(S.mode==="all"&&S.full&&perfect&&typed)award("lord");
+  saveB();return earned;
+}
+// Wikipedia article names where they differ from the display name; THE marks "Flag of the …".
+const WIKI={us:"United_States",gb:"United_Kingdom",nl:"Netherlands",ph:"Philippines",gm:"The_Gambia",bs:"The_Bahamas",cz:"Czech_Republic",cd:"Democratic_Republic_of_the_Congo",cg:"Republic_of_the_Congo",ae:"United_Arab_Emirates",do:"Dominican_Republic",cf:"Central_African_Republic",mh:"Marshall_Islands",sb:"Solomon_Islands",mv:"Maldives",km:"Comoros",fm:"Federated_States_of_Micronesia",tw:"Taiwan",ps:"State_of_Palestine",ci:"Ivory_Coast",tr:"Turkey",tl:"East_Timor",va:"Vatican_City",kp:"North_Korea",kr:"South_Korea",cv:"Cape_Verde",st:"São_Tomé_and_Príncipe",ir:"Iran",sy:"Syria",ru:"Russia",ye:"Yemen",cn:"China",la:"Laos",bn:"Brunei",tz:"Tanzania",eg:"Egypt",vn:"Vietnam",bo:"Bolivia",ve:"Venezuela",xk:"Kosovo"};
+const THE=new Set(["us","gb","nl","ph","gm","bs","cz","cd","cg","ae","do","cf","mh","sb","mv","km","fm"]);
+const FLAGWIKI={tw:"Flag_of_the_Republic_of_China",ps:"Flag_of_Palestine",gm:"Flag_of_the_Gambia",bs:"Flag_of_the_Bahamas"};
+const CAPWIKI={us:"Washington, D.C.",lu:"Luxembourg City",sc:"Victoria, Seychelles",gy:"Georgetown, Guyana",jm:"Kingston, Jamaica",ag:"St. John's, Antigua and Barbuda",gd:"St. George's, Grenada",cr:"San José, Costa Rica",dj:"Djibouti (city)",nr:"Yaren District",ki:"South Tarawa",ly:"Tripoli, Libya",bs:"Nassau, Bahamas",sm:"City of San Marino",sg:"Singapore",mc:"Monaco",va:"Vatican City",ps:"Ramallah",bo:"Sucre",cl:"Santiago",sv:"San Salvador",pa:"Panama City",gt:"Guatemala City",mx:"Mexico City",kw:"Kuwait City"};
+function links(c){
+  const name=(WIKI[c]||BY[c].n).replace(/ /g,"_");
+  const flag="https://en.wikipedia.org/wiki/"+(FLAGWIKI[c]||"Flag_of_"+(THE.has(c)?"the_":"")+name);
+  const country="https://en.wikipedia.org/wiki/"+name;
+  const capName=BY[c].cap.split(" (")[0],cap="https://en.wikipedia.org/wiki/"+encodeURIComponent((CAPWIKI[c]||capName).replace(/ /g,"_"));
+  return {flag,country,cap,sameCap:capName===BY[c].n};
+}
+const wl=(url,text,title="Wikipedia")=>`<a class="wl" href="${url}" target="_blank" rel="noopener" title="${title}">${text}</a>`;
+// Country name as a quiet link; capital line carries the capital and flag-article links.
+function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
+function capLine(c){const L=links(c),f=BY[c];return `${L.sameCap?esc(f.cap):wl(L.cap,esc(f.cap))} · ${f.r} · ${wl(L.flag,"Flag","The flag on Wikipedia")}`}
+const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
 let S={view:"home",tab:"quiz"};
 const $=s=>document.querySelector(s);
 const app=$("#app");
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const img=(c,cls="flag")=>`<div class="${cls}"><img src="flags/${c}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div>`;
+// True proportions where they are part of the flag's identity (the icon set normalises everything to 4:3).
+const RATIO={ch:1,va:1,id:1.5,mc:1.25,pl:1.6,qa:28/11,bh:5/3,np:"bare"};
+const img=(c,cls="flag")=>{const r=RATIO[c];const k=r==="bare"?" bare":(r&&r>4/3?" wide":"");const st=r&&r!=="bare"?` style="--r:${r}"`:"";
+  return `<div class="${cls}"><div class="fl${k}"${st}><img src="flags/${c}.svg" alt="Flag of ${BY[c].n}" loading="lazy"></div></div>`};
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
 function poolFor(mode,arg){
@@ -468,20 +567,27 @@ function distractors(c,diff,mode){
   add(any);
   return [...out];
 }
+function goBack(){
+  clearTimeout(S.timer);
+  const f=S.from||{view:"home",tab:"quiz"};
+  S={view:f.view,tab:f.tab||"quiz",region:f.region};render();
+  window.scrollTo(0,f.scroll||0);
+}
 function startRound(mode,arg,label){
   const pool=poolFor(mode,arg);
   if(!pool.length)return;
+  const from=S.view==="quiz"||S.view==="done"?S.from:{view:S.view,tab:S.tab,region:S.region,scroll:window.scrollY};
   const diff=SET.dir==="flag"&&SET.diff==="expert"?"hard":SET.diff;
-  let order;
-  if(mode==="group"){
+  let order,full;
+  if(mode==="group"){full=SET.len==="all";
     const n=SET.len==="all"?pool.length*2:SET.len;
-    order=[];while(order.length<n)order.push(...shuffle(pool));order=order.slice(0,n);
+    order=[];while(order.length<n){let sh=shuffle(pool);if(pool.length>1&&order.length&&sh[0]===order[order.length-1])sh.push(sh.shift());order.push(...sh)}order=order.slice(0,n);
   } else {
-    const n=SET.len==="all"?pool.length:Math.min(SET.len,pool.length);
+    const n=SET.len==="all"?pool.length:Math.min(SET.len,pool.length);full=n===pool.length;
     order=pickOrder(pool,n);
   }
   const qs=order.map(c=>({c,opts:shuffle([c,...distractors(c,diff,mode)]),ans:null,typed:""}));
-  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:mode==="group"&&diff!=="expert"?"hard":diff,dir:SET.dir};
+  S={view:"quiz",mode,arg,label,qs,i:0,streak:0,best:0,diff:mode==="group"&&diff!=="expert"?"hard":diff,dir:SET.dir,pace:SET.pace,from,full};
   render();window.scrollTo(0,0);
 }
 function submitTyped(){
@@ -506,15 +612,30 @@ function answer(k){
   prog[q.c]=r;save();
   S.streak=ok?S.streak+1:0;S.best=Math.max(S.best,S.streak);
   render();
+  if(S.pace==="drill"&&ok){clearTimeout(S.timer);S.timer=setTimeout(next,650);return}
   requestAnimationFrame(()=>{const btns=app.querySelectorAll(".btn");const b=btns[btns.length-1];if(b)b.scrollIntoView({block:"end",behavior:"smooth"})});
 }
-function next(){ if(S.i+1<S.qs.length){S.i++;render();window.scrollTo(0,0)} else {S.view="done";render();window.scrollTo(0,0)} }
+function next(){ clearTimeout(S.timer);S.timer=null; if(S.i+1<S.qs.length){S.i++;render();window.scrollTo(0,0)} else {S.earned=checkBadges();S.view="done";render();window.scrollTo(0,0)} }
+function showLore(){const q=S.qs[S.i];q.lore=true;render()}
+// Keyboard: A-D or 1-4 pick an option, Enter moves on.
+document.addEventListener("keydown",e=>{
+  if(S.view!=="quiz"||e.metaKey||e.ctrlKey||e.altKey)return;
+  const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
+  const q=S.qs[S.i];
+  if(e.key==="Escape"){goBack();return}
+  if(e.key==="Enter"){if(q.ans){e.preventDefault();next()}return}
+  if(q.ans)return;
+  const k=e.key.toLowerCase();let i=-1;
+  if(k>="a"&&k<="d")i=k.charCodeAt(0)-97;else if(k>="1"&&k<="4")i=+k-1;
+  if(i>=0&&q.opts&&q.opts[i]){e.preventDefault();answer(q.opts[i])}
+});
 
 // ---------- VIEWS ----------
 function render(){
   if(S.view==="quiz"){app.innerHTML=viewQuiz();const t=$("#typeIn");if(t&&!S.qs[S.i].ans)t.focus();return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="study")return app.innerHTML=viewStudy();
+  if(S.view==="badges")return app.innerHTML=viewBadges();
   return app.innerHTML=viewHome();
 }
 function tiles(){
@@ -522,15 +643,27 @@ function tiles(){
     const all=FLAGS.filter(f=>f.r===r);const m=all.filter(f=>mastered(f.c)).length;
     return `<button class="tile" onclick="startRound('region','${r}','${r}')">
       <span class="name">${r}</span>
-      <span class="count">${m} / ${all.length} mastered</span>
+      <span class="count">${badges["lord-"+r]?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned"}</span>
       <span class="bar"><i style="width:${Math.round(100*m/all.length)}%"></i></span></button>`}).join("");
 }
+function setTab(t){S.tab=t;S.view=t==="quiz"?"home":t;if(t==="study")S.region=S.region||"Europe";render();window.scrollTo(0,0)}
+function shell(extra=""){
+  const total=FLAGS.length,m=FLAGS.filter(f=>mastered(f.c)).length,lord=!!badges.lord;
+  return `<div class="sticky"><div class="top"><div><h1 class="brand">Flags of the world</h1>${lord?`<p class="eyebrow" style="color:var(--gold)">Flag Lord · since ${fmtDate(badges.lord)}</p>`:""}</div><span class="stat">${m}/${total}</span></div>
+  <div class="tabs">${[["quiz","Quiz"],["study","Study"],["badges","Badges"]].map(([t,l])=>`<button class="${S.tab===t?"on":""}" onclick="setTab('${t}')">${l}</button>`).join("")}</div>${extra}</div>`;
+}
+function viewBadges(){
+  const nb=BADGES.filter(b=>badges[b.id]).length;
+  return `${shell()}
+  <div class="top"><h3>${nb} of ${BADGES.length} earned</h3><span class="stat">${FLAGS.filter(f=>mastered(f.c)).length} / ${FLAGS.length} learned</span></div>
+  <div class="badges">${BADGES.map(b=>`<div class="badge${badges[b.id]?" on":""}${b.big?" big":""}"><span class="be">${b.e}</span><span class="bn">${b.n}</span><span class="bh">${b.h}${badges[b.id]?" Earned "+fmtDate(badges[b.id])+".":""}</span></div>`).join("")}</div>
+  <p class="small muted">A flag counts as learned at 4 points: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert; a miss costs 2. Badges are kept once earned.</p>`;
+}
 function viewHome(){
-  const total=FLAGS.length,m=FLAGS.filter(f=>mastered(f.c)).length,weak=poolFor("weak").length;
-  return `
-  <div class="top"><div><p class="eyebrow">Flags of the world</p><h1>Flag Lore</h1></div><span class="stat">${m}/${total}</span></div>
-  <div class="tabs"><button class="${S.tab==="quiz"?"on":""}" onclick="S.tab='quiz';render()">Quiz</button><button class="${S.tab==="study"?"on":""}" onclick="S.tab='study';S.view='study';S.region=S.region||'Europe';render()">Study</button><button onclick="S.tab='look';S.view='study';S.region='Look-alikes';render()">Look-alikes</button></div>
-  <p class="muted small">Each answer unlocks what the flag means, which is what makes it stick. Flags you miss come back more often. Mastery takes 4 points per flag: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert; a miss costs 2.</p>
+  const total=FLAGS.length,weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
+  return `${shell()}
+  <p class="muted small">Name the flag, then read what it stands for. Pick a region or the whole world, set the difficulty, and play in Learn or Drill. Flags you miss come back sooner.</p>
+  <div class="kbd"><span class="eyebrow">Keyboard</span><span><kbd>A</kbd>–<kbd>D</kbd> or <kbd>1</kbd>–<kbd>4</kbd> answer</span><span><kbd>Enter</kbd> continues</span><span><kbd>Esc</kbd> leaves the round</span></div>
   <div class="card">
     <div class="seg"><span class="label">Round length</span><div class="btns">
       ${[[10,"10"],[25,"25"],["all","Full set"]].map(([v,l])=>`<button class="${SET.len===v?"on":""}" onclick="setOpt('len',${typeof v==="string"?"'all'":v})">${l}</button>`).join("")}</div></div>
@@ -541,20 +674,21 @@ function viewHome(){
       <button class="${SET.dir==="name"?"on":""}" onclick="setOpt('dir','name')">Country name</button>
       <button class="${SET.dir==="flag"?"on":""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
       <span class="note">${SET.dir==="flag"?"You see the country and choose among four flags.":"You see the flag and choose or type the country."}</span></div>
+    <div class="seg"><span class="label">Pace</span><div class="btns">
+      <button class="${SET.pace==="learn"?"on":""}" onclick="setOpt('pace','learn')">Learn</button>
+      <button class="${SET.pace==="drill"?"on":""}" onclick="setOpt('pace','drill')">Drill</button></div>
+      <span class="note">${SET.pace==="drill"?"Correct answers advance automatically.":"Shows what the flag means after each answer."}</span></div>
   </div>
   <div class="tiles">${tiles()}
     <button class="tile wide" onclick="startRound('all',null,'Whole world')"><span class="name">Whole world</span><span class="count">${total} flags</span></button>
     <button class="tile wide" onclick="startRound('weak',null,'Weak spots')" ${weak?"":"disabled style='opacity:.5'"}><span class="name">Weak spots</span><span class="count">${weak?weak+" to fix":"nothing missed yet"}</span></button>
-  </div>
-  <div class="card"><h3>Look-alike drills</h3><p class="small muted">The pairs everyone mixes up, quizzed against each other.</p>
-    <select id="groupSel" onchange="if(this.value!=='')startRound('group',+this.value,GROUPS[+this.value].t)">
-      <option value="">Pick a set…</option>${GROUPS.map((g,i)=>`<option value="${i}">${esc(g.t)}</option>`).join("")}</select>
+    <button class="tile wide" onclick="setTab('badges')"><span class="name">Badges</span><span class="count">${nb} / ${BADGES.length} earned ›</span></button>
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>`;
 }
 function resetAsk(){
   const f=app.querySelector(".foot");
-  f.innerHTML=`<span class="small">Clear all progress?</span><span class="row" style="flex:none"><button class="link" onclick="prog={};save();render()">Yes, clear</button><button class="link" onclick="render()">Keep</button></span>`;
+  f.innerHTML=`<span class="small">Clear all progress?</span><span class="row" style="flex:none"><button class="link" onclick="prog={};badges={};save();saveB();render()">Yes, clear</button><button class="link" onclick="render()">Keep</button></span>`;
 }
 function viewQuiz(){
   const q=S.qs[S.i],f=BY[q.c],n=S.qs.length;
@@ -589,10 +723,21 @@ function viewQuiz(){
       if(picked)miss=`<div class="row" style="align-items:center"><div style="flex:0 0 72px">${img(q.ans,"flag sm")}</div><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
       else miss=`<p class="small muted">${q.typed?`"${esc(q.typed)}" didn't match a country.`:"Revealed."}</p>`;
     }
+    const pill=`<span class="pill ${ok?(q.pts?"ok":""):"bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered?"learned":q.pts>0?"+"+q.pts:q.pts===0?"no points on easy":q.pts}</span>`;
+    if(S.pace==="drill"&&!q.lore){
+      reveal=ok?`<div class="card lore" style="padding:12px 16px"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`
+      :`<div class="card lore">
+        <p class="verdict bad">Not quite ${pill}</p>
+        <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p></div>
+        ${reverse?img(q.c):""}${miss}
+        <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
+      </div>
+      <button class="btn" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
+    } else
     reveal=`<div class="card lore">
-      <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} <span class="pill ${ok?(q.pts?"ok":""):"bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered?"mastered":q.pts>0?"+"+q.pts:q.pts===0?"no mastery on easy":q.pts}</span></p>
+      <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
       ${reverse?img(q.c):""}
-      <div><h2>${esc(f.n)}</h2><p class="capital">${esc(f.cap)} · ${f.r}</p></div>
+      <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p></div>
       <p>${esc(f.m)}</p>
       ${miss}
     </div>
@@ -600,45 +745,69 @@ function viewQuiz(){
   }
   const right=S.qs.filter(x=>x.ans===x.c).length;
   return `
-  <div class="top"><button class="back" onclick="S.view='home';render()">‹ ${esc(S.label)}</button><span class="stat">${right} right · ${S.i+1} / ${n}</span></div>
-  <div class="progress">${dots}</div>
+  <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ ${esc(S.label)}</button><span class="stat">${right} right · ${S.i+1} / ${n}</span></div>
+  <div class="progress">${dots}</div></div>
   ${prompt}
   ${opts}
   ${reveal}`;
+}
+const SITE="https://maxlep.github.io/flag-game/";
+function shareGrid(){
+  const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length;
+  if(n<=50){const sq=S.qs.map(q=>q.ans===q.c?"🟩":"🟥");const rows=[];for(let i=0;i<n;i+=10)rows.push(sq.slice(i,i+10).join(""));return rows.join("\n")}
+  const k=20,red=Math.round((n-right)/n*k);return "🟩".repeat(k-red)+"🟥".repeat(red);
+}
+function shareText(){
+  const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length;
+  const diff=S.diff[0].toUpperCase()+S.diff.slice(1),mode=S.dir==="flag"?" · pick the flag":"";
+  return `Flag Game · ${S.label} · ${diff}${mode}\n${right}/${n}${S.best>=5?` · streak ${S.best}`:""}\n${shareGrid()}\n${SITE}`;
+}
+async function share(){
+  const text=shareText(),btn=$("#shareBtn");
+  try{if(navigator.share){await navigator.share({text});btn.textContent="Shared";return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(text);btn.textContent="Copied to clipboard"}
+  catch(e){const ta=$("#shareTa");ta.hidden=false;ta.value=text;ta.focus();ta.select();btn.textContent="Copy the text below"}
 }
 function viewDone(){
   const right=S.qs.filter(q=>q.ans===q.c).length,n=S.qs.length;
   const missed=S.qs.filter(q=>q.ans!==q.c);
   const word=right===n?"Perfect round":right>=n*.7?"Strong round":right>=n*.4?"Getting there":"Keep at it";
+  const crown=(S.earned||[]).map(id=>{const b=BADGE[id];return `<div class="card newbadge"><div class="row" style="flex-wrap:nowrap"><span class="be" style="flex:none">${b.e}</span><div><p class="eyebrow">New badge</p><h2>${id==="lord"?"You are the Flag Lord.":b.n}</h2><p class="small muted">${b.h}</p></div></div></div>`}).join("");
   return `
-  <div class="top"><button class="back" onclick="S.view='home';render()">‹ Home</button><span class="stat">${esc(S.label)}</span></div>
+  <div class="top"><button class="back" onclick="goBack()">‹ Back</button><span class="stat">${esc(S.label)}</span></div>
+  ${crown}
   <div class="card" style="align-items:flex-start">
     <p class="eyebrow">${word}</p>
     <p class="score">${right}<span class="muted" style="font-size:24px"> / ${n}</span></p>
     <p class="small muted">Best streak this round: ${S.best}</p>
+    <p class="grid">${shareGrid().replace(/\n/g,"<br>")}</p>
+    <button class="btn line" id="shareBtn" onclick="share()">Share result</button>
+    <textarea class="sharebox" id="shareTa" hidden readonly aria-label="Result text to copy"></textarea>
   </div>
   ${missed.length?`<div class="card"><h3>Missed</h3><div class="missed">${missed.map(q=>`<span class="chip">${img(q.c,"flag")}${esc(BY[q.c].n)}</span>`).join("")}</div></div>`:""}
   <button class="btn" onclick="startRound(S.mode,S.arg,S.label)">Play again</button>
-  <button class="btn ghost" onclick="S.view='home';render()">Choose another set</button>`;
+  <button class="btn ghost" onclick="goBack()">Choose another set</button>`;
 }
 function viewStudy(){
   const r=S.region;
-  const opts=[...REGIONS,"Look-alikes"].map(x=>`<option ${x===r?"selected":""}>${x}</option>`).join("");
+  const opts=[...REGIONS,"Whole world","Look-alikes"].map(x=>`<option value="${x}" ${x===r?"selected":""}>${x==="Look-alikes"?"Look-alikes · "+GROUPS.length+" sets":x==="Whole world"?"Whole world · "+FLAGS.length+" flags":x+" · "+FLAGS.filter(f=>f.r===x).length+" flags"}</option>`).join("");
   let body;
   if(r==="Look-alikes"){
-    body=GROUPS.map((g,i)=>`<div class="group"><h3>${esc(g.t)}</h3><div class="flags">${g.f.map(c=>`<figure>${img(c,"flag sm")}<figcaption>${esc(BY[c].n)}</figcaption></figure>`).join("")}</div><p class="hint">${esc(g.h)}</p><button class="btn line" onclick="startRound('group',${i},GROUPS[${i}].t)">Drill this set</button></div>`).join("");
+    const order=["Horizontal stripes","Vertical stripes","Cantons & crosses","Discs & stars","Triangles & serrations"];
+    const sorted=GROUPS.map((g,i)=>({g,i,r:g.k})).sort((a,b)=>order.indexOf(a.r)-order.indexOf(b.r)||a.g.t.localeCompare(b.g.t));
+    let lastR="";
+    body=sorted.map(({g,i,r})=>(r!==lastR?`<p class="eyebrow" style="padding-top:6px">${esc(lastR=r)}</p>`:"")+`<div class="group"><h3>${esc(g.t)}</h3><div class="flags">${g.f.map(c=>`<figure>${img(c,"flag sm")}<figcaption>${esc(BY[c].n)}</figcaption></figure>`).join("")}</div><p class="hint">${esc(g.h)}</p><button class="btn line" onclick="startRound('group',${i},GROUPS[${i}].t)">Quiz me on this set</button></div>`).join("");
   } else {
-    body=FLAGS.filter(f=>f.r===r).map(f=>`<div class="entry">${img(f.c,"flag sm")}<div class="t"><span class="name">${esc(f.n)} ${mastered(f.c)?'<span class="pill ok">mastered</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${esc(f.cap)}</span><p>${esc(f.m)}</p></div></div>`).join("");
+    const list=r==="Whole world"?FLAGS.slice().sort((a,b)=>a.n.localeCompare(b.n)):FLAGS.filter(f=>f.r===r);
+    body=list.map(f=>`<div class="entry"><a class="flink" href="${links(f.c).flag}" target="_blank" rel="noopener" title="The flag on Wikipedia">${img(f.c,"flag sm")}</a><div class="t"><span class="name">${nameLink(f.c)} ${mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':""}</span><span class="capital">${capLine(f.c)}</span><p>${esc(f.m)}</p></div></div>`).join("");
   }
-  return `
-  <div class="top"><button class="back" onclick="S.view='home';S.tab='quiz';render()">‹ Home</button><span class="stat">${r==="Look-alikes"?GROUPS.length+" sets":FLAGS.filter(f=>f.r===r).length+" flags"}</span></div>
-  <select id="studySel" onchange="S.region=this.value;render();window.scrollTo(0,0)">${opts}</select>
+  return `${shell(`<select id="studySel" onchange="S.region=this.value;render();window.scrollTo(0,0)">${opts}</select>`)}
   <div class="study">${body}</div>
-  ${r!=="Look-alikes"?`<button class="btn" onclick="startRound('region','${r}','${r}')">Quiz me on ${r}</button>`:""}`;
+`;
 }
 
 // ---------- BOOT ----------
-load();loadSet();
+load();loadSet();loadB();
 function start(data){ if(data&&data.S)S=data.S; render(); }
 if(window.claude?.hot?.snapshot)window.claude.hot.snapshot(()=>({S}));
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});

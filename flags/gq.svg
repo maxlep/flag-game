@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gq" viewBox="0 0 640 480">
-  <path fill="#e32118" d="M0 0h640v480H0z"/>
-  <path fill="#fff" d="M0 0h640v320H0z"/>
-  <path fill="#3e9a00" d="M0 0h640v160H0z"/>
+  <path fill="#e32118" d="M0 0h640v480H0z" shape-rendering="crispEdges"/>
+  <path fill="#fff" d="M0 0h640v320H0z" shape-rendering="crispEdges"/>
+  <path fill="#3e9a00" d="M0 0h640v160H0z" shape-rendering="crispEdges"/>
   <path fill="#0073ce" d="M0 0v480l180-240z"/>
   <g stroke="#000">
     <path fill="#fff" d="M281.6 191.8h76.6V272c0 27-35.2 6.2-38.2 20.6-5.2-14.8-38.2 6.6-38.2-22.2z"/>

@@ -1,0 +1,21 @@
+{
+ "name": "Flags of the World",
+ "short_name": "Flags",
+ "description": "A quiz for learning the flags of the world, with the meaning behind each flag.",
+ "start_url": "./",
+ "display": "standalone",
+ "background_color": "#0f1521",
+ "theme_color": "#1e3f8f",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}
