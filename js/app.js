@@ -516,7 +516,6 @@ function viewDone(){
     <p class="score">${right}<span class="muted" style="font-size:24px"> / ${n}</span></p>
     <p class="small muted">Best streak this round: ${S.best}</p>
     ${shareGrid()?`<p class="grid">${shareGrid().replace(/\n/g,"<br>")}</p>`:""}
-    <p class="small">${esc(shareMissed())}</p>
     <div class="row" style="flex-wrap:nowrap"><button class="btn line" id="shareBtn" onclick="share()">Share result</button><button class="btn line icon" id="copyBtn" onclick="copyResult()" title="Copy result text" aria-label="Copy result text">${CLIP}</button></div>
     <textarea class="sharebox" id="shareTa" hidden readonly aria-label="Result text to copy"></textarea>
   </div>
