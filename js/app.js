@@ -322,7 +322,7 @@ function setCards(list){
   return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
     return card({name:r,count:badges["lord-"+r]&&SET.scope!=="territories"?"Lord of "+r+" · "+m+" / "+all.length:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
 }
-const SCOPES=[["countries","Countries"],["all","All"],["territories","Territories"]];
+const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
 const scopeSeg=note=>`<div class="seg"><span class="label">Flags</span><div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
 function viewHome(){
   const weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
