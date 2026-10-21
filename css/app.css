@@ -133,6 +133,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .grid{font-size:18px;line-height:1.25;letter-spacing:1px;word-break:break-all;max-width:100%}
 .sharebox{width:100%;font:13px var(--mono);color:var(--ink);background:var(--tint);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:120px}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}
+.ver{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:-6px}
+.ver .stamp{margin-left:auto;font:10px var(--mono);color:var(--muted);opacity:.55;letter-spacing:.02em}
+.ver .stale{font-size:13px;color:var(--accent);font-weight:600;text-decoration:none}
+.ver .stale:hover{text-decoration:underline}
 .link{color:var(--accent);font-weight:600;font-size:14px}
 .wl{color:inherit;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);transition:text-decoration-color .12s}
 .wl:hover,.wl:focus-visible{text-decoration-color:var(--accent);color:var(--accent)}
