@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1440 960"><defs>
+<linearGradient id="d" y2="277.58" gradientUnits="userSpaceOnUse" x2="601.38" gradientTransform="matrix(1.14637 0 0 1.17117 33.18 82.14)" y1="342.3" x1="597.92">
+<stop stop-color="#fff" offset="0"/>
+<stop stop-color="#1ea8d1" offset="1"/>
+</linearGradient>
+<linearGradient id="e" y2="399.5" gradientUnits="userSpaceOnUse" x2="600.31" gradientTransform="matrix(1.14637 0 0 1.17117 33.18 82.14)" y1="326.43" x1="599.96">
+<stop stop-color="#FFF" offset="0"/>
+<stop stop-color="#c1d3e8" offset=".13"/>
+<stop stop-color="#88b0d5" offset=".3"/>
+<stop stop-color="#5998c6" offset=".46"/>
+<stop stop-color="#2c87bc" offset=".62"/>
+<stop stop-color="#007db5" offset=".76"/>
+<stop stop-color="#0077b0" offset=".9"/>
+<stop stop-color="#0075af" offset="1"/>
+</linearGradient>
+</defs><path fill="#ed1c24" d="M0 0h1440v960H0z" shape-rendering="crispEdges"/><path fill="#034ea2" d="M0 0h1440v720H0z" shape-rendering="crispEdges"/><path fill="#fd0" d="M0 0h1440v480H0z" shape-rendering="crispEdges"/></svg>

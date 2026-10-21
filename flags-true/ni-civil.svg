@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 600"><defs>
+<linearGradient id="cap1" gradientUnits="userSpaceOnUse" x1="498.738" y1="289.055" x2="500.626" y2="283.42">
+<stop stop-color="#510000" offset="0"/>
+<stop stop-color="#8a0000" offset="0.3"/>
+<stop stop-color="#a00" offset="1"/>
+</linearGradient>
+<linearGradient id="cap2" gradientUnits="userSpaceOnUse" x1="501.444" y1="291.373" x2="502.927" y2="287.449">
+<stop stop-color="#ff2a2a" offset="0"/>
+<stop stop-color="#f00" offset="1"/>
+</linearGradient>
+<linearGradient id="mountain" gradientUnits="userSpaceOnUse" x1="484.764" y1="311.709" x2="484.764" y2="317.647">
+<stop stop-color="#F5F549" offset="0"/>
+<stop stop-color="#97C924" offset="1"/>
+</linearGradient>
+<linearGradient id="seafgrad">
+<stop stop-color="#025" offset="0"/>
+<stop stop-color="#04a" offset="0.5"/>
+<stop stop-color="#025" offset="1"/>
+</linearGradient>
+<linearGradient id="seabgrad" xlink:href="#seafgrad" gradientUnits="userSpaceOnUse" x1="444.509" y1="317.486" x2="634.411" y2="317.486"/>
+<clipPath id="shield">
+<path fill="#000" d="m500,226.375 -63.7015,110.332h127.401z"/>
+</clipPath>
+</defs><rect width="1000" height="600" fill="#0067C6" shape-rendering="crispEdges"/><rect width="1000" height="200" y="200" fill="#fff" shape-rendering="crispEdges"/></svg>

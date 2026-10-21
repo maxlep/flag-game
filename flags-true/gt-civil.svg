@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 960 600"><defs>
+<radialGradient id="a">
+<stop stop-color="#f9f0aa" offset=".22"/>
+<stop stop-color="#b07e09" offset="1"/>
+</radialGradient>
+<radialGradient id="d" xlink:href="#a" gradientUnits="userSpaceOnUse" cx="447.42" cy="308.27" r="16.53"/>
+<radialGradient id="e" xlink:href="#a" gradientUnits="userSpaceOnUse" cx="451.56" cy="313" r="10.91"/>
+<radialGradient id="f" xlink:href="#a" gradientUnits="userSpaceOnUse" cx="454.11" cy="308.64" r="9.78"/>
+<radialGradient id="g" xlink:href="#a" gradientUnits="userSpaceOnUse" cx="458.39" cy="307.06" r="17.35"/>
+<radialGradient id="j" xlink:href="#a" gradientUnits="userSpaceOnUse" cx="445.98" cy="252.36" r="13.02"/>
+<radialGradient id="m" gradientUnits="userSpaceOnUse" cx="477.86" cy="215.27" r=".34">
+<stop stop-color="#a50a0a" offset=".26"/>
+<stop stop-color="#4c0505" offset="1"/>
+</radialGradient>
+<radialGradient id="n">
+<stop stop-color="#fff" offset="0"/>
+<stop stop-color="#fff" stop-opacity="0" offset="1"/>
+</radialGradient>
+<linearGradient id="h" gradientUnits="userSpaceOnUse" x1="473.91" y1="259.17" x2="472.36" y2="231.96">
+<stop stop-color="#b07e09" stop-opacity="0" offset=".22"/>
+<stop stop-color="#b07e09" offset="1"/>
+</linearGradient>
+<linearGradient id="i" gradientUnits="userSpaceOnUse" x1="483.13" y1="296.66" x2="485.49" y2="326.58">
+<stop stop-color="#b07e09" stop-opacity="0" offset=".22"/>
+<stop stop-color="#b07e09" offset="1"/>
+</linearGradient>
+<linearGradient id="k" gradientUnits="userSpaceOnUse" x1="451.54" y1="249.52" x2="455.37" y2="240.58">
+<stop stop-color="#f9f0aa" offset=".22"/>
+<stop stop-color="#b07e09" offset="1"/>
+</linearGradient>
+<linearGradient id="l" gradientUnits="userSpaceOnUse" x1="473.31" y1="237.25" x2="475.93" y2="270.45">
+<stop stop-color="#f9f0aa" offset=".22"/>
+<stop stop-color="#b07e09" offset="1"/>
+</linearGradient>
+</defs><path fill="#4997d0" d="M0 0h960v600H0z" shape-rendering="crispEdges"/><path fill="#fff" d="M320 0h320v600H320z" shape-rendering="crispEdges"/></svg>
