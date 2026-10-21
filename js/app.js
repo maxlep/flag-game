@@ -501,17 +501,24 @@ function openFlag(c){
   st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};LB.moved=false;st.classList.add("drag")});
   st.addEventListener("pointermove",e=>{if(!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start;
     if(cur.length===1&&s0.pts.length===1){LB.x=s0.x+(cur[0].x-s0.pts[0].x);LB.y=s0.y+(cur[0].y-s0.pts[0].y)}
-    else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const r=d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));LB.scale=Math.min(8,Math.max(1,s0.scale*r));
-      const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};LB.x=s0.x+(m1.x-m0.x);LB.y=s0.y+(m1.y-m0.y)}
+    else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));const ns=Math.min(8,Math.max(1,want)),r=ns/s0.scale;
+      const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},C=lbCenter();
+      // keep the point under the fingers' midpoint fixed while scaling, then follow the midpoint
+      LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y)}
     if(Math.abs(LB.x-s0.x)+Math.abs(LB.y-s0.y)>6||LB.scale!==s0.scale)LB.moved=true;
     lbApply()});
   const up=e=>{LB.pts.delete(e.pointerId);LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()]};if(!LB.pts.size)st.classList.remove("drag")};
   st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
-  st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015))},{passive:false});
-  st.addEventListener("dblclick",()=>{LB.scale=LB.scale>1?1:2.5;if(LB.scale===1){LB.x=0;LB.y=0}lbApply()});
+  st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
+  st.addEventListener("dblclick",e=>{if(LB.scale>1){LB.scale=1;LB.x=0;LB.y=0;lbApply()}else lbZoom(2.5,{x:e.clientX,y:e.clientY})});
   el.addEventListener("click",e=>{if(e.target===st&&!LB.moved)closeFlag()});
 }
-function lbZoom(f){if(!LB)return;LB.scale=Math.min(8,Math.max(1,LB.scale*f));if(LB.scale===1){LB.x=0;LB.y=0}lbApply()}
+// The flag is centred in the stage and transformed as translate(x,y) scale(s) about its own centre C, so a local
+// offset q shows at C+t+s·q. Zooming by f about a screen point P keeps the point under P fixed: t' = (1-f)(P-C) + f·t.
+function lbCenter(){const r=LB.stage.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}}
+function lbZoom(f,P){if(!LB)return;const ns=Math.min(8,Math.max(1,LB.scale*f));f=ns/LB.scale;if(f===1)return;
+  const C=lbCenter();P=P||C;LB.x=(1-f)*(P.x-C.x)+f*LB.x;LB.y=(1-f)*(P.y-C.y)+f*LB.y;LB.scale=ns;
+  if(ns===1){LB.x=0;LB.y=0}lbApply()}
 function lbApply(){if(!LB)return;LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px) scale(${LB.scale})`}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
