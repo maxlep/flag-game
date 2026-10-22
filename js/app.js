@@ -165,7 +165,7 @@ function showVariant(c,i){
 // One line naming the design on screen (text only), and a separate row of chips to switch designs. Keeping them apart
 // means the chips sit in a fixed spot under the flag and never move with the length of the label.
 function useLine(c,vi){const v=VARS(c),cur=v&&v[vi];return `<p class="vline" data-c="${c}">${cur?esc(cur.l)+(cur.d?" · "+esc(cur.d):""):esc(useLabel(c))}</p>`}
-function vchips(c,vi,onpick,hidden){const v=VARS(c);if(!v)return "";return `<div class="vchips${hidden?" hide":""}" data-c="${c}">${v.map((x,i)=>`<button type="button" class="chipbtn${i===vi?" on":""}" onclick="${onpick.replace("%i",i)}">${esc(x.k[0].toUpperCase()+x.k.slice(1))}</button>`).join("")}</div>`}
+function vchips(c,vi,onpick,hidden){const v=VARS(c);if(!v)return "";return `<div class="vchips${hidden?" hide":""}" data-c="${c}">${v.map((x,i)=>`<button type="button" class="chipbtn${i===vi?" on":""}" onmousedown="event.preventDefault()" onclick="${onpick.replace("%i",i)}">${esc(x.k[0].toUpperCase()+x.k.slice(1))}</button>`).join("")}</div>`}
 const esc=s=>s.replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 
 // Look-alike filter: a region name or null for all regions. The scope setting applies on top.
@@ -259,7 +259,7 @@ function submitTyped(){
 function typeInput(v){
   const q=S.qs[S.i];q.typed=v;
   const box=$("#sugg");if(!box)return;
-  box.innerHTML=suggest(v).map(c=>`<button type="button" onclick="pickSugg('${c}')">${esc(BY[c].n)}</button>`).join("");
+  box.innerHTML=suggest(v).map(c=>`<button type="button" onmousedown="event.preventDefault()" onclick="pickSugg('${c}')">${esc(BY[c].n)}</button>`).join("");
 }
 function pickSugg(c){const inp=$("#typeIn");if(inp)inp.value=BY[c].n;submitTyped()}
 function answer(k){
@@ -308,9 +308,11 @@ window.addEventListener("scroll",shade,{passive:true});window.addEventListener("
 // scrolled to the top, so flag and box share the screen.
 // The state follows the viewport height alone, not focus, so tapping a button can't toggle it and resize the flag.
 // Height is taken in layout pixels (vv.height × vv.scale), so pinch-zooming the page doesn't count as a keyboard.
+let VVH=0;
 function keyboard(){
-  const vv=window.visualViewport,h=vv?vv.height*vv.scale:window.innerHeight,open=!!(vv&&h<window.innerHeight-120),was=document.body.classList.contains("kb");
-  document.documentElement.style.setProperty("--vvh",vv?h+"px":"");
+  const vv=window.visualViewport;if(vv&&vv.scale>1.02)return; // pinch-zoomed: leave the layout alone
+  const h=vv?Math.round(vv.height*vv.scale):window.innerHeight,open=!!(vv&&h<window.innerHeight-120),was=document.body.classList.contains("kb");
+  if(Math.abs(h-VVH)>24){VVH=h;document.documentElement.style.setProperty("--vvh",h+"px")}
   document.body.classList.toggle("kb",open);
   if(open&&!was&&S.view==="quiz")window.scrollTo(0,0);
 }
@@ -453,7 +455,7 @@ function viewQuiz(){
     opts=`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" type="text" enterkeyhint="${q.ans?"next":"go"}" ${q.ans?"readonly":""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans?"Enter for next":strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
       ${strict||q.ans?"":'<div class="sugg" id="sugg"></div>'}
-      ${q.ans?"":`<div class="row"><button type="submit" class="btn">Check</button><button type="button" class="btn line" onclick="answer('__wrong__')">Reveal</button></div>`}</form>`;
+      ${q.ans?"":`<div class="row"><button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`}</form>`;
   } else {
     prompt=`${img(q.c,"flag",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
@@ -479,7 +481,7 @@ function viewQuiz(){
         ${reverse?img(q.c,"flag",q.v||0):""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
       </div>
-      <button class="btn" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
+      <button class="btn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
     } else
     reveal=`<div class="card lore">
       <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
@@ -488,7 +490,7 @@ function viewQuiz(){
       <p>${esc(f.m)}</p>
       ${miss}
     </div>
-    <button class="btn" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
+    <button class="btn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
   }
   const right=S.qs.filter(x=>x.ans===x.c).length;
   return `
