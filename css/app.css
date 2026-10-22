@@ -110,6 +110,7 @@ body.kb .flag.big .fl{width:min(var(--w,100%),calc((var(--vvh,9999px) - 240px) *
 .opt:active,.fopt:active{transform:scale(.985)}
 .tile .name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15}
 .tile .name.sm{font-size:15px}
+.tile .name .mark{font-size:14px;margin-left:6px;vertical-align:1px}
 .tile .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
