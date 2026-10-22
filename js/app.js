@@ -377,15 +377,17 @@ function viewHome(){
     ${card({wide:true,name:"Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>
-  <p class="ver" id="ver"><span class="stamp">${typeof VERSION==="object"?"updated "+VERSION.at:""}<button class="refresh" onclick="location.reload()" title="Reload the page" aria-label="Reload">↻</button></span></p>`;
+  <p class="ver" id="ver"><span class="stamp">${typeof VERSION==="object"?"updated "+VERSION.at:""}<button class="refresh" onclick="hardReload()" title="Reload the page" aria-label="Reload">↻</button></span></p>`;
 }
-// Compare this build with the one on GitHub; say so if a newer one exists. Fails silently where the network is blocked.
+// Compare this build with the one the site is serving; say so if that one is newer. Fails silently from a local file.
+// A hard reload fetches a fresh index.html (whose asset links carry the version), so the browser can't mix old and new.
+function hardReload(){location.replace(location.pathname+"?r="+Date.now())}
 let VER_CHECKED=null;
 async function checkVersion(){
   if(typeof VERSION!=="object"||VER_CHECKED!==null)return;VER_CHECKED=false;
-  try{const r=await fetch("https://raw.githubusercontent.com/maxlep/flag-game/main/js/version.js?"+Date.now(),{cache:"no-store"});
+  try{const r=await fetch("js/version.js?"+Date.now(),{cache:"no-store"});
     const m=(await r.text()).match(/at:"([^"]+)"/);if(!m)return;VER_CHECKED=m[1];
-    const el=$("#ver");if(el&&VER_CHECKED>VERSION.at)el.innerHTML=`<a class="stale" href="javascript:location.reload(true)">A newer version is available, reload</a>`+el.innerHTML;
+    const el=$("#ver");if(el&&VER_CHECKED>VERSION.at)el.innerHTML=`<button class="stale" onclick="hardReload()">A newer version is available, reload</button>`+el.innerHTML;
   }catch(e){}
 }
 function resetAsk(){
@@ -667,6 +669,7 @@ function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="
 // ---------- BOOT ----------
 load();loadSet();loadB();
 function start(data){
+  if(location.search.startsWith("?r="))history.replaceState(null,"",location.pathname);
   if(data&&data.S)S=data.S;
   else{const r=loadRound();if(r){S=r;S.confirmLeave=false;S.timer=null;
     // a Drill round saved right after a correct answer should move on as it would have
