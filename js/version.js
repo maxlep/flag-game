@@ -1,2 +1,2 @@
 // Written by tools/stamp_version.py before each commit.
-const VERSION={at:"2026-10-22 14:46 UTC"};
+const VERSION={at:"2026-10-22 18:25 UTC"};

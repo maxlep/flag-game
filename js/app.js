@@ -274,8 +274,10 @@ function answer(k){
   if(S.pace==="drill"&&ok){clearTimeout(S.timer);S.timer=setTimeout(next,650);return}
   requestAnimationFrame(()=>{const btns=app.querySelectorAll(".btn");const b=btns[btns.length-1];if(b)b.scrollIntoView({block:"end",behavior:"smooth"})});
 }
-function next(){ clearTimeout(S.timer);S.timer=null;S.confirmLeave=false; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0)} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
+function next(){ clearTimeout(S.timer);S.timer=null;S.confirmLeave=false; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0);wake()} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
 function showLore(){const q=S.qs[S.i];q.lore=true;render()}
+// A phone can hide its keyboard while the box keeps focus; a blur and focus during the tap brings it back.
+function wake(){const t=$("#typeIn");if(t&&document.activeElement===t&&!document.body.classList.contains("kb")){t.blur();t.focus({preventScroll:true})}}
 function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();showVariant(q.c,i)}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
@@ -305,9 +307,10 @@ window.addEventListener("scroll",shade,{passive:true});window.addEventListener("
 // When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
 // scrolled to the top, so flag and box share the screen.
 // The state follows the viewport height alone, not focus, so tapping a button can't toggle it and resize the flag.
+// Height is taken in layout pixels (vv.height × vv.scale), so pinch-zooming the page doesn't count as a keyboard.
 function keyboard(){
-  const vv=window.visualViewport,open=!!(vv&&vv.height<window.innerHeight-120),was=document.body.classList.contains("kb");
-  document.documentElement.style.setProperty("--vvh",vv?vv.height+"px":"");
+  const vv=window.visualViewport,h=vv?vv.height*vv.scale:window.innerHeight,open=!!(vv&&h<window.innerHeight-120),was=document.body.classList.contains("kb");
+  document.documentElement.style.setProperty("--vvh",vv?h+"px":"");
   document.body.classList.toggle("kb",open);
   if(open&&!was&&S.view==="quiz")window.scrollTo(0,0);
 }
