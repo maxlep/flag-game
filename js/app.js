@@ -714,7 +714,7 @@ function viewLook(){
 // ---------- FLAG VIEWER ----------
 let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
 // openFlag shows a flag's designs as slides; openMap shows its map alone. Both use the same overlay and gestures,
-// and the chip row under the stage switches between them. Swiping only ever moves between designs.
+// and the chip row switches between them. Dragging always pans; nothing swipes.
 // o.from opens with the flag at a rect on the page (the question flag), so a pinch there carries straight on in the
 // viewer: that size is then the floor, and pinching back down to it closes the viewer. o.quiet hides the name and
 // the chips, for a flag that hasn't been named yet.
@@ -731,7 +731,7 @@ function openViewer(c,o){
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
   const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
-  LB={c,chips:o.chips!==false&&!o.quiet,refocus,min:1,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track};
+  LB={c,chips:o.chips!==false&&!o.quiet,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
   lbShow(o.what,o.vi||0);
   if(o.from&&LB.what==="flag"){const r=o.from,C=lbCenter(),s=r.width/LB.baseW;LB.from={s,x:r.left+r.width/2-C.x,y:r.top+r.height/2-C.y};LB.min=Math.min(1,s);LB.scale=s;LB.x=LB.from.x;LB.y=LB.from.y;lbApply()}
   const st=stage;
@@ -749,22 +749,17 @@ function lbDown(e){if(!LB)return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY
 function lbMove(e){if(!LB||!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start,st=LB.stage;
   if(cur.length===1&&s0.pts.length===1){
     const dx=cur[0].x-s0.pts[0].x,dy=cur[0].y-s0.pts[0].y;
-    if(LB.scale===1&&LB.n>1&&!LB.from){
-      // At normal size the strip of designs follows the finger; it resists past the first and last.
-      const atEnd=(LB.vi===0&&dx>0)||(LB.vi===LB.n-1&&dx<0);LB.sx=atEnd?dx*0.3:dx;lbTrack(false);if(Math.abs(dx)>6)LB.moved=true}
-    else if(LB.scale>LB.min||LB.from){LB.x=s0.x+dx;LB.y=s0.y+dy;if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;lbApply()}
+    if(LB.scale>LB.min||LB.from){LB.x=s0.x+dx;LB.y=s0.y+dy;if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;lbApply()}
   }
   else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
     if(LB.from&&want<=LB.min){closeFlag();return} // pinched back down to its own size
     const ns=Math.min(lbMax(),Math.max(LB.min,want)),r=ns/s0.scale;
     const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},C=lbCenter();
     // keep the point under the fingers' midpoint fixed while scaling, then follow the midpoint
-    LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y);LB.sx=0;LB.moved=true;lbApply();lbTrack(false)}
+    LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y);LB.moved=true;lbApply()}
 }
 // Double tap by hand: touch devices don't send dblclick. Two quick taps near the same spot, with no drag between.
-function lbUp(e){if(!LB)return;LB.pts.delete(e.pointerId);const s0=LB.start,st=LB.stage;
-  if(LB.sx){const W=st.clientWidth,dt=Math.max(1,Date.now()-s0.at),fast=Math.abs(LB.sx)/dt>0.5;
-    const go=(Math.abs(LB.sx)>W*0.2||fast)?(LB.sx<0?1:-1):0;LB.sx=0;lbGo(Math.min(LB.n-1,Math.max(0,LB.vi+go)))}
+function lbUp(e){if(!LB)return;LB.pts.delete(e.pointerId);const st=LB.stage;
   if(!LB.pts.size){st.classList.remove("drag");lbSettle(true)}
   LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};
   if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
@@ -807,16 +802,16 @@ function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
   const f=(fl.dataset.fit||"").split(" ").map(Number);if(f.length!==4)return;
   const v=LB.vb0,u=v.w/LB.baseW,s=Math.min(lbMax(),Math.max(1,Math.min(v.w/f[2],v.h/f[3])));
   LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
-// The strip of designs: slide vi is in view, offset by the finger while dragging. Animated only when snapping.
-function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(calc(${-100*LB.vi}% + ${LB.sx}px))`}
-function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}LB.sx=0;lbTrack(true)}
+// The strip of designs: slide vi is in view. The chips move it (animated); there is no swiping, so a drag is always a pan.
+function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(${-100*LB.vi}%)`}
+function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}lbTrack(true)}
 // Fill the stage with the designs (slide vi in view) or the map, from rest.
 function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
-  LB.what=what;LB.scale=1;LB.x=0;LB.y=0;LB.sx=0;LB.vb0=null;LB.from=null;LB.min=1;
+  LB.what=what;LB.scale=1;LB.x=0;LB.y=0;LB.vb0=null;LB.from=null;LB.min=1;
   if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:lbBox().w/lbBox().h,pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
   else{LB.track.innerHTML=Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("");LB.n=nd;LB.vi=Math.min(nd-1,vi);LB.fls=[...LB.track.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]}
   LB.fl=LB.fls[LB.vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbTrack(false);lbCaption();if(what==="map")lbMapHome();
-  $("#lbHint").textContent="Pinch or scroll to zoom · drag to pan · double-tap to reset"+(what==="flag"&&nd>1?" · swipe for the other design":"")}
+  $("#lbHint").textContent="Pinch or scroll to zoom · drag to pan · double-tap to reset"}
 // The arrow keys walk the chips: designs, then the map.
 function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(mapHas(LB.c)?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
 // A chip: a design (by index) or the map.
