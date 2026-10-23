@@ -100,7 +100,7 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 /* The question flag hugs its artwork (no 4:3 slot) so it can take the band's full height; the design chips sit on it. */
 .qflag{position:relative;display:flex;justify-content:center}
 .qmid .flag.big{aspect-ratio:auto;height:auto;max-height:max(110px,var(--flagh,9999px));transition:max-height .25s cubic-bezier(.2,.7,.2,1)}
-.card.lore .vchips{justify-content:flex-start;margin-top:6px}
+.card.lore .vchips{align-self:flex-start;margin-top:6px}
 .qmid .flag.big .fl{width:min(100%,calc(max(110px,var(--flagh,9999px)) * var(--r,1.3333)));transition:width .25s cubic-bezier(.2,.7,.2,1)}
 .flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .zscrim{position:fixed;inset:0;z-index:30;background:rgba(8,12,20,.85);opacity:0;transition:opacity .12s;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -234,14 +234,19 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .chipbtn.on{background:var(--accent);color:var(--accent-ink)}
 .vline{font:12px/1.5 var(--mono);color:var(--muted);letter-spacing:.01em;margin:2px 0 4px}
 .flag .fl[hidden]{display:none}
-.vchips{display:flex;gap:4px;justify-content:center}
+/* One pill with the options inside it: a pick-one control, not separate buttons. */
+.vchips{display:inline-flex;align-self:center;gap:0;padding:3px;border-radius:999px;background:var(--tint)}
+.vchips .chipbtn{background:transparent;color:var(--accent)}
+.vchips .chipbtn.on{background:var(--accent);color:var(--accent-ink)}
 .vchips.hide{visibility:hidden} /* keeps the space before the answer, so the options don't jump */
 .vchips .chipbtn{padding:3px 9px;font-size:12px;line-height:1.3}
 .entry .fcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.entry .fcol .vchips{align-self:stretch;display:flex}
 .entry .fcol .vchips .chipbtn{padding:2px 0;font-size:11px;flex:1;text-align:center}
 .lb-var{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 16px 0;color:#fff;text-align:center}
 .lb-var .vline{color:rgba(255,255,255,.7)}
-.lb-var .chipbtn{background:rgba(255,255,255,.15);color:#fff}
+.lb-var .vchips{background:rgba(255,255,255,.15)}
+.lb-var .chipbtn{background:transparent;color:#fff}
 .lb-var .chipbtn.on{background:#fff;color:#111}
 .lb-track{display:flex;height:100%;width:100%}
 .lb-track.anim{transition:transform .28s cubic-bezier(.2,.7,.2,1)}
