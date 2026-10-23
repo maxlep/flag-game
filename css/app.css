@@ -85,6 +85,8 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .qdrawer .typebox{gap:8px}
 .qdrawer .opt{min-height:46px;padding:9px 14px}
 .qdrawer.empty{display:none}
+/* Drill's "Correct" strip stays visible at the foot of the middle band even when the flag fills it. */
+.qmid .card.toast{position:sticky;bottom:0;padding:10px 16px;margin-top:-6px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .qdrawer.answered .opt{min-height:40px;padding:6px 14px;font-size:15px}
 .qdrawer .opts{gap:8px}
 .qdrawer::before{content:"";position:absolute;top:-1px;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:var(--bg);z-index:-1;border-top:1px solid transparent;transition:border-color .15s,box-shadow .15s}

@@ -521,7 +521,7 @@ function viewQuiz(){
     }
     const pill=`<span class="pill ${ok?(q.pts?"ok":""):"bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered?"learned":q.pts>0?"+"+q.pts:q.pts===0?"no points on easy":q.pts}</span>`;
     if(S.pace==="drill"&&!q.lore){
-      reveal=ok?`<div class="card lore" style="padding:12px 16px"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`
+      reveal=ok?`<div class="card lore toast"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`
       :`<div class="card lore">
         <p class="verdict bad">Not quite ${pill}</p>
         <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p></div>
