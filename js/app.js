@@ -694,51 +694,59 @@ function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="
 
 // Zoom on the question flag. Desktop: scroll over it to zoom; as it grows it drifts from its place toward the middle of
 // the screen (centred by 3x), and you drag to pan. Phone: a pinch scales it where it is, about its own centre, and the
-// fingers' midpoint pans it. The page dims and takes no input while the flag is enlarged. It eases back after a short
-// rest, or at once on a click on the dimmed page or Esc. Resized rather than transform-scaled, so the SVG stays sharp.
+// fingers' midpoint pans it. While enlarged the flag is moved out of the page into a dimming layer that covers the quiz
+// screen and takes every touch, so it always paints on top and every gesture reaches it. It eases back after a short
+// rest, or at once on a tap on the dimmed page or Esc. Resized rather than transform-scaled, so the SVG stays sharp.
 const ZOOM_REST=1500;
-let ZS=null,ZS_T=null,ZBOX=null; // the dimming layer and the box that owns it
+let ZS=null,ZS_T=null,ZBOX=null; // the dimming layer and the box whose flag is in it
 function scrimOn(box){clearTimeout(ZS_T);ZBOX=box;
-  if(!ZS){ZS=document.createElement("div");ZS.className="zscrim";(app.querySelector(".qscreen")||document.body).appendChild(ZS); // inside the quiz screen so it stacks under the lifted flag
-    ZS.addEventListener("click",()=>ZBOX&&ZBOX._z.drop(true));
-    ZS.addEventListener("wheel",e=>{e.preventDefault();if(ZBOX)ZBOX._z.wheel(e)},{passive:false})}
+  if(!ZS){const sc=ZS=document.createElement("div");sc.className="zscrim";(app.querySelector(".qscreen")||document.body).appendChild(sc);
+    const z=()=>ZBOX&&ZBOX._z;
+    sc.addEventListener("click",e=>{if(e.target===sc&&z()&&!z().moved())z().drop(true)});
+    sc.addEventListener("dblclick",e=>{if(z())z().drop(true)});
+    sc.addEventListener("wheel",e=>{e.preventDefault();if(z())z().wheel(e)},{passive:false});
+    sc.addEventListener("pointerdown",e=>{if(z()){sc.setPointerCapture(e.pointerId);z().down(e)}});
+    sc.addEventListener("pointermove",e=>{if(z())z().move(e)});
+    sc.addEventListener("pointerup",e=>{if(z())z().end(e)});sc.addEventListener("pointercancel",e=>{if(z())z().end(e)})}
   requestAnimationFrame(()=>ZS&&ZS.classList.add("on"))}
 function scrimOff(){if(!ZS)return;const sc=ZS;sc.classList.remove("on");ZS_T=setTimeout(()=>{sc.remove();if(ZS===sc){ZS=null;ZBOX=null}},260)}
 function wireZoom(){
   app.querySelectorAll(".flag.big").forEach(box=>{
-    if(box._z)return;const F=()=>box.querySelector(".fl:not([hidden])");
-    const Z={scale:1,px:0,py:0,lift:0,pts:new Map(),timer:null,finishT:null};
+    if(box._z)return;
+    const Z={scale:1,px:0,py:0,lift:0,pts:new Map(),timer:null,finishT:null,fl:null,moved:false};
+    const F=()=>Z.fl||box.querySelector(".fl:not([hidden])");
     const Q=()=>{const q=app.querySelector(".qscreen");return q?q.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight}};
     const C=()=>{const q=Q();return {x:q.width/2,y:q.height/2}};
-    // Take the flag out of the page flow (fixed, at the same spot) so it can grow over everything.
-    // Everything is set in pixels (left, top, width), never percentages or transforms, so transitions interpolate cleanly.
-    const up=()=>{const fl=F();if(fl.classList.contains("z"))return;const r=fl.getBoundingClientRect(),q=Q();Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
-      fl.classList.add("z");box.classList.add("zooming");scrimOn(box);Z.scale=1;Z.px=Z.py=0;apply();void fl.offsetWidth};
+    // Lift: measure the flag where it sits, then move it into the dimming layer at the same spot, in pixels.
+    const up=()=>{if(Z.fl)return;const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
+      Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
+      scrimOn(box);Z.fl=fl;ZS.appendChild(fl);fl.classList.add("z");Z.scale=1;Z.px=Z.py=0;apply();void fl.offsetWidth};
     const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
       const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
       fl.style.width=w.toFixed(1)+"px";fl.style.left=(cx-w/2).toFixed(1)+"px";fl.style.top=(cy-h/2).toFixed(1)+"px"};
     const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
-    const drop=anim=>{live();const fl=F();if(!fl.classList.contains("z"))return;scrimOff();
-      const finish=()=>{fl.classList.remove("anim","z");box.classList.remove("zooming");fl.style.width=fl.style.left=fl.style.top="";Z.scale=1;Z.px=Z.py=0};
+    const drop=anim=>{live();const fl=Z.fl;if(!fl)return;scrimOff();
+      const finish=()=>{fl.classList.remove("anim","z");fl.style.width=fl.style.left=fl.style.top="";box.insertBefore(fl,box.firstChild);Z.fl=null;Z.scale=1;Z.px=Z.py=0};
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true),ZOOM_REST)};
-    const zoomTo=(ns,lift)=>{ns=Math.min(6,Math.max(1,ns));if(ns===Z.scale&&F().classList.contains("z"))return;live();up();Z.lift=lift;Z.scale=ns;apply()};
+    const zoomTo=(ns,lift)=>{ns=Math.min(6,Math.max(1,ns));if(ns===Z.scale&&Z.fl)return;live();up();Z.lift=lift;Z.scale=ns;apply()};
     // The first scroll glides out from the flag's place; later ones follow the wheel directly.
-    const wheel=e=>{const first=!F().classList.contains("z"),ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(first&&ns<=1)return;
+    const wheel=e=>{const first=!Z.fl,ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(first&&ns<=1)return;
       if(first)up();zoomTo(ns,1);if(first){const fl=F();fl.classList.add("anim");setTimeout(()=>fl.classList.remove("anim"),260)}rest()};
-    box.addEventListener("wheel",e=>{e.preventDefault();wheel(e)},{passive:false});
-    box.addEventListener("dblclick",()=>{if(Z.scale>1)drop(true);else{zoomTo(3,1);rest()}});
-    box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&Z.scale===1)return;box.setPointerCapture(e.pointerId);Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-      Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};live()});
-    box.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...Z.pts.values()],s0=Z.start;
-      if(cur.length===1&&s0.pts.length===1&&Z.scale>1){Z.px=s0.px+cur[0].x-s0.pts[0].x;Z.py=s0.py+cur[0].y-s0.pts[0].y;apply()}
+    const down=e=>{Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};Z.moved=false;live()};
+    const move=e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...Z.pts.values()],s0=Z.start;
+      if(cur.length===1&&s0.pts.length===1&&Z.scale>1){Z.px=s0.px+cur[0].x-s0.pts[0].x;Z.py=s0.py+cur[0].y-s0.pts[0].y;if(Math.abs(Z.px-s0.px)+Math.abs(Z.py-s0.py)>6)Z.moved=true;apply()}
       else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const ns=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
-        if(Z.scale===1&&ns<=1)return;const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};
-        zoomTo(ns,0);Z.px=s0.px+m1.x-m0.x;Z.py=s0.py+m1.y-m0.y;apply()}});
+        if(!Z.fl&&ns<=1)return;const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};
+        zoomTo(ns,0);Z.px=s0.px+m1.x-m0.x;Z.py=s0.py+m1.y-m0.y;Z.moved=true;apply()}};
     const end=e=>{Z.pts.delete(e.pointerId);Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};if(!Z.pts.size)rest()};
-    box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
-    box._z={drop,wheel};
+    // Until the flag is lifted, gestures start on the box itself; after that the dimming layer takes them.
+    box.addEventListener("wheel",e=>{e.preventDefault();wheel(e)},{passive:false});
+    box.addEventListener("dblclick",()=>{if(Z.fl)drop(true);else{zoomTo(3,1);rest()}});
+    box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse")return;box.setPointerCapture(e.pointerId);down(e)});
+    box.addEventListener("pointermove",move);box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
+    box._z={drop,wheel,down,move,end,moved:()=>Z.moved};
   });
 }
 
