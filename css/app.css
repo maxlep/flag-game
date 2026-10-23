@@ -356,3 +356,6 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 .lb-hint{font-size:12px;color:#a3adc2;line-height:1.45;margin:0}
 .lb.quiet .lb-foot{display:none}
 .lb .flag{width:min(calc(100% - 24px),calc((100vh - 200px) * 4 / 3));user-select:none;overflow:visible}
+/* In the study column the flag hugs its artwork (no 4:3 slot), so the gaps to the chips and the map are the same. */
+.entry .fcol .flag{aspect-ratio:auto;height:auto;align-items:flex-start}
+.entry .fcol .flag .fl{width:100%} /* flag, chips and map share one width */
