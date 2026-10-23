@@ -320,12 +320,16 @@ app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid"
 // The suggestion row handles its own touches: a drag scrolls it sideways, a lift with little movement picks the chip
 // under the finger. Leaving this to the browser let a slight sideways wobble turn a tap into a scroll and drop it.
 let SUG=null;
-app.addEventListener("pointerdown",e=>{const sg=e.target.closest&&e.target.closest("#sugg");if(!sg)return;
+// #debug: the last few touch events on the suggestion row, shown in the header, to see what a missed tap did.
+const DBG=[];function dbg(t){if(location.hash!=="#debug")return;DBG.push(t);if(DBG.length>6)DBG.shift();const el=app.querySelector(".qscreen .stat");if(el)el.textContent=DBG.join(" ")}
+app.addEventListener("pointerdown",e=>{const sg=e.target.closest&&e.target.closest("#sugg");if(sg)dbg("down@"+Math.round(e.clientX)+","+Math.round(e.clientY)+(e.target.tagName==="BUTTON"?"btn":e.target.tagName));if(!sg)return;
   sg.setPointerCapture(e.pointerId);SUG={sg,id:e.pointerId,x:e.clientX,y:e.clientY,left:sg.scrollLeft,moved:false}},{capture:true});
 app.addEventListener("pointermove",e=>{if(!SUG||e.pointerId!==SUG.id)return;const dx=e.clientX-SUG.x;if(Math.abs(dx)>6||Math.abs(e.clientY-SUG.y)>12)SUG.moved=true;SUG.sg.scrollLeft=SUG.left-dx},{capture:true});
-app.addEventListener("pointerup",e=>{const d=SUG;SUG=null;if(!d||e.pointerId!==d.id)return;if(d.moved)return;
-  const b=document.elementFromPoint(e.clientX,e.clientY),chip=b&&b.closest&&b.closest("#sugg button");if(chip){e.preventDefault();chip.click()}},{capture:true});
-app.addEventListener("pointercancel",()=>{SUG=null},{capture:true});
+app.addEventListener("pointerup",e=>{const d=SUG;SUG=null;if(!d||e.pointerId!==d.id)return;if(d.moved){dbg("up-moved");return}
+  const b=document.elementFromPoint(e.clientX,e.clientY),chip=b&&b.closest&&b.closest("#sugg button");dbg("up@"+Math.round(e.clientX)+","+Math.round(e.clientY)+" on "+(b?b.tagName+(b.id?"#"+b.id:""):"none")+(chip?" pick":" NOPICK"));
+  if(chip){e.preventDefault();chip.click()}},{capture:true});
+app.addEventListener("pointercancel",e=>{if(SUG)dbg("cancel");SUG=null},{capture:true});
+app.addEventListener("click",e=>{if(e.target.closest&&e.target.closest(".qdrawer"))dbg("click:"+e.target.tagName+(e.target.id?"#"+e.target.id:"")+(e.target.textContent||"").trim().slice(0,8))},{capture:true});
 // On a phone the keyboard halves the screen and the browser centres the answer box, pushing the flag off the top.
 // When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
 // scrolled to the top, so flag and box share the screen.
