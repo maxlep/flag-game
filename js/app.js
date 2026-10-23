@@ -138,6 +138,8 @@ function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
 function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";const y=typeof ADOPTED==="object"&&ADOPTED[c];
   const where=f.sov?f.r:geoOf(f)+" · territory";
   return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+where:""} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
+// The flag on a card: tap to open it in the viewer.
+function cardFlag(c,vi){return `<button type="button" class="flink" onclick="openFlag('${c}',+this.querySelector('.fl:not([hidden])').dataset.v)" title="View large">${img(c,"flag",vi)}</button>`}
 // A small map of the flag's region, the country filled in; opens the viewer on the map slide.
 function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openMap('${c}',false)" title="Open the map">${mapSVG({code:c,cls:"sm",fit:1.6,pad:0})}</button>`:""}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
@@ -294,7 +296,6 @@ function wake(){const t=$("#typeIn");if(t&&document.activeElement===t&&!document
 function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();showVariant(q.c,i)}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
-  if(ZS&&e.key==="Escape"){if(ZBOX)ZBOX._z.drop(true);return}
   if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbGo(LB.vi+(e.key==="ArrowRight"?1:-1));return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
@@ -398,7 +399,7 @@ function render(){
     // The middle band keeps its scroll position when the same question is drawn again (the leave prompt, a design
     // switch), so the reader doesn't jump back to the flag.
     const mid0=$("#qmid"),keep=mid0&&+mid0.dataset.i===S.i&&mid0.scrollTop>0?mid0.scrollTop:0;
-    if(ZBOX&&ZBOX._z)ZBOX._z.drop(false); // a lifted flag goes back before its screen is redrawn
+    if(LB&&LB.from)closeFlag(); // a flag opened from this screen closes before it is redrawn
     renderQuiz();
     if(keep){const m=$("#qmid");if(m)m.scrollTop=keep}
     return}
@@ -558,7 +559,7 @@ function viewQuiz(){
     if(!ok){
       const gi=GROUP_OF[q.c]&&GROUP_OF[q.c].find(i=>GROUPS[i].f.includes(q.ans));
       const hint=gi!==undefined&&gi!==null?esc(GROUPS[gi].h):"";
-      if(picked)miss=`<div class="row" style="align-items:center"><div style="flex:0 0 72px">${img(q.ans,"flag sm")}</div><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
+      if(picked)miss=`<div class="row" style="align-items:center"><button type="button" class="flink" style="flex:0 0 72px" onclick="openFlag('${q.ans}')" title="View large">${img(q.ans,"flag sm")}</button><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
       else miss=`<p class="small muted">${q.typed?`"${esc(q.typed)}" didn't match a country.`:"Revealed."}</p>`;
     }
     const pill=`<span class="pill ${ok?(q.pts?"ok":""):"bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered?"learned":q.pts>0?"+"+q.pts:q.pts===0?"no points on easy":q.pts}</span>`;
@@ -567,14 +568,14 @@ function viewQuiz(){
       :`<div class="card lore">
         <p class="verdict bad">Not quite ${pill}</p>
         <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p></div>
-        ${reverse?img(q.c,"flag",q.v||0):""}${miss}
+        ${reverse?cardFlag(q.c,q.v||0):""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
       </div>
 `;
     } else
     reveal=`<div class="card lore">
       <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
-      ${reverse?img(q.c,"flag",q.v||0)+vchips(q.c,q.v||0,"setQVar(%i)"):""}
+      ${reverse?cardFlag(q.c,q.v||0)+vchips(q.c,q.v||0,"setQVar(%i)"):""}
       <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p>${useLine(q.c,q.v||0)}${reverse?"":vchips(q.c,q.v||0,"setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
       ${mapCard(q.c)}
@@ -708,64 +709,80 @@ function viewLook(){
 let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
 // openFlag shows a flag's designs as slides; openMap shows its map alone. Both use the same overlay and gestures,
 // and the chip row under the stage switches between them. Swiping only ever moves between designs.
-function openFlag(c,vi=0){openViewer(c,{what:"flag",vi})}
+// o.from opens with the flag at a rect on the page (the question flag), so a pinch there carries straight on in the
+// viewer: that size is then the floor, and pinching back down to it closes the viewer. o.quiet hides the name and
+// the chips, for a flag that hasn't been named yet.
+function openFlag(c,vi=0,o){openViewer(c,{what:"flag",vi,...(o||{})})}
 function openMap(c,chips=true){openViewer(c,{what:"map",chips})}
 function openViewer(c,o){
-  if(ZBOX&&ZBOX._z)ZBOX._z.drop(true); // a flag lifted by the in-place zoom goes back first
   closeFlag();
-  const el=document.createElement("div");el.className="lb";el.id="lb";
-  el.innerHTML=`<div class="lb-top"><span class="nm">${esc(BY[c].n)}</span><div class="ctl">
+  const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"");el.id="lb";
+  el.innerHTML=`<div class="lb-top"><span class="nm">${o.quiet?"":esc(BY[c].n)}</span><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
     <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
     <div class="lb-var" id="lbVar"></div>
     <p class="lb-hint" id="lbHint"></p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
-  LB={c,chips:o.chips!==false,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track};
+  // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
+  const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
+  LB={c,chips:o.chips!==false&&!o.quiet,refocus,min:1,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track};
   lbShow(o.what,o.vi||0);
-  lbTrack(false);
+  if(o.from&&LB.what==="flag"){const r=o.from,C=lbCenter(),s=r.width/LB.baseW;LB.from={s,x:r.left+r.width/2-C.x,y:r.top+r.height/2-C.y};LB.min=Math.min(1,s);LB.scale=s;LB.x=LB.from.x;LB.y=LB.from.y;lbApply()}
   const st=stage;
-  st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:Date.now()});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};LB.moved=false;st.classList.add("drag")});
-  st.addEventListener("pointermove",e=>{if(!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start;
-    if(cur.length===1&&s0.pts.length===1){
-      const dx=cur[0].x-s0.pts[0].x,dy=cur[0].y-s0.pts[0].y;
-      if(LB.scale===1&&LB.n>1){
-        // At normal size the strip of designs follows the finger; it resists past the first and last.
-        const W=st.clientWidth,atEnd=(LB.vi===0&&dx>0)||(LB.vi===LB.n-1&&dx<0);LB.sx=atEnd?dx*0.3:dx;lbTrack(false);if(Math.abs(dx)>6)LB.moved=true}
-      else if(LB.scale>1){LB.x=s0.x+dx;LB.y=s0.y+dy;if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;lbApply()}
-    }
-    else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));const ns=Math.min(lbMax(),Math.max(1,want)),r=ns/s0.scale;
-      const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},C=lbCenter();
-      // keep the point under the fingers' midpoint fixed while scaling, then follow the midpoint
-      LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y);LB.sx=0;LB.moved=true;lbApply();lbTrack(false)}
-  });
-  // Double tap by hand: touch devices don't send dblclick. Two quick taps near the same spot, with no drag between.
-  const up=e=>{LB.pts.delete(e.pointerId);const s0=LB.start;
-    if(LB.sx){const W=st.clientWidth,dt=Math.max(1,Date.now()-s0.at),fast=Math.abs(LB.sx)/dt>0.5;
-      const go=(Math.abs(LB.sx)>W*0.2||fast)?(LB.sx<0?1:-1):0;LB.sx=0;lbGo(Math.min(LB.n-1,Math.max(0,LB.vi+go)))}
-    if(!LB.pts.size){st.classList.remove("drag");lbSettle(true)}
-    LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};
-    if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
-      if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){LB.lastTap=null;lbToggle({x:e.clientX,y:e.clientY})}else LB.lastTap={at:now,x:e.clientX,y:e.clientY}}};
-  st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
+  st.addEventListener("pointerdown",e=>{capture(st,e);lbDown(e)});
+  st.addEventListener("pointermove",lbMove);
+  st.addEventListener("pointerup",lbUp);st.addEventListener("pointercancel",lbUp);
   st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
   st.addEventListener("dblclick",e=>{if(e.pointerType==="touch"||e.sourceCapabilities?.firesTouchEvents)return;lbToggle({x:e.clientX,y:e.clientY})});
+  el.addEventListener("mousedown",e=>e.preventDefault()); // a click here must not move focus
   el.addEventListener("click",e=>{if((e.target===st||e.target.classList.contains("lb-slide"))&&!LB.moved)closeFlag()});
 }
+const capture=(el,e)=>{try{el.setPointerCapture(e.pointerId)}catch(x){}};
+// The pointer handlers, shared with the question flag, which hands its own pointers over once the viewer is open.
+function lbDown(e){if(!LB)return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:Date.now()});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};LB.moved=false;LB.stage.classList.add("drag")}
+function lbMove(e){if(!LB||!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start,st=LB.stage;
+  if(cur.length===1&&s0.pts.length===1){
+    const dx=cur[0].x-s0.pts[0].x,dy=cur[0].y-s0.pts[0].y;
+    if(LB.scale===1&&LB.n>1&&!LB.from){
+      // At normal size the strip of designs follows the finger; it resists past the first and last.
+      const atEnd=(LB.vi===0&&dx>0)||(LB.vi===LB.n-1&&dx<0);LB.sx=atEnd?dx*0.3:dx;lbTrack(false);if(Math.abs(dx)>6)LB.moved=true}
+    else if(LB.scale>LB.min||LB.from){LB.x=s0.x+dx;LB.y=s0.y+dy;if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;lbApply()}
+  }
+  else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
+    if(LB.from&&want<=LB.min){closeFlag();return} // pinched back down to its own size
+    const ns=Math.min(lbMax(),Math.max(LB.min,want)),r=ns/s0.scale;
+    const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},C=lbCenter();
+    // keep the point under the fingers' midpoint fixed while scaling, then follow the midpoint
+    LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y);LB.sx=0;LB.moved=true;lbApply();lbTrack(false)}
+}
+// Double tap by hand: touch devices don't send dblclick. Two quick taps near the same spot, with no drag between.
+function lbUp(e){if(!LB)return;LB.pts.delete(e.pointerId);const s0=LB.start,st=LB.stage;
+  if(LB.sx){const W=st.clientWidth,dt=Math.max(1,Date.now()-s0.at),fast=Math.abs(LB.sx)/dt>0.5;
+    const go=(Math.abs(LB.sx)>W*0.2||fast)?(LB.sx<0?1:-1):0;LB.sx=0;lbGo(Math.min(LB.n-1,Math.max(0,LB.vi+go)))}
+  if(!LB.pts.size){st.classList.remove("drag");lbSettle(true)}
+  LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};
+  if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
+    if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){LB.lastTap=null;lbToggle({x:e.clientX,y:e.clientY})}else LB.lastTap={at:now,x:e.clientX,y:e.clientY}}}
 // The flag is centred in the stage and transformed as translate(x,y) scale(s) about its own centre C, so a local
 // offset q shows at C+t+s·q. Zooming by f about a screen point P keeps the point under P fixed: t' = (1-f)(P-C) + f·t.
-function lbToggle(P){if(!LB)return;if(LB.scale>1){LB.scale=1;LB.x=0;LB.y=0;lbApply()}else lbZoom(2.5,P)}
-function lbCenter(){const r=LB.stage.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}}
+// A double tap goes between 2.5x and the size it opened at (its place on the page, when it came from there).
+function lbToggle(P){if(!LB)return;if(LB.scale>LB.min+0.01){LB.scale=LB.min;LB.x=LB.from?LB.from.x:0;LB.y=LB.from?LB.from.y:0;lbApply()}else lbZoom(2.5/LB.min,P)}
+// The stage's content box (its padding leaves room for the bar at the top): where the flag is centred.
+function lbBox(){const st=LB.stage,cs=getComputedStyle(st),pt=parseFloat(cs.paddingTop),pb=parseFloat(cs.paddingBottom),pl=parseFloat(cs.paddingLeft),pr=parseFloat(cs.paddingRight),r=st.getBoundingClientRect();
+  return {left:r.left+pl,top:r.top+pt,w:r.width-pl-pr,h:r.height-pt-pb}}
+function lbCenter(){const b=lbBox();return {x:b.left+b.w/2,y:b.top+b.h/2}}
 // The flag zooms to 8x. The map zooms by its viewBox, so it can go much further and still be sharp.
 const lbMax=()=>LB.fl.tagName==="svg"?80:8;
-function lbZoom(f,P){if(!LB)return;const ns=Math.min(lbMax(),Math.max(1,LB.scale*f));f=ns/LB.scale;if(f===1)return;
+function lbZoom(f,P){if(!LB)return;const want=LB.scale*f;if(LB.from&&want<=LB.min){closeFlag();return}
+  const ns=Math.min(lbMax(),Math.max(LB.min,want));f=ns/LB.scale;if(f===1)return;
   const C=lbCenter();P=P||C;LB.x=(1-f)*(P.x-C.x)+f*LB.x;LB.y=(1-f)*(P.y-C.y)+f*LB.y;LB.scale=ns;
-  if(ns===1){LB.x=0;LB.y=0}lbApply();lbSettle(false)}
-// Once the fingers lift, or after a zoom from the buttons or the wheel, the flag is pulled back so it covers the stage
-// with no gap, and is centred along any side where it is smaller than the stage. Animated after a gesture.
-function lbSettle(anim){if(!LB||LB.fl.tagName==="svg")return;const st=LB.stage,W=LB.baseW*LB.scale,H=W*LB.fl.offsetHeight/Math.max(1,LB.fl.offsetWidth);
-  const mx=Math.max(0,(W-st.clientWidth+24)/2),my=Math.max(0,(H-st.clientHeight+24)/2);
-  const x=Math.max(-mx,Math.min(mx,LB.x)),y=Math.max(-my,Math.min(my,LB.y));if(x===LB.x&&y===LB.y)return;
+  if(ns===1&&!LB.from){LB.x=0;LB.y=0}lbApply();lbSettle(false)}
+// Once the fingers lift, or after a zoom from the buttons or the wheel, the flag settles within the stage: wholly on
+// it where it is smaller than the stage, leaving no gap at an edge where it is larger. Animated after a gesture.
+function lbSettle(anim){if(!LB||LB.fl.tagName==="svg")return;const b=lbBox(),W=LB.baseW*LB.scale,H=W*LB.fl.offsetHeight/Math.max(1,LB.fl.offsetWidth),sw=b.w,sh=b.h;
+  const lim=(size,span,p)=>{const m=Math.abs(span-size)/2;return Math.max(-m,Math.min(m,p))};
+  const x=lim(W,sw,LB.x),y=lim(H,sh,LB.y);if(x===LB.x&&y===LB.y)return;
   LB.x=x;LB.y=y;if(anim){LB.fl.classList.add("snap");clearTimeout(LB.snapT);LB.snapT=setTimeout(()=>LB&&LB.fl.classList.remove("snap"),300)}lbApply()}
 // Zoom by resizing the element rather than transform:scale, so the SVG is re-rendered sharp at every level.
 function lbApply(){if(!LB)return;const fl=LB.fl;
@@ -778,9 +795,10 @@ function lbApply(){if(!LB)return;const fl=LB.fl;
   const mx=(s-1)*W/2,my=(s-1)*H/2;LB.x=Math.max(-mx,Math.min(mx,LB.x));LB.y=Math.max(-my,Math.min(my,LB.y));
   fl.setAttribute("viewBox",`${(v.x+v.w/2-(W/2+LB.x)*u/s).toFixed(2)} ${(v.y+v.h/2-(H/2+LB.y)*u/s).toFixed(2)} ${(v.w/s).toFixed(2)} ${(v.h/s).toFixed(2)}`);
   fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/s).toFixed(2))})}
-// Entering the map slide: remember its full frame and open zoomed to the country's close frame (data-fit), so zooming
+// Entering the map: remember its full frame and open zoomed to the country's close frame (data-fit), so zooming
 // out reaches the region and a double tap resets to it.
 function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
+  if(!LB.vb0){const b=fl.viewBox.baseVal;LB.vb0={x:b.x,y:b.y,w:b.width,h:b.height}}
   const f=(fl.dataset.fit||"").split(" ").map(Number);if(f.length!==4)return;
   const v=LB.vb0,u=v.w/LB.baseW,s=Math.min(lbMax(),Math.max(1,Math.min(v.w/f[2],v.h/f[3])));
   LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
@@ -789,104 +807,45 @@ function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB
 function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}LB.sx=0;lbTrack(true)}
 // Fill the stage with the designs (slide vi in view) or the map, from rest.
 function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
-  LB.what=what;LB.scale=1;LB.x=0;LB.y=0;LB.sx=0;LB.vb0=null;
-  if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:(LB.stage.clientWidth-48)/(LB.stage.clientHeight-24),pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
+  LB.what=what;LB.scale=1;LB.x=0;LB.y=0;LB.sx=0;LB.vb0=null;LB.from=null;LB.min=1;
+  if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:(lbBox().w-24)/lbBox().h,pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
   else{LB.track.innerHTML=Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("");LB.n=nd;LB.vi=Math.min(nd-1,vi);LB.fls=[...LB.track.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]}
   LB.fl=LB.fls[LB.vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbTrack(false);lbCaption();if(what==="map")lbMapHome();
   $("#lbHint").textContent="Pinch or scroll to zoom · drag to pan · double-tap to reset"+(what==="flag"&&nd>1?" · swipe for the other design":"")}
 // A chip: a design (by index) or the map.
 function lbPick(k){if(!LB)return;const v=VARS(LB.c),nd=v?v.length:1;if(k>=nd)lbShow("map");else if(LB.what==="flag")lbGo(k);else lbShow("flag",k)}
-// The map slide is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
-function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,st=LB.stage,W=st.clientWidth-48,H=st.clientHeight-24;m.style.width=Math.min(W,H*vb.width/vb.height).toFixed(1)+"px"}
+// The map is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
+function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,b=lbBox(),W=b.w-24,H=b.h;m.style.width=Math.min(W,H*vb.width/vb.height).toFixed(1)+"px"}
 // Under the stage: a line naming what's shown (the design, or the capital and region on the map) and one row of
-// chips: the designs by name, then Map. No chips in a round, where the flag is zoomed in place instead.
+// chips: the designs by name, then Map. Neither before the flag has been named in a round.
 function lbCaption(){if(!LB)return;const c=LB.c,f=BY[c],onMap=LB.what==="map",v=VARS(c);
   const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(mapHas(c))names.push("Map");
   const cur=onMap?names.length-1:LB.vi;
   const chips=LB.chips&&names.length>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===cur?" on":""}" onmousedown="event.preventDefault()" onclick="lbPick(${k})">${esc(t)}</button>`).join("")}</div>`:"";
+  if(LB.el.classList.contains("quiet")){$("#lbVar").innerHTML="";return}
   $("#lbVar").innerHTML=(onMap?`<p class="vline">${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}</p>`:useLine(c,LB.vi))+chips}
-function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
+function closeFlag(){if(!LB)return;const {el,refocus}=LB;el.remove();document.body.style.overflow="";LB=null;
+  if(refocus){const inp=$("#typeIn");if(inp)inp.focus({preventScroll:true})}}
 
-// Zoom on the question flag. Desktop: scroll over it to zoom; as it grows it drifts from its place toward the middle of
-// the screen (centred by 3x), and you drag to pan. Phone: a pinch scales it where it is, about its own centre, and the
-// fingers' midpoint pans it. While enlarged the flag is moved out of the page into a dimming layer that covers the quiz
-// screen and takes every touch, so it always paints on top and every gesture reaches it. It eases back after a short
-// rest, or at once on a tap on the dimmed page or Esc. Resized rather than transform-scaled, so the SVG stays sharp.
-const ZOOM_REST=1000;
-let ZS=null,ZS_T=null,ZBOX=null; // the dimming layer and the box whose flag is in it
-function scrimOn(box){clearTimeout(ZS_T);ZBOX=box;
-  if(ZS&&!ZS.isConnected)ZS=null; // a screen drawn afresh left the old layer behind
-  if(!ZS){const sc=ZS=document.createElement("div");sc.className="zscrim";(app.querySelector(".qscreen")||document.body).appendChild(sc);
-    const z=()=>ZBOX&&ZBOX._z;
-    sc.addEventListener("mousedown",e=>e.preventDefault()); // a click here must not move focus
-    sc.addEventListener("click",e=>{if(e.target===sc&&z()&&!z().moved())z().drop(true)});
-    sc.addEventListener("dblclick",e=>{if(z())z().drop(true)});
-    sc.addEventListener("wheel",e=>{e.preventDefault();if(z())z().wheel(e)},{passive:false});
-    sc.addEventListener("pointerdown",e=>{if(z()){sc.setPointerCapture(e.pointerId);z().down(e)}});
-    sc.addEventListener("pointermove",e=>{if(z())z().move(e)});
-    sc.addEventListener("pointerup",e=>{if(!z())return;z().end(e);
-      // Two quick taps in the same place (touch devices send no dblclick) put the flag back.
-      if(e.pointerType==="touch"&&!z().moved()){const now=Date.now(),t=sc._tap;if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){sc._tap=null;z().drop(true)}else sc._tap={at:now,x:e.clientX,y:e.clientY}}});
-    sc.addEventListener("pointercancel",e=>{if(z())z().end(e)})}
-  requestAnimationFrame(()=>ZS&&ZS.classList.add("on"))}
-function scrimOff(){if(!ZS)return;const sc=ZS;sc.classList.remove("on");ZS_T=setTimeout(()=>{sc.remove();if(ZS===sc){ZS=null;ZBOX=null}},260)}
+// The question flag opens the viewer with the flag where it is: a pinch, a double tap or the wheel. The gesture's
+// pointers are captured by the flag's box, so their moves and lifts are passed on to the viewer.
 function wireZoom(){
   app.querySelectorAll(".flag.big").forEach(box=>{
-    if(box._z)return;
-    const Z={scale:1,px:0,py:0,lift:0,pts:new Map(),timer:null,finishT:null,fl:null,moved:false};
-    const F=()=>Z.fl||box.querySelector(".fl:not([hidden])");
-    const Q=()=>{const q=app.querySelector(".qscreen");return q?q.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight}};
-    const C=()=>{const q=Q();return {x:q.width/2,y:q.height/2}};
-    // Lift: measure the flag where it sits and put a copy of it into the dimming layer at the same spot, in pixels.
-    // The original stays where it is (dimmed under the layer), so nothing in the page changes or repaints; the copy is
-    // shown once its image has decoded, so it doesn't blink in.
-    const up=()=>{
-      // A copy still easing back is simply taken up again; one that was swept away with its layer is forgotten.
-      if(Z.fl){if(Z.fl.isConnected){scrimOn(box);return}Z.fl=null}
-      const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
-      Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
-      scrimOn(box);const cp=fl.cloneNode(true);cp.classList.add("z");ZS.appendChild(cp);Z.fl=cp;
-      // Typing waits: the keyboard goes away so the whole screen is free. A tap on the field brings it back afterwards
-      // (a tap that drops the flag refocuses the field itself; a timer can't open a keyboard).
-      const inp=$("#typeIn");Z.refocus=inp&&document.activeElement===inp;if(Z.refocus)inp.blur();
-      cp.classList.add("in"); // shown at once: the pinch or the wheel is what moves it
-      Z.scale=1;Z.px=Z.py=0;apply();void cp.offsetWidth};
-    const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
-      const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
-      fl.style.width=w.toFixed(1)+"px";fl.style.left=(cx-w/2).toFixed(1)+"px";fl.style.top=(cy-h/2).toFixed(1)+"px"};
-    const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
-    // The gesture ends with the drop: the layer that held its pointers goes, so their lifts never arrive.
-    const drop=(anim,byTimer)=>{live();const fl=Z.fl;if(!fl)return;scrimOff();Z.pts.clear();Z.start=null;
-      const finish=()=>{fl.remove();Z.fl=null;Z.scale=1;Z.px=Z.py=0};
-      if(Z.refocus){Z.refocus=false;const inp=$("#typeIn");if(inp&&!byTimer)inp.focus({preventScroll:true})}
-      if(!anim){finish();return}
-      fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
-    const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true,true),ZOOM_REST)};
-    // Once the fingers lift, the flag settles within the screen: wholly on it where it is smaller than the screen,
-    // leaving no gap at an edge where it is larger. While held it can go anywhere.
-    const settle=()=>{const fl=Z.fl;if(!fl)return;const q=Q(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
-      const nx=c.x+(Z.c0.x-c.x)*(1-k),ny=c.y+(Z.c0.y-c.y)*(1-k);
-      const lim=(size,span,n,p)=>size<=span?Math.max(size/2-n,Math.min(span-size/2-n,p)):Math.max(span-size/2-n,Math.min(size/2-n,p));
-      const px=lim(w,q.width,nx,Z.px),py=lim(h,q.height,ny,Z.py);
-      if(px===Z.px&&py===Z.py)return;Z.px=px;Z.py=py;
-      fl.classList.add("anim");clearTimeout(Z.finishT);Z.finishT=setTimeout(()=>fl.classList.remove("anim"),260);apply()};
-    // Back at its own size the flag is simply put back: the layer goes, the timer with it.
-    const zoomTo=(ns,lift)=>{ns=Math.min(6,ns);if(ns<=1){if(Z.fl)drop(true);return}if(ns===Z.scale&&Z.fl)return;live();up();Z.lift=lift;Z.scale=ns;apply()};
-    // Every step follows the wheel directly; only the way back is animated.
-    const wheel=e=>{const ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(!Z.fl&&ns<=1)return;zoomTo(ns,1);if(Z.fl)rest()};
-    const down=e=>{Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};Z.moved=false;live()};
-    const move=e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...Z.pts.values()],s0=Z.start;
-      if(cur.length===1&&s0.pts.length===1&&Z.scale>1){Z.px=s0.px+cur[0].x-s0.pts[0].x;Z.py=s0.py+cur[0].y-s0.pts[0].y;if(Math.abs(Z.px-s0.px)+Math.abs(Z.py-s0.py)>6)Z.moved=true;apply()}
-      else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const ns=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
-        if(!Z.fl&&ns<=1)return;const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};
-        zoomTo(ns,0);if(!Z.fl)return;Z.px=s0.px+m1.x-m0.x;Z.py=s0.py+m1.y-m0.y;Z.moved=true;apply()}};
-    const end=e=>{Z.pts.delete(e.pointerId);if(!Z.pts.size)settle();Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};if(!Z.pts.size&&Z.fl)rest()};
-    // Until the flag is lifted, gestures start on the box itself; after that the dimming layer takes them.
-    box.addEventListener("wheel",e=>{e.preventDefault();wheel(e)},{passive:false});
-    box.addEventListener("dblclick",()=>{if(Z.fl)drop(true);else{zoomTo(3,1);rest()}});
-    box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse")return;box.setPointerCapture(e.pointerId);down(e)});
-    box.addEventListener("pointermove",move);box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
-    box._z={drop,wheel,down,move,end,moved:()=>Z.moved};
+    if(box._z)return;box._z=true;
+    const c=box.dataset.c,vi=()=>+(box.querySelector(".fl:not([hidden])")||{dataset:{v:0}}).dataset.v;
+    const open=()=>{if(LB)return;const q=S.qs&&S.qs[S.i];openFlag(c,vi(),{from:box.querySelector(".fl:not([hidden])").getBoundingClientRect(),quiet:!(q&&q.ans)})};
+    const pts=new Map();let lastTap=null;
+    box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse")return;capture(box,e);
+      if(LB){lbDown(e);return}
+      pts.set(e.pointerId,e);
+      if(pts.size>=2){open();for(const p of pts.values())lbDown(p);pts.clear()}});
+    box.addEventListener("pointermove",e=>{if(LB)lbMove(e)});
+    const end=e=>{pts.delete(e.pointerId);if(LB){lbUp(e);return}
+      // two quick taps in the same place open the viewer zoomed in
+      if(e.pointerType==="touch"){const now=Date.now(),t=lastTap;if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){lastTap=null;open();lbToggle({x:e.clientX,y:e.clientY})}else lastTap={at:now,x:e.clientX,y:e.clientY}}};
+    box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
+    box.addEventListener("wheel",e=>{e.preventDefault();if(e.deltaY>0&&!LB)return;open();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
+    box.addEventListener("dblclick",e=>{if(e.sourceCapabilities?.firesTouchEvents)return;open();lbToggle({x:e.clientX,y:e.clientY})});
   });
 }
 

@@ -70,7 +70,6 @@ body.quiz{overflow:hidden;position:fixed;inset:0;width:100%}
 .qscreen>*{width:100%;max-width:calc(560px + 2 * max(16px,env(safe-area-inset-left,0px)));margin-left:auto;margin-right:auto;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .qscreen .sticky{position:relative;top:auto;margin-top:0;gap:8px;padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:8px;flex:none}
-.qscreen .zscrim{padding:0;max-width:none}
 .qmid{flex:1;min-height:0;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:16px;padding-top:14px;padding-bottom:16px;scrollbar-width:thin}
 .qmid>*{flex:none}
 /* Only with the keyboard up does the visible viewport drift from the page; follow it then. */
@@ -103,14 +102,6 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .card.lore .vchips{align-self:flex-start;margin-top:6px}
 .qmid .flag.big .fl{width:min(100%,calc(max(110px,var(--flagh,9999px)) * var(--r,1.3333)));transition:width .25s cubic-bezier(.2,.7,.2,1)}
 .flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.zscrim{position:fixed;inset:0;z-index:30;background:rgba(8,12,20,.85);opacity:0;transition:opacity .12s;touch-action:none;user-select:none;-webkit-user-select:none}
-.qscreen .zscrim{position:absolute}
-.zscrim.on{opacity:1}
-.zscrim .fl.z{position:absolute;max-width:none;max-height:none;border-radius:6px;overflow:hidden;background:transparent;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 24px 60px rgba(0,0,0,.5);cursor:grab;opacity:0}
-.zscrim .fl.z.in{opacity:1}
-.zscrim .fl.anim.in{transition:width .25s cubic-bezier(.2,.7,.2,1),left .25s cubic-bezier(.2,.7,.2,1),top .25s cubic-bezier(.2,.7,.2,1)}
-.zscrim .fl.z img{display:block;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
-.zscrim .fl.anim{transition:width .25s cubic-bezier(.2,.7,.2,1),left .25s cubic-bezier(.2,.7,.2,1),top .25s cubic-bezier(.2,.7,.2,1)}
 .flag.big img{-webkit-user-drag:none;pointer-events:none}
 
 .flag .fl{width:var(--w,100%);aspect-ratio:var(--r,4/3);max-width:100%;max-height:100%;border-radius:6px;overflow:hidden;background:var(--surface);
@@ -353,3 +344,7 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 /* The caption and hint keep their height, so the chip row never moves when the text changes. */
 .lb-var .vline{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1.5em}
 .lb-hint{min-height:calc(2 * 1.45em + 10px);line-height:1.45}
+.lb.quiet .lb-var,.lb.quiet .lb-hint{display:none}
+.lb-top{position:absolute;top:0;left:0;right:0;z-index:2;background:linear-gradient(rgba(8,12,20,.95),rgba(8,12,20,0))}
+.lb-stage{padding-top:60px}
+.flink .flag{pointer-events:none}
