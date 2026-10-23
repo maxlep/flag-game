@@ -273,12 +273,12 @@ function answer(k){
   saveRound();render();
   if(S.pace==="drill"&&ok){clearTimeout(S.timer);S.timer=setTimeout(next,650);return}
   // A card is about to be read: on a phone the keyboard gives the room back. Next (a tap) brings it up again.
-  if(document.body.classList.contains("kb")){const t=$("#typeIn");if(t&&document.activeElement===t)t.blur()}
+  if(document.body.classList.contains("kb")){const t=$("#typeIn");if(t&&document.activeElement===t){S.kbOff=true;t.blur()}} // stays off until Next
   requestAnimationFrame(()=>{const mid=$("#qmid"),card=mid&&mid.querySelector(".card.lore");if(!card)return;
     // The whole card if it fits under the flag, otherwise its top.
     card.scrollIntoView({block:card.offsetHeight<mid.clientHeight*0.6?"end":"start",behavior:"smooth"})});
 }
-function next(){ clearTimeout(S.timer);S.timer=null;S.confirmLeave=false; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0);wake()} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
+function next(){ clearTimeout(S.timer);S.timer=null;S.confirmLeave=false;S.kbOff=false; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0);wake()} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
 function showLore(){const q=S.qs[S.i];q.lore=true;render()}
 // A phone can hide its keyboard while the box keeps focus; a blur and focus during the tap brings it back.
 function wake(){const t=$("#typeIn");if(t&&document.activeElement===t&&!document.body.classList.contains("kb")){t.blur();t.focus({preventScroll:true})}}
@@ -387,7 +387,7 @@ function render(){
   if(S.view==="quiz"){
     const old=document.activeElement,oldForm=old&&old.id==="typeIn"&&app.contains(old)?old.closest("form.typebox"):null;
     const html=viewQuiz();
-    if(!oldForm){app.innerHTML=html;const t=$("#typeIn");if(t)t.focus({preventScroll:true});wireZoom();return}
+    if(!oldForm){app.innerHTML=html;const t=$("#typeIn");if(t&&!S.kbOff)t.focus({preventScroll:true});wireZoom();return}
     // A focused answer box is never replaced: phones close the keyboard, or scroll, when focus moves. The box is
     // patched in place (read-only, placeholder, value) and everything around it is swapped for the new screen.
     const tmp=document.createElement("template");tmp.innerHTML=html;
