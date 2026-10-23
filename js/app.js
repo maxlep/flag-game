@@ -139,7 +139,7 @@ function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameC
   const where=f.sov?f.r:geoOf(f)+" · territory";
   return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+where:""} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
 // A small map of the flag's region, the country filled in; opens the viewer on the map slide.
-function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openFlag('${c}','map')" title="Open the map">${mapSVG({code:c,cls:"sm"})}</button>`:""}
+function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openFlag('${c}','map')" title="Open the map">${mapSVG({code:c,cls:"sm",fit:1.6,pad:0})}</button>`:""}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------

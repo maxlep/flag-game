@@ -14,10 +14,29 @@ function mapBox(frame,code){
   return [x0,y0,x1,y1];
 }
 
-// o: {frame, code, cap:true|false, pad:0.04, cls:"", id:""}. Returns the SVG markup.
+// A close frame around one flag: about three times the country's size, never narrower than a sub-continent (130 units,
+// about 5,000 km) and never wider than the region, at the aspect ratio given (width over height). Kept inside the
+// region's frame in the Pacific set, whose edges are empty.
+function mapFit(frame,code,aspect){
+  const fr=MAP.frame[frame],S=MAP.set[fr.set],Rg=mapBox(frame,code),b=S.box[code];
+  // The world set has land everywhere, so the frame may leave the region; the Pacific set is empty outside Oceania.
+  const R=fr.set==="world"?[0,0,MAP.w,MAP.h]:Rg;
+  const rw=Rg[2]-Rg[0],rh=Rg[3]-Rg[1],bw=b[2]-b[0],bh=b[3]-b[1];
+  let w=Math.min(rw,Math.max(130,bw*3.2,bh*3.2*aspect)),h=w/aspect;
+  if(h>rh){h=rh;w=Math.min(rw,h*aspect)}
+  const cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2;
+  const place=()=>{let x0=cx-w/2,y0=cy-h/2;x0=Math.max(R[0],Math.min(R[2]-w,x0));y0=Math.max(R[1],Math.min(R[3]-h,y0));return [x0,y0,x0+w,y0+h]};
+  // A speck in mid-ocean would frame nothing but sea: widen until some other land shows.
+  let box=place();
+  const land=([x0,y0,x1,y1])=>S.lbox.some(l=>l[0]<x1&&l[2]>x0&&l[1]<y1&&l[3]>y0&&Math.hypot(l[2]-l[0],l[3]-l[1])>w*0.05);
+  for(let i=0;i<4&&w<rw&&!land(box);i++){w=Math.min(rw,w*1.6);h=Math.min(rh,w/aspect);box=place()}
+  return box;
+}
+
+// o: {frame, code, fit:aspect, cap:true|false, pad:0.04, cls:"", id:""}. Returns the SVG markup.
 function mapSVG(o){
   const frame=o.frame||(o.code?mapFrameFor(o.code):"World"),S=MAP.set[MAP.frame[frame].set];
-  let [x0,y0,x1,y1]=mapBox(frame,o.code);
+  let [x0,y0,x1,y1]=o.fit&&o.code&&S.box[o.code]?mapFit(frame,o.code,o.fit):mapBox(frame,o.code);
   const pad=(o.pad===undefined?0.04:o.pad)*Math.max(x1-x0,y1-y0);x0-=pad;y0-=pad;x1+=pad;y1+=pad;
   const w=x1-x0,h=y1-y0,dot=Math.max(1.5,w*0.011);
   // Only the land that falls in the frame; a region map doesn't carry the whole world's outlines.
