@@ -346,8 +346,11 @@ let PRE_T=0;
 function preKeyboard(){if(S.view!=="quiz"||document.body.classList.contains("kb"))return;
   FULLH=Math.max(FULLH,window.innerHeight);const k=+localStorage.getItem("flaglore.kbh")||Math.round(FULLH*0.55);
   PRE_T=Date.now();VVH=k;document.documentElement.style.setProperty("--vvh",k+"px");document.body.classList.add("kb");fitFlag();requestAnimationFrame(fitFlag)}
-document.addEventListener("focusin",e=>{if(e.target.id==="typeIn")[100,350,700].forEach(t=>setTimeout(keyboard,t))});
-document.addEventListener("pointerdown",e=>{if(e.target.id==="typeIn"&&e.pointerType==="touch")preKeyboard()},{capture:true}); // touch only: a mouse brings no keyboard
+// The layout must not move under the finger (the tap would miss), so a touch only arms it; the shrink happens on focus,
+// which still comes before the keyboard. A mouse brings no keyboard, so it never arms it.
+let TOUCH_T=0;
+document.addEventListener("pointerdown",e=>{if(e.pointerType==="touch")TOUCH_T=Date.now()},{capture:true,passive:true});
+document.addEventListener("focusin",e=>{if(e.target.id!=="typeIn")return;if(Date.now()-TOUCH_T<800)preKeyboard();[100,350,700].forEach(t=>setTimeout(keyboard,t))});
 // Rebuild the screen around one element that must survive (the focused answer box): walk up from it, and at each
 // level keep the old ancestor, copy the new one's attributes onto it, and swap all its other children for the new ones.
 function patchAround(oldLeaf,newLeaf){
