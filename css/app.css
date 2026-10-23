@@ -68,7 +68,7 @@ body.quiz{overflow:hidden;position:fixed;inset:0;width:100%}
 /* Each band carries the side gutters itself, so the middle band's scrollbar rides the edge of the screen. */
 .qscreen>*{width:100%;max-width:calc(560px + 2 * max(16px,env(safe-area-inset-left,0px)));margin-left:auto;margin-right:auto;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.qscreen .sticky{position:relative;top:auto;margin-top:0;padding-top:calc(12px + env(safe-area-inset-top,0px));flex:none}
+.qscreen .sticky{position:relative;top:auto;margin-top:0;gap:8px;padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:8px;flex:none}
 .qscreen .zscrim{padding:0;max-width:none}
 .qmid{flex:1;min-height:0;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:16px;padding-top:14px;padding-bottom:16px;scrollbar-width:thin}
 .qmid>*{flex:none}
@@ -78,6 +78,11 @@ body.kb .qscreen{transform:translateY(var(--vvt,0px))}
 body.kb .qdrawer{padding-bottom:8px} /* riding the top of the keyboard */
 .qdrawer,.qscreen .sticky{touch-action:none} /* only the middle band scrolls; a drag here must not move the page */
 .qdrawer .eyebrow{margin-bottom:-2px}
+.qdrawer .btn{min-height:42px;padding:8px 16px;font-size:16px}
+.qdrawer .btn.line{border-width:1px}
+.qdrawer .typebox input{padding:9px 13px;border-width:1px}
+.qdrawer .typebox{gap:8px}
+.qdrawer .opt{min-height:46px;padding:9px 14px}
 .qdrawer.empty{display:none}
 .qdrawer.answered .opt{min-height:40px;padding:6px 14px;font-size:15px}
 .qdrawer .opts{gap:8px}
@@ -256,10 +261,10 @@ select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px soli
 .typebox input{font:inherit;font-size:17px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;width:100%}
 .typebox input:focus{outline:3px solid var(--accent);outline-offset:1px;border-color:transparent}
 /* One row, scrolling sideways, with its height reserved even when empty so the layout above doesn't jump while typing. */
-.sugg{display:flex;flex-wrap:nowrap;gap:6px;height:34px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x;
+.sugg{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:none;height:32px;min-height:32px;max-height:32px;box-sizing:border-box;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x;
   -webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px;mask-image:linear-gradient(90deg,transparent,#000 12px,#000 calc(100% - 12px),transparent)}
 .sugg::-webkit-scrollbar{display:none}
-.sugg button{flex:none;background:var(--tint);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600;white-space:nowrap}
+.sugg button{flex:none;height:28px;line-height:28px;background:var(--tint);border-radius:999px;padding:0 12px;font-size:14px;font-weight:600;white-space:nowrap}
 .kbd{display:none;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 @media (hover:hover) and (pointer:fine){.kbd{display:flex}}
 kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
