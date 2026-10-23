@@ -420,14 +420,14 @@ function shell(sub){
 // A home card: the card itself starts a round; the trailing link opens the study list.
 const BOOK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>`;
 function card(o){
-  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span>${o.titles?`<span class="titles">${esc(o.titles)}</span>`:""}<span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
+  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
   const study=o.study?`<button class="tstudy" onclick="${o.study}" aria-label="Study ${esc(o.name)}">${BOOK}Study</button>`:"";
   return `<div class="tile${o.wide?" wide":""}${o.cls?" "+o.cls:""}">${main}${study}</div>`;
 }
 function setCards(list){
   return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
     const held=["lord","warden","emperor"].filter(k=>badges[k+"-"+r]),marks=held.map(k=>({e:BADGE[k+"-"+r].e,n:BADGE[k+"-"+r].n}));
-    return card({name:r,marks,titles:held.map(k=>k[0].toUpperCase()+k.slice(1)).join(" · "),count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
+    return card({name:r,marks,count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
 }
 const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
 const scopeSeg=(note,label)=>`<div class="seg">${label?'<span class="label">Flags</span>':""}<div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
