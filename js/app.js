@@ -328,6 +328,7 @@ function keyboard(){
   // In the home-screen app innerHeight itself shrinks with the keyboard, so compare with the tallest height seen.
   FULLH=Math.max(FULLH,window.innerHeight,vv?vv.height*vv.scale:0);
   let h=vv?Math.round(vv.height*vv.scale):window.innerHeight;const open=h<FULLH-120,was=document.body.classList.contains("kb");
+  if(!open&&Date.now()-PRE_T<700)return; // the keyboard was asked for a moment ago and hasn't shown yet
   // The keyboard can grow after it opens (a prediction bar on the first keystroke). Remember the smallest height seen
   // with it up and lay out for that from the start, so the screen doesn't resize mid-round next time.
   if(open){const k=+localStorage.getItem("flaglore.kbh")||0;if(!k||h<k)try{localStorage.setItem("flaglore.kbh",h)}catch(e){}if(k&&k<h&&h-k<120)h=k}
@@ -339,7 +340,14 @@ function keyboard(){
 }
 if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard);window.visualViewport.addEventListener("scroll",keyboard)}
 window.addEventListener("resize",keyboard);
+// On focus, shrink the screen to the keyboard's remembered height before the keyboard appears, so the field is already
+// above it and the phone has no reason to shove the page to reveal it. The real height refines it as the keyboard settles.
+let PRE_T=0;
+function preKeyboard(){if(S.view!=="quiz"||document.body.classList.contains("kb"))return;
+  FULLH=Math.max(FULLH,window.innerHeight);const k=+localStorage.getItem("flaglore.kbh")||Math.round(FULLH*0.55);
+  PRE_T=Date.now();VVH=k;document.documentElement.style.setProperty("--vvh",k+"px");document.body.classList.add("kb");fitFlag();requestAnimationFrame(fitFlag)}
 document.addEventListener("focusin",e=>{if(e.target.id==="typeIn")[100,350,700].forEach(t=>setTimeout(keyboard,t))});
+document.addEventListener("pointerdown",e=>{if(e.target.id==="typeIn"&&e.pointerType==="touch")preKeyboard()},{capture:true}); // touch only: a mouse brings no keyboard
 // Rebuild the screen around one element that must survive (the focused answer box): walk up from it, and at each
 // level keep the old ancestor, copy the new one's attributes onto it, and swap all its other children for the new ones.
 function patchAround(oldLeaf,newLeaf){

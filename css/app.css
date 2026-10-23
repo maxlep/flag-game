@@ -76,7 +76,7 @@ body.quiz{overflow:hidden;position:fixed;inset:0;width:100%}
 /* Only with the keyboard up does the visible viewport drift from the page; follow it then. */
 body.kb .qscreen{transform:translateY(var(--vvt,0px))}
 .qdrawer{position:relative;flex:none;display:flex;flex-direction:column;gap:10px;padding-top:12px;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
-body.kb .qdrawer{padding-bottom:8px} /* riding the top of the keyboard */
+body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .qdrawer,.qscreen .sticky{touch-action:none} /* only the middle band scrolls; a drag here must not move the page */
 .qdrawer .eyebrow{margin-bottom:-2px}
 .qdrawer .btn{min-height:42px;padding:8px 16px;font-size:16px}
