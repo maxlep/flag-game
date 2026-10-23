@@ -162,13 +162,16 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .tile .name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15}
 .tile .name.sm{font-size:15px}
 .tile .name .mark{font-size:14px;margin-left:6px;vertical-align:1px}
+.tile .titles{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--accent);margin-top:-4px}
 .tile .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .tile.wide{grid-column:1/-1;flex-direction:row;align-items:stretch}
 .tile.wide .tmain{flex-direction:row;align-items:center;justify-content:space-between;padding:14px}
 .tile.wide .tstudy{align-self:center;padding:14px;border-left:1px solid var(--line)}
-.tile.wide .name{font-size:17px}
+.tile.wide .name{font-size:17px;white-space:nowrap}
+.tile.gold{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
+.tile.gold .count{color:var(--ink)}
 
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .row > *{flex:1;min-width:0}

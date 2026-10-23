@@ -94,13 +94,13 @@ const BADGES=[ // roughly in the order people earn them
  // Titles: one per region per scope. Lord is Countries, Warden is Territories, Emperor is All; the same three on the world card.
  ...REGIONS.flatMap(r=>[
    {id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round (Countries) on Master, typed, with no misses.",title:1},
-   {id:"warden-"+r,n:"Warden of "+r,e:"🧭",h:"A full "+r+" round (Territories) on Master, typed, with no misses.",title:1},
-   {id:"emperor-"+r,n:"Emperor of "+r,e:"🌐",h:"A full "+r+" round (All) on Master, typed, with no misses.",title:1}]),
- {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Master, typed, with no misses. All 197 names exact, no mistakes.",big:1},
- {id:"warden",n:"Flag Warden",e:"🧭",h:"A full All-territories round on Master, typed, with no misses.",big:1},
- {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Master, typed, with no misses. Every flag, names exact, no mistakes.",big:1}
+   {id:"warden-"+r,n:"Warden of "+r,e:"🏰",h:"A full "+r+" round (Territories) on Master, typed, with no misses.",title:1},
+   {id:"emperor-"+r,n:"Emperor of "+r,e:"⚜️",h:"A full "+r+" round (All) on Master, typed, with no misses.",title:1}]),
+ {id:"lord",n:"Flag Lord",e:"🛡️",h:"A full Whole World round on Master, typed, with no misses. All 197 names exact, no mistakes.",big:1},
+ {id:"warden",n:"Flag Warden",e:"🏰",h:"A full All-territories round on Master, typed, with no misses.",big:1},
+ {id:"emperor",e:"👑",n:"Flag Emperor",h:"A full Everything round on Master, typed, with no misses. Every flag, names exact, no mistakes.",big:1}
 ];
-const TITLE={countries:{k:"lord",e:"🛡️"},territories:{k:"warden",e:"🧭"},all:{k:"emperor",e:"🌐"}};
+const TITLE={countries:{k:"lord"},territories:{k:"warden"},all:{k:"emperor"}};
 const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
 function checkBadges(){
   const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length,perfect=right===n;
@@ -420,14 +420,14 @@ function shell(sub){
 // A home card: the card itself starts a round; the trailing link opens the study list.
 const BOOK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>`;
 function card(o){
-  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
+  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span>${o.titles?`<span class="titles">${esc(o.titles)}</span>`:""}<span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
   const study=o.study?`<button class="tstudy" onclick="${o.study}" aria-label="Study ${esc(o.name)}">${BOOK}Study</button>`:"";
-  return `<div class="tile${o.wide?" wide":""}">${main}${study}</div>`;
+  return `<div class="tile${o.wide?" wide":""}${o.cls?" "+o.cls:""}">${main}${study}</div>`;
 }
 function setCards(list){
   return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
-    const marks=["lord","warden","emperor"].filter(k=>badges[k+"-"+r]).map(k=>({e:BADGE[k+"-"+r].e,n:BADGE[k+"-"+r].n}));
-    return card({name:r,marks,count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
+    const held=["lord","warden","emperor"].filter(k=>badges[k+"-"+r]),marks=held.map(k=>({e:BADGE[k+"-"+r].e,n:BADGE[k+"-"+r].n}));
+    return card({name:r,marks,titles:held.map(k=>k[0].toUpperCase()+k.slice(1)).join(" · "),count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
 }
 const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
 const scopeSeg=(note,label)=>`<div class="seg">${label?'<span class="label">Flags</span>':""}<div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
@@ -440,13 +440,15 @@ function viewHome(){
   ${scopeSeg()}
   <p class="eyebrow">Regions</p>
   <div class="tiles">${setCards(ALLREGIONS)}
-    ${card({wide:true,name:scopeName(),marks:["lord","warden","emperor"].filter(k=>badges[k]).map(k=>({e:k==="lord"?"👑":BADGE[k].e,n:BADGE[k].n})),count:learned(SCOPED())+" / "+SCOPED().length+" learned",go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`})}
+    ${card({wide:true,name:scopeName(),marks:["lord","warden","emperor"].filter(k=>badges[k]).map(k=>({e:BADGE[k].e,n:BADGE[k].n})),count:learned(SCOPED())+" / "+SCOPED().length,go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`})}
   </div>
   <p class="eyebrow" style="padding-top:4px">Practice</p>
   <div class="tiles">
     ${card({wide:true,name:"Look-alikes",count:GROUPS.filter(g=>g.f.filter(c=>inScope(BY[c])).length>=2).length+" sets · mixed round",go:"openSetup('lookmix',null,'Look-alikes')",study:"openLook()"})}
     ${weak?card({wide:true,name:"Weak spots",count:weak+" to fix",go:"openSetup('weak',null,'Weak spots')"}):`<div class="tile wide dim"><span class="tmain"><span class="name">Weak spots</span><span class="count">nothing missed yet</span></span></div>`}
-    ${card({wide:true,name:"Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
+  </div>
+  <div class="tiles" style="padding-top:4px">
+    ${card({wide:true,cls:"gold",name:"🏅 Badges",count:nb+" / "+BADGES.length+" earned ›",go:"openBadges()"})}
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>
   <p class="ver" id="ver"><span class="stamp">${location.pathname.includes("/preview/")?"preview · ":""}${typeof VERSION==="object"?"updated "+VERSION.at:""}<button class="refresh" onclick="hardReload()" title="Reload the page" aria-label="Reload">↻</button></span></p>`;
