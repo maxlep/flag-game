@@ -728,6 +728,8 @@ function openViewer(c,o){
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
     <div class="lb-foot"><div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
+  // The cursor only changes when the mouse moves, so the element it is over takes the viewer's cursor meanwhile.
+  const under=[...document.querySelectorAll(":hover")].pop();if(under&&!el.contains(under)){under.style.cursor="grab";el._under=under}
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
   const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
@@ -827,7 +829,7 @@ function lbCaption(){if(!LB)return;const c=LB.c,f=BY[c],onMap=LB.what==="map",v=
   const d=v&&v[LB.vi];
   $("#lbSub").innerHTML=onMap?`${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}`:esc(d?d.l+(d.d?" · "+d.d:""):useLabel(c));
   $("#lbVar").innerHTML=chips}
-function closeFlag(){if(!LB)return;const {el,refocus}=LB;el.remove();document.body.style.overflow="";LB=null;
+function closeFlag(){if(!LB)return;const {el,refocus}=LB;if(el._under)el._under.style.cursor="";el.remove();document.body.style.overflow="";LB=null;
   if(refocus){const inp=$("#typeIn");if(inp)inp.focus({preventScroll:true})}}
 
 // The question flag opens the viewer with the flag where it is: a tap, a pinch, a double click or the wheel. A
