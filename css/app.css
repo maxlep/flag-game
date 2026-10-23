@@ -83,6 +83,9 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .qdrawer .btn.line{border-width:1px}
 .qdrawer .typebox input{padding:9px 13px;border-width:1px}
 .qdrawer .typebox{gap:8px}
+/* The phone extends the text field's touch area a little past its edge (the caret sits right there), and a chip too close
+   underneath loses the tap to the field. Keep the row clear of that zone. */
+.qdrawer .typebox .sugg{margin-top:6px}
 .qdrawer .opt{min-height:46px;padding:9px 14px}
 .qdrawer.empty{display:none}
 /* Drill's "Correct" strip stays visible at the foot of the middle band even when the flag fills it. */
