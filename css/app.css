@@ -340,7 +340,7 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
 .lb .map{max-width:none;flex:none;will-change:transform;height:auto;border-radius:6px;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 20px 60px rgba(0,0,0,.5)}
 .capdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;border:1.5px solid #111;vertical-align:middle;margin:0 5px 2px 0}
 button.wl{font:inherit;color:inherit;background:none;padding:0}
-.lb .fl.snap{transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+.lb .fl.snap{transition:transform .25s cubic-bezier(.2,.7,.2,1),width .25s cubic-bezier(.2,.7,.2,1)}
 /* The caption and hint keep their height, so the chip row never moves when the text changes. */
 .lb-var .vline{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1.5em}
 .lb-hint{min-height:calc(2 * 1.45em + 10px);line-height:1.45}
@@ -348,3 +348,5 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 .lb-top{position:absolute;top:0;left:0;right:0;z-index:2;background:linear-gradient(rgba(8,12,20,.95),rgba(8,12,20,0))}
 .lb-stage{padding-top:60px}
 .flink .flag{pointer-events:none}
+.mapbtn.mini{aspect-ratio:1.4;background:var(--sea,#dfe8f3);border:1px solid var(--line);margin-top:0}
+.mapbtn.mini .map.sm{max-height:none;border:0}

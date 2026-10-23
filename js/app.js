@@ -296,7 +296,7 @@ function wake(){const t=$("#typeIn");if(t&&document.activeElement===t&&!document
 function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();showVariant(q.c,i)}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
-  if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbGo(LB.vi+(e.key==="ArrowRight"?1:-1));return}
+  if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbStep(e.key==="ArrowRight"?1:-1);return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
@@ -405,7 +405,7 @@ function render(){
     return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
-  if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
+  if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();wireMiniMaps();return}
   if(S.view==="look")return app.innerHTML=viewLook();
   if(S.view==="badges")return app.innerHTML=viewBadges();
   app.innerHTML=viewHome();checkVersion();
@@ -657,13 +657,19 @@ function viewStudy(){
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
   const status=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}${mapHas(f.c)?` · <button type="button" class="wl" onclick="openMap('${f.c}')">Map</button>`:""}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${mapHas(f.c)?`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`:""}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
   ${list.length?`<button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${wide?scopeName():r}')">Quiz me on ${esc(wide?scopeName():r)}</button>`:'<p class="muted small">No flags in this region for the current scope.</p>'}`;
 }
+// The study list's small maps are drawn as they scroll into view; drawing all of them at once would be heavy.
+function wireMiniMaps(){const boxes=[...app.querySelectorAll(".mapbtn.mini")];if(!boxes.length)return;
+  const draw=b=>{if(!b.dataset.c)return;b.innerHTML=mapSVG({code:b.dataset.c,cls:"sm",fit:1.4,pad:0});delete b.dataset.c};
+  if(!("IntersectionObserver" in window)){boxes.forEach(draw);return}
+  const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){draw(x.target);io.unobserve(x.target)}}),{rootMargin:"300px 0px"});
+  boxes.forEach(b=>io.observe(b))}
 // Alphabet index: tap or drag along the letters to jump the list, like a phone's contacts list.
 function wireAlpha(){
   const a=$("#alpha");if(!a)return;let bubble=null,active=false,lastL="";
@@ -812,6 +818,8 @@ function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
   else{LB.track.innerHTML=Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("");LB.n=nd;LB.vi=Math.min(nd-1,vi);LB.fls=[...LB.track.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]}
   LB.fl=LB.fls[LB.vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbTrack(false);lbCaption();if(what==="map")lbMapHome();
   $("#lbHint").textContent="Pinch or scroll to zoom · drag to pan · double-tap to reset"+(what==="flag"&&nd>1?" · swipe for the other design":"")}
+// The arrow keys walk the chips: designs, then the map.
+function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(mapHas(LB.c)?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
 // A chip: a design (by index) or the map.
 function lbPick(k){if(!LB)return;const v=VARS(LB.c),nd=v?v.length:1;if(k>=nd)lbShow("map");else if(LB.what==="flag")lbGo(k);else lbShow("flag",k)}
 // The map is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
@@ -834,6 +842,9 @@ function wireZoom(){
     if(box._z)return;box._z=true;
     const c=box.dataset.c,vi=()=>+(box.querySelector(".fl:not([hidden])")||{dataset:{v:0}}).dataset.v;
     const open=()=>{if(LB)return;const q=S.qs&&S.qs[S.i];openFlag(c,vi(),{from:box.querySelector(".fl:not([hidden])").getBoundingClientRect(),quiet:!(q&&q.ans)})};
+    // A tap opens the viewer as the study list does, the flag growing from its place on the page to its full size
+    // (never smaller than it was on the page).
+    const openFull=()=>{if(LB)return;open();if(!LB)return;const fl=LB.fl;void fl.offsetWidth;fl.classList.add("snap");const s0=LB.from.s;LB.from=null;LB.min=1;LB.scale=Math.max(1,s0);LB.x=0;LB.y=0;lbApply();clearTimeout(LB.snapT);LB.snapT=setTimeout(()=>LB&&fl.classList.remove("snap"),300)};
     const pts=new Map();
     box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse")return;capture(box,e);
       if(LB){lbDown(e);return}
@@ -844,7 +855,7 @@ function wireZoom(){
     box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
     // A tap opens the viewer too. The mousedown is swallowed so the tap doesn't take focus from the answer box.
     box.addEventListener("mousedown",e=>e.preventDefault());
-    box.addEventListener("click",()=>{if(!LB)open()});
+    box.addEventListener("click",()=>{if(!LB)openFull()});
     box.addEventListener("wheel",e=>{e.preventDefault();if(e.deltaY>0&&!LB)return;open();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
     box.addEventListener("dblclick",e=>{if(e.sourceCapabilities?.firesTouchEvents)return;open();lbToggle({x:e.clientX,y:e.clientY})});
   });
