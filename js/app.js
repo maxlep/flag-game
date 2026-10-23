@@ -557,8 +557,8 @@ function viewQuiz(){
   const right=S.qs.filter(x=>x.ans===x.c).length;
   return `<div class="qscreen">
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${location.hash==="#debug"?`vv ${VVH} full ${FULLH} in ${innerHeight} off ${getComputedStyle(document.documentElement).getPropertyValue("--vvt")} flag ${getComputedStyle(document.documentElement).getPropertyValue("--flagh")} ${document.body.classList.contains("kb")?"kb":""}`:`${esc(S.label)} · ${right} right · ${S.i+1} / ${n}`}</span></div>
-  ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}
-  <div class="progress">${dots}</div></div>
+  <div class="progress">${dots}</div>
+  ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}</div>
   <div class="qmid" id="qmid">${prompt}${reverse?opts:""}${reveal}</div>
   <div class="qdrawer${q.ans?" answered":""}${reverse&&!q.ans?" empty":""}">${q.ans&&(!typed||compact)?"":ask}${reverse?"":opts}${nextBtn}</div>
   </div>`;
