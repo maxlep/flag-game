@@ -856,6 +856,13 @@ function wireZoom(){
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true,true),ZOOM_REST)};
+    // Once the fingers lift, the flag settles: back to where it sits when it is smaller than the screen, and pulled in
+    // so no edge leaves a gap when it is larger. While held it can go anywhere.
+    const settle=()=>{const fl=Z.fl;if(!fl)return;const q=Q(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
+      const nx=c.x+(Z.c0.x-c.x)*(1-k),ny=c.y+(Z.c0.y-c.y)*(1-k);
+      const px=w<=q.width?0:Math.max(q.width-w/2-nx,Math.min(w/2-nx,Z.px)),py=h<=q.height?0:Math.max(q.height-h/2-ny,Math.min(h/2-ny,Z.py));
+      if(px===Z.px&&py===Z.py)return;Z.px=px;Z.py=py;
+      fl.classList.add("anim");clearTimeout(Z.finishT);Z.finishT=setTimeout(()=>fl.classList.remove("anim"),260);apply()};
     const zoomTo=(ns,lift)=>{ns=Math.min(6,Math.max(1,ns));if(ns===Z.scale&&Z.fl)return;live();up();Z.lift=lift;Z.scale=ns;apply()};
     // Every step follows the wheel directly; only the way back is animated.
     const wheel=e=>{const ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(!Z.fl&&ns<=1)return;zoomTo(ns,1);rest()};
@@ -865,7 +872,7 @@ function wireZoom(){
       else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const ns=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
         if(!Z.fl&&ns<=1)return;const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};
         zoomTo(ns,0);Z.px=s0.px+m1.x-m0.x;Z.py=s0.py+m1.y-m0.y;Z.moved=true;apply()}};
-    const end=e=>{Z.pts.delete(e.pointerId);Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};if(!Z.pts.size)rest()};
+    const end=e=>{Z.pts.delete(e.pointerId);if(!Z.pts.size)settle();Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};if(!Z.pts.size)rest()};
     // Until the flag is lifted, gestures start on the box itself; after that the dimming layer takes them.
     box.addEventListener("wheel",e=>{e.preventDefault();wheel(e)},{passive:false});
     box.addEventListener("dblclick",()=>{if(Z.fl)drop(true);else{zoomTo(3,1);rest()}});
