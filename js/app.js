@@ -272,7 +272,9 @@ function answer(k){
   S.streak=ok?S.streak+1:0;S.best=Math.max(S.best,S.streak);
   saveRound();render();
   if(S.pace==="drill"&&ok){clearTimeout(S.timer);S.timer=setTimeout(next,650);return}
-  requestAnimationFrame(()=>{const btns=app.querySelectorAll(".btn");const b=btns[btns.length-1];if(b)b.scrollIntoView({block:"end",behavior:"smooth"})});
+  requestAnimationFrame(()=>{const mid=$("#qmid"),card=mid&&mid.querySelector(".card.lore");if(!card)return;
+    // The whole card if it fits under the flag, otherwise its top.
+    card.scrollIntoView({block:card.offsetHeight<mid.clientHeight*0.6?"end":"start",behavior:"smooth"})});
 }
 function next(){ clearTimeout(S.timer);S.timer=null;S.confirmLeave=false; if(S.i+1<S.qs.length){S.i++;saveRound();render();window.scrollTo(0,0);wake()} else {S.earned=checkBadges();S.view="done";saveRound();render();window.scrollTo(0,0)} }
 function showLore(){const q=S.qs[S.i];q.lore=true;render()}
@@ -300,27 +302,46 @@ document.addEventListener("keydown",e=>{
 
 // ---------- VIEWS ----------
 // Pinned bars get an edge once content scrolls under them.
-function shade(){const st=app.querySelector(".sticky"),dk=app.querySelector(".dock");
-  if(st)st.classList.toggle("scrolled",window.scrollY>4);
-  if(dk)dk.classList.toggle("lift",document.documentElement.scrollHeight-window.innerHeight-window.scrollY>4)}
-window.addEventListener("scroll",shade,{passive:true});window.addEventListener("resize",shade);
+function shade(){const st=app.querySelector(".sticky"),dk=app.querySelector(".dock,.qdrawer"),mid=$("#qmid");
+  const y=mid?mid.scrollTop:window.scrollY,left=mid?mid.scrollHeight-mid.clientHeight-mid.scrollTop:document.documentElement.scrollHeight-window.innerHeight-window.scrollY;
+  if(st)st.classList.toggle("scrolled",y>4);
+  if(dk)dk.classList.toggle("lift",left>4)}
+window.addEventListener("scroll",shade,{passive:true});window.addEventListener("resize",shade);app.addEventListener("scroll",shade,true);
 // On a phone the keyboard halves the screen and the browser centres the answer box, pushing the flag off the top.
 // When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
 // scrolled to the top, so flag and box share the screen.
 // The state follows the viewport height alone, not focus, so tapping a button can't toggle it and resize the flag.
 // Height is taken in layout pixels (vv.height × vv.scale), so pinch-zooming the page doesn't count as a keyboard.
+// The quiz screen is exactly as tall as the visible viewport (--vvh) and shifted by its offset (--vvt), so with the
+// keyboard up the whole layout fits above it and nothing scrolls behind it.
 let VVH=0;
 function keyboard(){
   const vv=window.visualViewport;if(vv&&vv.scale>1.02)return; // pinch-zoomed: leave the layout alone
   const h=vv?Math.round(vv.height*vv.scale):window.innerHeight,open=!!(vv&&h<window.innerHeight-120),was=document.body.classList.contains("kb");
   if(Math.abs(h-VVH)>24){VVH=h;document.documentElement.style.setProperty("--vvh",h+"px")}
+  document.documentElement.style.setProperty("--vvt",(vv?Math.round(vv.offsetTop):0)+"px");
   document.body.classList.toggle("kb",open);
   if(open&&!was&&S.view==="quiz")window.scrollTo(0,0);
 }
-if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard)}
+if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard);window.visualViewport.addEventListener("scroll",keyboard)}
+window.addEventListener("resize",keyboard);
 document.addEventListener("focusin",e=>{if(e.target.id==="typeIn")setTimeout(keyboard,350)});
+// Rebuild the screen around one element that must survive (the focused answer box): walk up from it, and at each
+// level keep the old ancestor, copy the new one's attributes onto it, and swap all its other children for the new ones.
+function patchAround(oldLeaf,newLeaf){
+  let o=oldLeaf,n=newLeaf;
+  while(o!==app){
+    const op=o.parentNode,np=n.parentNode,top=op===app;
+    if(!top){[...op.attributes].forEach(a=>{if(!np.hasAttribute(a.name))op.removeAttribute(a.name)});[...np.attributes].forEach(a=>op.setAttribute(a.name,a.value))}
+    [...op.childNodes].forEach(c=>{if(c!==o)c.remove()});
+    const kids=[...np.childNodes],i=kids.indexOf(n);
+    kids.slice(0,i).forEach(k=>op.insertBefore(k,o));kids.slice(i+1).forEach(k=>op.appendChild(k));
+    o=op;n=np;
+  }
+}
 function render(){
   requestAnimationFrame(shade);
+  document.body.classList.toggle("quiz",S.view==="quiz");
   if(S.view==="quiz"){
     const old=document.activeElement,oldForm=old&&old.id==="typeIn"&&app.contains(old)?old.closest("form.typebox"):null;
     const html=viewQuiz();
@@ -333,12 +354,7 @@ function render(){
     const ni=newForm.querySelector("#typeIn");
     for(const a of ["readonly","placeholder","enterkeyhint"]){if(ni.hasAttribute(a))old.setAttribute(a,ni.getAttribute(a));else old.removeAttribute(a)}
     if(old.value!==ni.value)old.value=ni.value;
-    [...oldForm.children].forEach(c=>{if(c!==old)c.remove()});
-    [...newForm.children].forEach(c=>{if(c.id!=="typeIn")oldForm.appendChild(c)});
-    const nodes=[...tmp.content.childNodes],fi=nodes.indexOf(newForm);
-    [...app.childNodes].forEach(n=>{if(n!==oldForm)n.remove()});
-    nodes.slice(0,fi).forEach(n=>app.insertBefore(n,oldForm));
-    nodes.slice(fi+1).forEach(n=>app.appendChild(n));
+    patchAround(old,ni);
     wireZoom();return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
@@ -482,7 +498,7 @@ function viewQuiz(){
         ${reverse?img(q.c,"flag",q.v||0):""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
       </div>
-      <button class="btn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
+`;
     } else
     reveal=`<div class="card lore">
       <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
@@ -490,17 +506,17 @@ function viewQuiz(){
       <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p>${useLine(q.c,q.v||0)}</div>
       <p>${esc(f.m)}</p>
       ${miss}
-    </div>
-    <button class="btn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`;
+    </div>`;
   }
+  const nextBtn=q.ans?`<button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`:"";
   const right=S.qs.filter(x=>x.ans===x.c).length;
-  return `
+  return `<div class="qscreen">
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${esc(S.label)} · ${right} right · ${S.i+1} / ${n}</span></div>
   ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}
   <div class="progress">${dots}</div></div>
-  ${prompt}
-  ${opts}
-  ${reveal}`;
+  <div class="qmid" id="qmid">${prompt}${reverse?opts:""}${reveal}</div>
+  <div class="qdrawer${q.ans?" answered":""}${reverse&&!q.ans?" empty":""}">${reverse?"":opts}${nextBtn}</div>
+  </div>`;
 }
 const SITE="https://maxlep.github.io/flag-game/";
 // Flag emoji: regional-indicator pairs for ISO codes; tag sequences for England, Scotland, Wales. Others have none.
@@ -688,10 +704,11 @@ function wireZoom(){
   app.querySelectorAll(".flag.big").forEach(box=>{
     if(box._z)return;const F=()=>box.querySelector(".fl:not([hidden])");
     const Z={scale:1,px:0,py:0,lift:0,pts:new Map(),timer:null,finishT:null};
-    const C=()=>({x:innerWidth/2,y:innerHeight/2});
+    const Q=()=>{const q=app.querySelector(".qscreen");return q?q.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight}};
+    const C=()=>{const q=Q();return {x:q.width/2,y:q.height/2}};
     // Take the flag out of the page flow (fixed, at the same spot) so it can grow over everything.
     // Everything is set in pixels (left, top, width), never percentages or transforms, so transitions interpolate cleanly.
-    const up=()=>{const fl=F();if(fl.classList.contains("z"))return;const r=fl.getBoundingClientRect();Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left+r.width/2,y:r.top+r.height/2};
+    const up=()=>{const fl=F();if(fl.classList.contains("z"))return;const r=fl.getBoundingClientRect(),q=Q();Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
       fl.classList.add("z");box.classList.add("zooming");scrimOn(box);Z.scale=1;Z.px=Z.py=0;apply();void fl.offsetWidth};
     const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
       const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
@@ -725,6 +742,7 @@ function wireZoom(){
 load();loadSet();loadB();
 function start(data){
   if(location.search.startsWith("?r="))history.replaceState(null,"",location.pathname);
+  keyboard();
   if(data&&data.S)S=data.S;
   else{const r=loadRound();if(r){S=r;S.confirmLeave=false;S.timer=null;
     // a Drill round saved right after a correct answer should move on as it would have

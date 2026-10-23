@@ -61,7 +61,26 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 .flag{width:100%;max-width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
 .flag+.vchips{margin-top:-6px}
-/* Keyboard open on a phone (body.kb): the question flag shrinks to what fits above the answer box. */
+/* The quiz is a screen, not a page: header, a middle band that scrolls, and an answer drawer pinned above the bottom
+   edge (or above the keyboard). Its height follows the visible viewport, set by keyboard() in app.js. */
+body.quiz{overflow:hidden}
+.qscreen{position:fixed;left:0;right:0;top:0;height:var(--vvh,100vh);transform:translateY(var(--vvt,0px));display:flex;flex-direction:column;background:var(--bg);z-index:4;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.qscreen>*{width:100%;max-width:560px;margin-left:auto;margin-right:auto}
+.qscreen .sticky{position:relative;top:auto;margin-top:0;padding-top:calc(12px + env(safe-area-inset-top,0px));flex:none}
+.qmid{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:16px;padding:14px 0 16px;scrollbar-width:thin}
+.qmid>*{flex:none}
+.qdrawer{position:relative;flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 0 calc(22px + env(safe-area-inset-bottom,0px))}
+.qdrawer.empty{display:none}
+.qdrawer.answered .opt{min-height:40px;padding:6px 14px;font-size:15px}
+.qdrawer .opts{gap:8px}
+.qdrawer::before{content:"";position:absolute;top:-1px;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:var(--bg);z-index:-1;border-top:1px solid transparent;transition:border-color .15s,box-shadow .15s}
+.qdrawer.lift::before{border-color:var(--line);box-shadow:0 -10px 24px -12px rgba(10,20,40,.35)}
+:root[data-theme="dark"] .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}}
+/* The question flag shrinks to what the middle band can show above the drawer and the keyboard. */
+.qmid .flag.big{max-height:max(110px,calc(var(--vvh,9999px) - 360px))}
+.qmid .flag.big .fl{width:min(var(--w,100%),calc(max(110px,var(--vvh,9999px) - 360px) * var(--r,1.3333)))}
 .flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .flag.big.zooming{touch-action:none;z-index:32}
 .flag.big .fl.z{position:fixed;max-width:none;max-height:none;z-index:31;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 24px 60px rgba(0,0,0,.5)}
@@ -69,8 +88,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .zscrim.on{opacity:1}
 .flag.big .fl.anim{transition:width .25s cubic-bezier(.2,.7,.2,1),left .25s cubic-bezier(.2,.7,.2,1),top .25s cubic-bezier(.2,.7,.2,1)}
 .flag.big img{-webkit-user-drag:none;pointer-events:none}
-body.kb .flag.big{max-height:calc(var(--vvh,9999px) - 240px)}
-body.kb .flag.big .fl{width:min(var(--w,100%),calc((var(--vvh,9999px) - 240px) * var(--r,1.3333)))}
+
 .flag .fl{width:var(--w,100%);aspect-ratio:var(--r,4/3);max-width:100%;max-height:100%;border-radius:6px;overflow:hidden;background:var(--surface);
   box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(10,20,40,.12)}
 .flag .fl.bare{background:transparent;box-shadow:none;border-radius:0}

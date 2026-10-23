@@ -33,6 +33,8 @@ What the project is and where files live: see README.md. This file holds the rul
 
 ## Behaviour that the code relies on
 
+- The quiz is a fixed-height screen (`.qscreen`), not a scrolling page: header, a middle band (`#qmid`) that scrolls on its own, and an answer drawer (`.qdrawer`) pinned at the bottom. Its height is `--vvh` and its offset `--vvt`, both set from `visualViewport` in `keyboard()`, so with a phone keyboard up the layout fits above it. The question flag is capped to the middle band. Because `.qscreen` has a transform, fixed-positioned descendants (the lifted zoom flag) position against it, and the zoom code measures relative to it.
+- In typed rounds the answer box is never replaced during a round: `render()` patches it in place (`patchAround`) so focus, and the phone keyboard, stay put.
 - The Design setting (`SET.variant`: national, civil, state, random) picks which variant each question shows; questions store it as `q.v` (and `q.ov` per option) so a restored round looks the same. The info card, study list and viewer let the reader switch designs; that never changes the setting.
 - Settings and progress live in localStorage under `flaglore.*` keys; the storage format must stay backward compatible (`rec()` migrates old records).
 - Badges are awarded only in `checkBadges()` at round end and are never revoked.
