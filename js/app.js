@@ -862,11 +862,12 @@ function wireZoom(){
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true,true),ZOOM_REST)};
-    // Once the fingers lift, the flag settles: back to where it sits when it is smaller than the screen, and pulled in
-    // so no edge leaves a gap when it is larger. While held it can go anywhere.
+    // Once the fingers lift, the flag settles within the screen: wholly on it where it is smaller than the screen,
+    // leaving no gap at an edge where it is larger. While held it can go anywhere.
     const settle=()=>{const fl=Z.fl;if(!fl)return;const q=Q(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
       const nx=c.x+(Z.c0.x-c.x)*(1-k),ny=c.y+(Z.c0.y-c.y)*(1-k);
-      const px=w<=q.width?0:Math.max(q.width-w/2-nx,Math.min(w/2-nx,Z.px)),py=h<=q.height?0:Math.max(q.height-h/2-ny,Math.min(h/2-ny,Z.py));
+      const lim=(size,span,n,p)=>size<=span?Math.max(size/2-n,Math.min(span-size/2-n,p)):Math.max(span-size/2-n,Math.min(size/2-n,p));
+      const px=lim(w,q.width,nx,Z.px),py=lim(h,q.height,ny,Z.py);
       if(px===Z.px&&py===Z.py)return;Z.px=px;Z.py=py;
       fl.classList.add("anim");clearTimeout(Z.finishT);Z.finishT=setTimeout(()=>fl.classList.remove("anim"),260);apply()};
     // Back at its own size the flag is simply put back: the layer goes, the timer with it.
