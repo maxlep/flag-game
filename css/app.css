@@ -258,11 +258,13 @@ select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px soli
 .flagopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .flagopts.n9{grid-template-columns:repeat(3,1fr);gap:8px}
 .flagopts.n16{grid-template-columns:repeat(4,1fr);gap:6px}
-.flagopts.n9 .fopt,.flagopts.n16 .fopt{padding:5px;gap:3px}
+.flagopts.n9 .fopt,.flagopts.n16 .fopt{padding:5px}
 .flagopts.n16 .key{font-size:10px}
-.fopt{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;min-width:0}
+.flagopts.n9 .fopt,.flagopts.n16 .fopt{gap:2px}
+.fopt{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;min-width:0}
 .fopt .flag .fl{box-shadow:0 0 0 1px var(--line)}
-.fopt .key{font-family:var(--mono);font-size:12px;color:var(--muted)}
+/* Two lines are reserved under every flag, so names that wrap after the answer don't push the grid about. */
+.fopt .key{font-family:var(--mono);font-size:12px;line-height:1.25;color:var(--muted);min-height:2.5em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:break-word}
 .fopt.right{border-color:var(--ok);background:var(--ok-tint)}
 .fopt.wrong{border-color:var(--bad);background:var(--bad-tint)}
 .fopt.dim{opacity:.45}
