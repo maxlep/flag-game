@@ -245,8 +245,6 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .entry .fcol{display:flex;flex-direction:column;gap:8px;min-width:0}
 .entry .fcol .vchips{align-self:stretch;display:flex}
 .entry .fcol .vchips .chipbtn{padding:2px 0;font-size:11px;flex:1;text-align:center}
-.lb-var{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 16px 0;color:#fff;text-align:center}
-.lb-var .vline{color:rgba(255,255,255,.7)}
 .lb-var .vchips{background:rgba(255,255,255,.15)}
 .lb-var .chipbtn{background:transparent;color:#fff}
 .lb-var .chipbtn.on{background:#fff;color:#111}
@@ -296,20 +294,13 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
 .alpha-bubble{position:fixed;right:40px;top:50%;transform:translateY(-50%);z-index:21;width:56px;height:56px;border-radius:14px;background:var(--accent);color:var(--accent-ink);
   font:800 28px/56px var(--display);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3);pointer-events:none}
 .study.indexed{padding-right:20px}
-.lb{position:fixed;inset:0;z-index:50;background:rgba(8,12,20,.96);display:flex;flex-direction:column;
-  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-.lb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;color:#eef1f7}
-.lb-top .nm{font-family:var(--display);font-weight:700;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-top .ctl{display:flex;gap:6px;flex:none}
 .lb-top button{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.1);color:#eef1f7;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center}
 .lb-top button:focus-visible{outline:3px solid #8fb0ff}
-.lb-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none;cursor:grab;padding:12px}
 .lb-stage.drag{cursor:grabbing}
-.lb .flag{width:min(100%,calc((100vh - 140px) * 4 / 3));max-width:100%;user-select:none;overflow:visible}
 .lb .flag .fl{max-width:none;max-height:none;flex:none;will-change:transform}
 .lb .flag .fl{box-shadow:0 0 0 1px rgba(255,255,255,.15),0 20px 60px rgba(0,0,0,.5)}
 .lb .flag img{pointer-events:none;-webkit-user-drag:none}
-.lb-hint{text-align:center;font-size:12px;color:#a3adc2;padding:0 16px 10px}
 .flink{cursor:zoom-in}
 /* Hover states, pointer devices only: a touch shouldn't leave a stuck hover. */
 @media (hover:hover){
@@ -337,16 +328,31 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
 .map.sm{max-height:170px;border:1px solid var(--line)}
 .mapbtn{display:block;width:100%;padding:0;border-radius:8px;cursor:zoom-in;margin-top:2px}
 .mapbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.lb .map{max-width:none;flex:none;will-change:transform;height:auto;border-radius:6px;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 20px 60px rgba(0,0,0,.5)}
+.lb .map{max-width:none;flex:none;will-change:transform;height:auto}
 .capdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;border:1.5px solid #111;vertical-align:middle;margin:0 5px 2px 0}
 button.wl{font:inherit;color:inherit;background:none;padding:0}
 .lb .fl.snap{transition:transform .25s cubic-bezier(.2,.7,.2,1),width .25s cubic-bezier(.2,.7,.2,1)}
 /* The caption and hint keep their height, so the chip row never moves when the text changes. */
-.lb-var .vline{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1.5em}
-.lb-hint{min-height:calc(2 * 1.45em + 10px);line-height:1.45}
-.lb.quiet .lb-var,.lb.quiet .lb-hint{display:none}
-.lb-top{position:absolute;top:0;left:0;right:0;z-index:2;background:linear-gradient(rgba(8,12,20,.95),rgba(8,12,20,0))}
-.lb-stage{padding-top:60px}
 .flink .flag{pointer-events:none}
 .mapbtn.mini{aspect-ratio:1.4;background:var(--sea,#dfe8f3);border:1px solid var(--line);margin-top:0}
 .mapbtn.mini .map.sm{max-height:none;border:0}
+/* The viewer: the stage fills the screen and the controls lie over it. Top: the name with the capital and region (or
+   the design) under it, and the buttons. Bottom: the chips and the hint. Both on gradients so they read over a map. */
+.lb{position:fixed;inset:0;z-index:50;background:rgba(8,12,20,.96)}
+.lb-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none;cursor:grab;padding:0}
+.lb-top{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;color:#eef1f7;
+  padding:calc(10px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) 28px calc(16px + env(safe-area-inset-left,0px));
+  background:linear-gradient(rgba(8,12,20,.92) 40%,rgba(8,12,20,0));pointer-events:none}
+.lb-top .ctl,.lb-top .nm,.lb-top .sub{pointer-events:auto}
+.lb-top .title{min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:6px}
+.lb-top .nm{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-top .sub{font:12px/1.5 var(--mono);color:rgba(255,255,255,.72);letter-spacing:.01em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.lb.quiet .lb-top .title{visibility:hidden}
+.lb-foot{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
+  padding:28px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(8,12,20,0),rgba(8,12,20,.92) 55%);pointer-events:none}
+.lb-foot .vchips,.lb-foot .lb-hint{pointer-events:auto}
+.lb-var{display:flex;justify-content:center;min-height:30px}
+.lb-var .vchips{background:rgba(255,255,255,.15)}
+.lb-hint{font-size:12px;color:#a3adc2;line-height:1.45;margin:0;min-height:2.9em} /* two lines reserved, so the chips hold still */
+.lb.quiet .lb-foot{display:none}
+.lb .flag{width:min(calc(100% - 24px),calc((100vh - 200px) * 4 / 3));user-select:none;overflow:visible}

@@ -723,11 +723,10 @@ function openMap(c,chips=true){openViewer(c,{what:"map",chips})}
 function openViewer(c,o){
   closeFlag();
   const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"");el.id="lb";
-  el.innerHTML=`<div class="lb-top"><span class="nm">${o.quiet?"":esc(BY[c].n)}</span><div class="ctl">
+  el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
+    <div class="lb-top"><div class="title"><span class="nm">${esc(BY[c].n)}</span><span class="sub" id="lbSub"></span></div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
-    <div class="lb-var" id="lbVar"></div>
-    <p class="lb-hint" id="lbHint"></p>`;
+    <div class="lb-foot"><div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
@@ -814,7 +813,7 @@ function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB
 // Fill the stage with the designs (slide vi in view) or the map, from rest.
 function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
   LB.what=what;LB.scale=1;LB.x=0;LB.y=0;LB.sx=0;LB.vb0=null;LB.from=null;LB.min=1;
-  if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:(lbBox().w-24)/lbBox().h,pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
+  if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:lbBox().w/lbBox().h,pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
   else{LB.track.innerHTML=Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("");LB.n=nd;LB.vi=Math.min(nd-1,vi);LB.fls=[...LB.track.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]}
   LB.fl=LB.fls[LB.vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbTrack(false);lbCaption();if(what==="map")lbMapHome();
   $("#lbHint").textContent="Pinch or scroll to zoom · drag to pan · double-tap to reset"+(what==="flag"&&nd>1?" · swipe for the other design":"")}
@@ -823,15 +822,16 @@ function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n
 // A chip: a design (by index) or the map.
 function lbPick(k){if(!LB)return;const v=VARS(LB.c),nd=v?v.length:1;if(k>=nd)lbShow("map");else if(LB.what==="flag")lbGo(k);else lbShow("flag",k)}
 // The map is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
-function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,b=lbBox(),W=b.w-24,H=b.h;m.style.width=Math.min(W,H*vb.width/vb.height).toFixed(1)+"px"}
+function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,b=lbBox();m.style.width=Math.min(b.w,b.h*vb.width/vb.height).toFixed(1)+"px"}
 // Under the stage: a line naming what's shown (the design, or the capital and region on the map) and one row of
 // chips: the designs by name, then Map. Neither before the flag has been named in a round.
 function lbCaption(){if(!LB)return;const c=LB.c,f=BY[c],onMap=LB.what==="map",v=VARS(c);
   const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(mapHas(c))names.push("Map");
   const cur=onMap?names.length-1:LB.vi;
   const chips=LB.chips&&names.length>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===cur?" on":""}" onmousedown="event.preventDefault()" onclick="lbPick(${k})">${esc(t)}</button>`).join("")}</div>`:"";
-  if(LB.el.classList.contains("quiet")){$("#lbVar").innerHTML="";return}
-  $("#lbVar").innerHTML=(onMap?`<p class="vline">${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}</p>`:useLine(c,LB.vi))+chips}
+  const d=v&&v[LB.vi];
+  $("#lbSub").innerHTML=onMap?`${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}`:esc(d?d.l+(d.d?" · "+d.d:""):useLabel(c));
+  $("#lbVar").innerHTML=chips}
 function closeFlag(){if(!LB)return;const {el,refocus}=LB;el.remove();document.body.style.overflow="";LB=null;
   if(refocus){const inp=$("#typeIn");if(inp)inp.focus({preventScroll:true})}}
 
