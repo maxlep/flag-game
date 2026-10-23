@@ -23,18 +23,18 @@ jobs:
         with:
           ref: main
           path: site
-      - name: Add the preview branch under /preview/
+      - uses: actions/checkout@v4
+        with:
+          ref: preview
+          path: site/preview
+      - name: Label the preview and list the site
         run: |
-          if git -C site ls-remote --exit-code --heads origin preview >/dev/null 2>&1; then
-            git clone --depth 1 --branch preview "https://github.com/${GITHUB_REPOSITORY}.git" site/preview
-            rm -rf site/preview/.git site/preview/.github
-            # Tell the two apart on a phone's home screen and in the page title.
-            sed -i 's/"short_name": "Flags"/"short_name": "Flags preview"/; s/"name": "Flags of the World"/"name": "Flags of the World (preview)"/' site/preview/manifest.webmanifest
-            sed -i 's|<meta name="apple-mobile-web-app-title" content="Flags">|<meta name="apple-mobile-web-app-title" content="Flags preview">|' site/preview/index.html
-          else
-            echo "no preview branch; deploying main only"
-          fi
-          rm -rf site/.git site/.github
+          rm -rf site/.git site/.github site/preview/.git site/preview/.github
+          # Tell the two apart on a phone's home screen and in the page title.
+          sed -i 's/"short_name": "Flags"/"short_name": "Flags preview"/; s/"name": "Flags of the World"/"name": "Flags of the World (preview)"/' site/preview/manifest.webmanifest
+          sed -i 's|<meta name="apple-mobile-web-app-title" content="Flags">|<meta name="apple-mobile-web-app-title" content="Flags preview">|' site/preview/index.html
+          test -f site/index.html && test -f site/preview/index.html
+          { echo '### Site'; echo '```'; find site -maxdepth 2 -not -path '*/flags*' | sort; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
