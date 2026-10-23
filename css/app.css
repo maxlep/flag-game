@@ -265,7 +265,7 @@ select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px soli
 .typebox input:focus{outline:3px solid var(--accent);outline-offset:1px;border-color:transparent}
 /* One row, scrolling sideways, with its height reserved even when empty so the layout above doesn't jump while typing. */
 /* No mask or momentum tricks here: Safari mis-places taps on a masked scroller. The chips fill the row's full height. */
-.sugg{display:flex;flex-wrap:nowrap;align-items:stretch;gap:6px;flex:none;height:34px;min-height:34px;max-height:34px;box-sizing:border-box;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x}
+.sugg{display:flex;flex-wrap:nowrap;align-items:stretch;gap:6px;flex:none;height:34px;min-height:34px;max-height:34px;box-sizing:border-box;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:none}
 .sugg::-webkit-scrollbar{display:none}
 .sugg button{flex:none;display:flex;align-items:center;background:var(--tint);border-radius:999px;padding:0 14px;font-size:14px;font-weight:600;white-space:nowrap}
 .kbd{display:none;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}

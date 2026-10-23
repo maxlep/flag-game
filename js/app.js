@@ -315,11 +315,15 @@ app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid"
   if(m&&m.contains(e.target)&&m.scrollHeight>m.clientHeight)return;
   if(sg&&sg.contains(e.target)&&sg.scrollWidth>sg.clientWidth)return; // the suggestion row scrolls sideways
   e.preventDefault()},{passive:false});
-// Suggestion chips pick on the finger lifting, not on click, which Safari sometimes drops on a scrolling row.
-let SUG_DOWN=null;
-app.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest("#sugg button");SUG_DOWN=b?{b,x:e.clientX,y:e.clientY}:null},{capture:true,passive:true});
-app.addEventListener("pointerup",e=>{const d=SUG_DOWN;SUG_DOWN=null;if(!d)return;const b=e.target.closest&&e.target.closest("#sugg button");
-  if(b===d.b&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<12){e.preventDefault();b.dataset.picked="1";b.click()}},{capture:true});
+// The suggestion row handles its own touches: a drag scrolls it sideways, a lift with little movement picks the chip
+// under the finger. Leaving this to the browser let a slight sideways wobble turn a tap into a scroll and drop it.
+let SUG=null;
+app.addEventListener("pointerdown",e=>{const sg=e.target.closest&&e.target.closest("#sugg");if(!sg)return;
+  sg.setPointerCapture(e.pointerId);SUG={sg,id:e.pointerId,x:e.clientX,y:e.clientY,left:sg.scrollLeft,moved:false}},{capture:true});
+app.addEventListener("pointermove",e=>{if(!SUG||e.pointerId!==SUG.id)return;const dx=e.clientX-SUG.x;if(Math.abs(dx)>6||Math.abs(e.clientY-SUG.y)>12)SUG.moved=true;SUG.sg.scrollLeft=SUG.left-dx},{capture:true});
+app.addEventListener("pointerup",e=>{const d=SUG;SUG=null;if(!d||e.pointerId!==d.id)return;if(d.moved)return;
+  const b=document.elementFromPoint(e.clientX,e.clientY),chip=b&&b.closest&&b.closest("#sugg button");if(chip){e.preventDefault();chip.click()}},{capture:true});
+app.addEventListener("pointercancel",()=>{SUG=null},{capture:true});
 // On a phone the keyboard halves the screen and the browser centres the answer box, pushing the flag off the top.
 // When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
 // scrolled to the top, so flag and box share the screen.
