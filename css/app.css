@@ -86,8 +86,8 @@ body.kb .qdrawer{padding-bottom:8px} /* riding the top of the keyboard */
 :root[data-theme="dark"] .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}}
 /* The question flag shrinks to what the middle band can show above the drawer and the keyboard. */
-.qmid .flag.big{max-height:max(110px,calc(var(--midh,9999px) - 76px))}
-.qmid .flag.big .fl{width:min(var(--w,100%),calc(max(110px,var(--midh,9999px) - 76px) * var(--r,1.3333)))}
+.qmid .flag.big{max-height:max(110px,var(--flagh,9999px))}
+.qmid .flag.big .fl{width:min(var(--w,100%),calc(max(110px,var(--flagh,9999px)) * var(--r,1.3333)))}
 .flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .zscrim{position:fixed;inset:0;z-index:30;background:rgba(8,12,20,.85);opacity:0;transition:opacity .12s;touch-action:none;user-select:none;-webkit-user-select:none}
 .qscreen .zscrim{position:absolute}

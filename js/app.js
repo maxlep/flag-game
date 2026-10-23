@@ -317,17 +317,21 @@ app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid"
 // Height is taken in layout pixels (vv.height × vv.scale), so pinch-zooming the page doesn't count as a keyboard.
 // The quiz screen is exactly as tall as the visible viewport (--vvh) and shifted by its offset (--vvt), so with the
 // keyboard up the whole layout fits above it and nothing scrolls behind it.
-let VVH=0;
+let VVH=0,FULLH=0;
 // The question flag may use the whole middle band less its chips row; measured, since the band's height depends on
 // the drawer and the keyboard.
-function fitFlag(){const mid=$("#qmid");if(mid)document.documentElement.style.setProperty("--midh",mid.clientHeight+"px")}
+function fitFlag(){const mid=$("#qmid");if(!mid)return;const cs=getComputedStyle(mid),chips=mid.querySelector(".flag.big + .vchips");
+  const h=mid.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-(chips?chips.offsetHeight+parseFloat(cs.rowGap||cs.gap||0):0);
+  document.documentElement.style.setProperty("--flagh",Math.round(h)+"px")}
 function keyboard(){
   const vv=window.visualViewport;if(vv&&vv.scale>1.02)return; // pinch-zoomed: leave the layout alone
-  const h=vv?Math.round(vv.height*vv.scale):window.innerHeight,open=!!(vv&&h<window.innerHeight-120),was=document.body.classList.contains("kb");
+  // In the home-screen app innerHeight itself shrinks with the keyboard, so compare with the tallest height seen.
+  FULLH=Math.max(FULLH,window.innerHeight,vv?vv.height*vv.scale:0);
+  const h=vv?Math.round(vv.height*vv.scale):window.innerHeight,open=h<FULLH-120,was=document.body.classList.contains("kb");
   if(Math.abs(h-VVH)>24){VVH=h;document.documentElement.style.setProperty("--vvh",h+"px")}
   document.documentElement.style.setProperty("--vvt",(vv?Math.round(vv.offsetTop):0)+"px");
-  fitFlag();
   document.body.classList.toggle("kb",open);
+  fitFlag();requestAnimationFrame(fitFlag); // after the drawer has taken its keyboard size
   if(open&&S.view==="quiz")window.scrollTo(0,0);
 }
 if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard);window.visualViewport.addEventListener("scroll",keyboard)}
@@ -519,7 +523,7 @@ function viewQuiz(){
   const nextBtn=q.ans?`<button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`:"";
   const right=S.qs.filter(x=>x.ans===x.c).length;
   return `<div class="qscreen">
-  <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${esc(S.label)} · ${right} right · ${S.i+1} / ${n}</span></div>
+  <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${location.hash==="#debug"?`vv ${VVH} full ${FULLH} in ${innerHeight} off ${getComputedStyle(document.documentElement).getPropertyValue("--vvt")} flag ${getComputedStyle(document.documentElement).getPropertyValue("--flagh")} ${document.body.classList.contains("kb")?"kb":""}`:`${esc(S.label)} · ${right} right · ${S.i+1} / ${n}`}</span></div>
   ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}
   <div class="progress">${dots}</div></div>
   <div class="qmid" id="qmid">${prompt}${reverse?opts:""}${reveal}</div>
@@ -738,12 +742,12 @@ function wireZoom(){
       const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
       fl.style.width=w.toFixed(1)+"px";fl.style.left=(cx-w/2).toFixed(1)+"px";fl.style.top=(cy-h/2).toFixed(1)+"px"};
     const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
-    const drop=anim=>{live();const fl=Z.fl;if(!fl)return;scrimOff();
+    const drop=(anim,byTimer)=>{live();const fl=Z.fl;if(!fl)return;scrimOff();
       const finish=()=>{fl.remove();Z.fl=null;Z.scale=1;Z.px=Z.py=0};
-      if(Z.refocus){Z.refocus=false;const inp=$("#typeIn");if(inp)inp.focus({preventScroll:true})}
+      if(Z.refocus){Z.refocus=false;const inp=$("#typeIn");if(inp&&!byTimer)inp.focus({preventScroll:true})} // after the timer, a tap on the field opens the keyboard
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
-    const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true),ZOOM_REST)};
+    const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true,true),ZOOM_REST)};
     const zoomTo=(ns,lift)=>{ns=Math.min(6,Math.max(1,ns));if(ns===Z.scale&&Z.fl)return;live();up();Z.lift=lift;Z.scale=ns;apply()};
     // Every step follows the wheel directly; only the way back is animated.
     const wheel=e=>{const ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(!Z.fl&&ns<=1)return;zoomTo(ns,1);rest()};
