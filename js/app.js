@@ -754,6 +754,8 @@ function lbApply(){if(!LB)return;const fl=LB.fl;
   // The map keeps its size and shows the window the same transform would: a point q of it shows at C+t+s·q, so the
   // window is the element's box pulled back through that. Markers are shrunk back so they keep their size on screen.
   const v=LB.vb0,W=LB.baseW,H=W*v.h/v.w,u=v.w/W,s=LB.scale;
+  // The window stays inside the frame: the map carries no land beyond it.
+  const mx=(s-1)*W/2,my=(s-1)*H/2;LB.x=Math.max(-mx,Math.min(mx,LB.x));LB.y=Math.max(-my,Math.min(my,LB.y));
   fl.setAttribute("viewBox",`${(v.x+v.w/2-(W/2+LB.x)*u/s).toFixed(2)} ${(v.y+v.h/2-(H/2+LB.y)*u/s).toFixed(2)} ${(v.w/s).toFixed(2)} ${(v.h/s).toFixed(2)}`);
   fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/s).toFixed(2))})}
 // Entering the map slide: remember its full frame and open zoomed to the country's close frame (data-fit), so zooming
