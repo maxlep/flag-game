@@ -109,13 +109,20 @@ for(const f of FLAGS){if(!f.cap||f.cap==="None"||!world.pt[f.c])continue;const w
   for(const [name,S] of Object.entries(out.set)){if(!S.shape[f.c])continue;const xy=S._projection(pick.ll);if(xy)S.cap[f.c]=[r1(xy[0]),r1(xy[1])]}}
 console.error("capitals: approximated (no place found, centre used):",approx.join(" ")||"none");
 for(const c of approx)for(const S of Object.values(out.set))if(S.pt[c])S.cap[c]=S.pt[c];
+// Equal Earth stretches shapes taller near the equator and flatter near the poles (a pseudocylindrical projection, so it
+// depends on y alone). ky[i] is that stretch at y = 10·i: the app divides a frame's height by it so a region looks as it
+// does on a globe.
+{const P=out.set.world._projection,inv=P.invert,e=0.01;out.ky=[];
+  for(let y=0;y<=out.h;y+=10){const ll=inv([W/2,Math.min(out.h-0.01,y)]);const lat=Math.max(-89,Math.min(89,ll[1]));const a=P([10,lat]),b=P([10+e,lat]),c=P([10,lat+e]);
+    out.ky.push(Math.round(((a[1]-c[1])/e)/((b[0]-a[0])/e)*Math.cos(lat*Math.PI/180)*1000)/1000)}}
 for(const S of Object.values(out.set))delete S._projection;
 console.error("sizes:",Object.entries(out.set).map(([n,S])=>n+" land "+S.land.length+" shapes "+Object.keys(S.shape).length).join("; "));
 
 const js=`// Built by tools/build_map.js from Natural Earth (public domain). Equal Earth projection on a ${W}x${out.h} canvas.
 // set.world is centred on 10°E, set.pac on 160°E for the Pacific. In each set: land = every country outline;
 // shape = the outline per flag code; pt = a centre point; box = bounds; area = projected area; cap = the capital.
-// frame = a pixel box per region and the set it is drawn from. Edit the script, not this file.
+// frame = a pixel box per region and the set it is drawn from. ky = the projection's vertical stretch, sampled every
+// 10 units of y. Edit the script, not this file.
 const MAP=${JSON.stringify(out)};
 `;
 fs.writeFileSync(path.join(root,"js/data/map.js"),js);

@@ -753,11 +753,12 @@ function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB
 function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}LB.sx=0;lbTrack(true)}
 // The map slide is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
 function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,st=LB.stage,W=st.clientWidth-48,H=st.clientHeight-24;m.style.width=Math.min(W,H*vb.width/vb.height).toFixed(1)+"px"}
-// Under the stage: the design's name and chips on a flag slide; the capital and region on the map slide. A Flag · Map
-// switch when both exist.
-function lbCaption(){if(!LB)return;const c=LB.c,i=LB.vi,f=BY[c],onMap=i>=LB.nd;
-  const sw=LB.nd<LB.n?`<div class="vchips"><button type="button" class="chipbtn${onMap?"":" on"}" onclick="lbGo(0)">Flag</button><button type="button" class="chipbtn${onMap?" on":""}" onclick="lbGo(${LB.nd})">Map</button></div>`:"";
-  $("#lbVar").innerHTML=onMap?`<p class="vline">${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}</p>${sw}`:useLine(c,i)+`<div class="row" style="gap:8px;justify-content:center">${vchips(c,i,"lbGo(%i)")}${sw}</div>`}
+// Under the stage: a line naming what's shown (the design, or the capital and region on the map) and one row of
+// chips, one per slide: the designs by name, then Map.
+function lbCaption(){if(!LB)return;const c=LB.c,i=LB.vi,f=BY[c],onMap=i>=LB.nd,v=VARS(c);
+  const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(LB.nd<LB.n)names.push("Map");
+  const chips=LB.n>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===i?" on":""}" onmousedown="event.preventDefault()" onclick="lbGo(${k})">${esc(t)}</button>`).join("")}</div>`:"";
+  $("#lbVar").innerHTML=(onMap?`<p class="vline">${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}</p>`:useLine(c,i))+chips}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
 // Zoom on the question flag. Desktop: scroll over it to zoom; as it grows it drifts from its place toward the middle of
