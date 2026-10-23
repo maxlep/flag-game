@@ -139,7 +139,7 @@ function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameC
   const where=f.sov?f.r:geoOf(f)+" · territory";
   return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+where:""} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
 // A small map of the flag's region, the country filled in; opens the viewer on the map slide.
-function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openFlag('${c}','map')" title="Open the map">${mapSVG({code:c,cls:"sm",fit:1.6,pad:0})}</button>`:""}
+function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openMap('${c}',false)" title="Open the map">${mapSVG({code:c,cls:"sm",fit:1.6,pad:0})}</button>`:""}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
@@ -647,7 +647,7 @@ function viewStudy(){
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
   const status=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}${mapHas(f.c)?` · <button type="button" class="wl" onclick="openFlag('${f.c}','map')">Map</button>`:""}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}${mapHas(f.c)?` · <button type="button" class="wl" onclick="openMap('${f.c}')">Map</button>`:""}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
@@ -697,22 +697,23 @@ function viewLook(){
 
 // ---------- FLAG VIEWER ----------
 let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
-function openFlag(c,vi=0){
+// openFlag shows a flag's designs as slides; openMap shows its map alone. Both use the same overlay and gestures,
+// and the chip row under the stage switches between them. Swiping only ever moves between designs.
+function openFlag(c,vi=0){openViewer(c,{what:"flag",vi})}
+function openMap(c,chips=true){openViewer(c,{what:"map",chips})}
+function openViewer(c,o){
+  if(ZBOX&&ZBOX._z)ZBOX._z.drop(true); // a flag lifted by the in-place zoom goes back first
   closeFlag();
   const el=document.createElement("div");el.className="lb";el.id="lb";
-  const v=VARS(c),nd=v?v.length:1,hasMap=mapHas(c),n=nd+(hasMap?1:0);
-  if(vi==="map")vi=hasMap?nd:0;
   el.innerHTML=`<div class="lb-top"><span class="nm">${esc(BY[c].n)}</span><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack">${Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("")}</div></div>
+    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
     <div class="lb-var" id="lbVar"></div>
-    <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset${n>1?" · swipe for "+(v&&hasMap?"the other designs and the map":v?"the other design":"the map"):""}</p>`;
+    <p class="lb-hint" id="lbHint"></p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
-  // The map slide fills the stage, so it is framed to the stage's shape once that is known.
-  if(hasMap)track.insertAdjacentHTML("beforeend",`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:(stage.clientWidth-48)/(stage.clientHeight-24),pad:0})}</div>`);
-  LB={c,vi,n,nd,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track,fls:[...el.querySelectorAll(".lb-slide .flag .fl:not([hidden])"),...el.querySelectorAll(".lb-slide .map")]};
-  lbFit();LB.fl=LB.fls[vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbCaption();lbMapHome();
+  LB={c,chips:o.chips!==false,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track};
+  lbShow(o.what,o.vi||0);
   lbTrack(false);
   const st=stage;
   st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:Date.now()});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};LB.moved=false;st.classList.add("drag")});
@@ -769,15 +770,25 @@ function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
   LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
 // The strip of designs: slide vi is in view, offset by the finger while dragging. Animated only when snapping.
 function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(calc(${-100*LB.vi}% + ${LB.sx}px))`}
-function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption();lbMapHome()}LB.sx=0;lbTrack(true)}
+function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}LB.sx=0;lbTrack(true)}
+// Fill the stage with the designs (slide vi in view) or the map, from rest.
+function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
+  LB.what=what;LB.scale=1;LB.x=0;LB.y=0;LB.sx=0;LB.vb0=null;
+  if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:(LB.stage.clientWidth-48)/(LB.stage.clientHeight-24),pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
+  else{LB.track.innerHTML=Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("");LB.n=nd;LB.vi=Math.min(nd-1,vi);LB.fls=[...LB.track.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]}
+  LB.fl=LB.fls[LB.vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbTrack(false);lbCaption();if(what==="map")lbMapHome();
+  $("#lbHint").textContent="Pinch or scroll to zoom · drag to pan · double-tap to reset"+(what==="flag"&&nd>1?" · swipe for the other design":"")}
+// A chip: a design (by index) or the map.
+function lbPick(k){if(!LB)return;const v=VARS(LB.c),nd=v?v.length:1;if(k>=nd)lbShow("map");else if(LB.what==="flag")lbGo(k);else lbShow("flag",k)}
 // The map slide is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
 function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,st=LB.stage,W=st.clientWidth-48,H=st.clientHeight-24;m.style.width=Math.min(W,H*vb.width/vb.height).toFixed(1)+"px"}
 // Under the stage: a line naming what's shown (the design, or the capital and region on the map) and one row of
-// chips, one per slide: the designs by name, then Map.
-function lbCaption(){if(!LB)return;const c=LB.c,i=LB.vi,f=BY[c],onMap=i>=LB.nd,v=VARS(c);
-  const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(LB.nd<LB.n)names.push("Map");
-  const chips=LB.n>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===i?" on":""}" onmousedown="event.preventDefault()" onclick="lbGo(${k})">${esc(t)}</button>`).join("")}</div>`:"";
-  $("#lbVar").innerHTML=(onMap?`<p class="vline">${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}</p>`:useLine(c,i))+chips}
+// chips: the designs by name, then Map. No chips in a round, where the flag is zoomed in place instead.
+function lbCaption(){if(!LB)return;const c=LB.c,f=BY[c],onMap=LB.what==="map",v=VARS(c);
+  const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(mapHas(c))names.push("Map");
+  const cur=onMap?names.length-1:LB.vi;
+  const chips=LB.chips&&names.length>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===cur?" on":""}" onmousedown="event.preventDefault()" onclick="lbPick(${k})">${esc(t)}</button>`).join("")}</div>`:"";
+  $("#lbVar").innerHTML=(onMap?`<p class="vline">${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}</p>`:useLine(c,LB.vi))+chips}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
 // Zoom on the question flag. Desktop: scroll over it to zoom; as it grows it drifts from its place toward the middle of
