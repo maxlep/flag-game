@@ -722,8 +722,9 @@ function wireZoom(){
     // shown once its image has decoded, so it doesn't blink in.
     const up=()=>{if(Z.fl)return;const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
       Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
-      scrimOn(box);const cp=fl.cloneNode(true);cp.classList.add("z");cp.style.visibility="hidden";ZS.appendChild(cp);Z.fl=cp;
-      const im=cp.querySelector("img");(im&&im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>{cp.style.visibility=""});
+      scrimOn(box);const cp=fl.cloneNode(true);cp.classList.add("z");ZS.appendChild(cp);Z.fl=cp;
+      // Fade the copy in over the original rather than popping it; a late first paint then shows as nothing, not a blank box.
+      const im=cp.querySelector("img");(im&&im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>requestAnimationFrame(()=>cp.classList.add("in")));
       Z.scale=1;Z.px=Z.py=0;apply();void cp.offsetWidth};
     const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
       const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
