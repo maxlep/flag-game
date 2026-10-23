@@ -811,7 +811,7 @@ function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="
 // fingers' midpoint pans it. While enlarged the flag is moved out of the page into a dimming layer that covers the quiz
 // screen and takes every touch, so it always paints on top and every gesture reaches it. It eases back after a short
 // rest, or at once on a tap on the dimmed page or Esc. Resized rather than transform-scaled, so the SVG stays sharp.
-const ZOOM_REST=1500;
+const ZOOM_REST=1000;
 let ZS=null,ZS_T=null,ZBOX=null; // the dimming layer and the box whose flag is in it
 function scrimOn(box){clearTimeout(ZS_T);ZBOX=box;
   if(!ZS){const sc=ZS=document.createElement("div");sc.className="zscrim";(app.querySelector(".qscreen")||document.body).appendChild(sc);
@@ -863,16 +863,17 @@ function wireZoom(){
       const px=w<=q.width?0:Math.max(q.width-w/2-nx,Math.min(w/2-nx,Z.px)),py=h<=q.height?0:Math.max(q.height-h/2-ny,Math.min(h/2-ny,Z.py));
       if(px===Z.px&&py===Z.py)return;Z.px=px;Z.py=py;
       fl.classList.add("anim");clearTimeout(Z.finishT);Z.finishT=setTimeout(()=>fl.classList.remove("anim"),260);apply()};
-    const zoomTo=(ns,lift)=>{ns=Math.min(6,Math.max(1,ns));if(ns===Z.scale&&Z.fl)return;live();up();Z.lift=lift;Z.scale=ns;apply()};
+    // Back at its own size the flag is simply put back: the layer goes, the timer with it.
+    const zoomTo=(ns,lift)=>{ns=Math.min(6,ns);if(ns<=1){if(Z.fl)drop(true);return}if(ns===Z.scale&&Z.fl)return;live();up();Z.lift=lift;Z.scale=ns;apply()};
     // Every step follows the wheel directly; only the way back is animated.
-    const wheel=e=>{const ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(!Z.fl&&ns<=1)return;zoomTo(ns,1);rest()};
+    const wheel=e=>{const ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(!Z.fl&&ns<=1)return;zoomTo(ns,1);if(Z.fl)rest()};
     const down=e=>{Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};Z.moved=false;live()};
     const move=e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...Z.pts.values()],s0=Z.start;
       if(cur.length===1&&s0.pts.length===1&&Z.scale>1){Z.px=s0.px+cur[0].x-s0.pts[0].x;Z.py=s0.py+cur[0].y-s0.pts[0].y;if(Math.abs(Z.px-s0.px)+Math.abs(Z.py-s0.py)>6)Z.moved=true;apply()}
       else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const ns=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
         if(!Z.fl&&ns<=1)return;const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};
-        zoomTo(ns,0);Z.px=s0.px+m1.x-m0.x;Z.py=s0.py+m1.y-m0.y;Z.moved=true;apply()}};
-    const end=e=>{Z.pts.delete(e.pointerId);if(!Z.pts.size)settle();Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};if(!Z.pts.size)rest()};
+        zoomTo(ns,0);if(!Z.fl)return;Z.px=s0.px+m1.x-m0.x;Z.py=s0.py+m1.y-m0.y;Z.moved=true;apply()}};
+    const end=e=>{Z.pts.delete(e.pointerId);if(!Z.pts.size)settle();Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};if(!Z.pts.size&&Z.fl)rest()};
     // Until the flag is lifted, gestures start on the box itself; after that the dimming layer takes them.
     box.addEventListener("wheel",e=>{e.preventDefault();wheel(e)},{passive:false});
     box.addEventListener("dblclick",()=>{if(Z.fl)drop(true);else{zoomTo(3,1);rest()}});
