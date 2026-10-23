@@ -259,7 +259,7 @@ function submitTyped(){
 function typeInput(v){
   const q=S.qs[S.i];q.typed=v;
   const box=$("#sugg");if(!box)return;
-  box.innerHTML=suggest(v).map(c=>`<button type="button" onmousedown="event.preventDefault()" onclick="pickSugg('${c}')">${esc(BY[c].n)}</button>`).join("");
+  box.innerHTML=suggest(v).map(c=>`<button type="button" onmousedown="event.preventDefault()" onclick="if(this.dataset.done)return;this.dataset.done=1;pickSugg('${c}')">${esc(BY[c].n)}</button>`).join("");
 }
 function pickSugg(c){const inp=$("#typeIn");if(inp)inp.value=BY[c].n;submitTyped()}
 function answer(k){
@@ -311,7 +311,15 @@ function shade(){const st=app.querySelector(".sticky"),dk=app.querySelector(".do
 window.addEventListener("scroll",shade,{passive:true});window.addEventListener("resize",shade);app.addEventListener("scroll",shade,true);
 // On the quiz screen only the middle band scrolls, and only when it has something to scroll; any other touch drag is
 // swallowed so a phone can't scroll the page beneath (iOS does that even with the body locked).
-app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid");if(!(m&&m.contains(e.target)&&m.scrollHeight>m.clientHeight))e.preventDefault()},{passive:false});
+app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid"),sg=$("#sugg");
+  if(m&&m.contains(e.target)&&m.scrollHeight>m.clientHeight)return;
+  if(sg&&sg.contains(e.target)&&sg.scrollWidth>sg.clientWidth)return; // the suggestion row scrolls sideways
+  e.preventDefault()},{passive:false});
+// Suggestion chips pick on the finger lifting, not on click, which Safari sometimes drops on a scrolling row.
+let SUG_DOWN=null;
+app.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest("#sugg button");SUG_DOWN=b?{b,x:e.clientX,y:e.clientY}:null},{capture:true,passive:true});
+app.addEventListener("pointerup",e=>{const d=SUG_DOWN;SUG_DOWN=null;if(!d)return;const b=e.target.closest&&e.target.closest("#sugg button");
+  if(b===d.b&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<12){e.preventDefault();b.dataset.picked="1";b.click()}},{capture:true});
 // On a phone the keyboard halves the screen and the browser centres the answer box, pushing the flag off the top.
 // When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
 // scrolled to the top, so flag and box share the screen.
