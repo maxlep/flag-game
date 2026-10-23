@@ -281,6 +281,7 @@ function wake(){const t=$("#typeIn");if(t&&document.activeElement===t&&!document
 function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();showVariant(q.c,i)}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
+  if(ZS&&e.key==="Escape"){const z=app.querySelector(".flag.big.zooming");if(z&&z._drop)z._drop(true);return}
   if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbGo(LB.vi+(e.key==="ArrowRight"?1:-1));return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
@@ -671,35 +672,49 @@ function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB
 function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();$("#lbVar").innerHTML=useLine(LB.c,i)+vchips(LB.c,i,"lbGo(%i)")}LB.sx=0;lbTrack(true)}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
-// In-place zoom on the question flag: pinch or scroll over it and it grows on top of the page, anchored under the
-// fingers or the pointer; drag to pan while enlarged. It eases back to normal size on its own after a short pause.
-// The element is resized rather than transform-scaled, so the SVG stays sharp.
+// Zoom on the question flag: pinch or scroll over it and it lifts out to the middle of the screen over a dimmed page,
+// with the point you pinched or pointed at placed in the centre; drag to pan while enlarged. It eases back on its own
+// after a short pause, or at once on a tap on the dimmed page or Esc. Resized rather than transform-scaled, so the SVG
+// stays sharp.
 const ZOOM_REST=1500;
+let ZS=null; // the dimming layer while a flag is lifted
 function wireZoom(){
   app.querySelectorAll(".flag.big").forEach(box=>{
     if(box.dataset.zoom)return;box.dataset.zoom="1";const F=()=>box.querySelector(".fl:not([hidden])");
     const Z={scale:1,x:0,y:0,pts:new Map(),timer:null,baseW:0};
-    const C=()=>{const r=box.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}};
-    const apply=()=>{const fl=F();if(Z.scale===1){fl.style.width=fl.style.transform="";fl.classList.remove("z");box.classList.remove("zooming");Z.baseW=0;return}
-      F().classList.add("z");box.classList.add("zooming");F().style.width=(Z.baseW*Z.scale).toFixed(1)+"px";F().style.transform=`translate(calc(-50% + ${Z.x}px),calc(-50% + ${Z.y}px))`};
-    const zoom=(f,P)=>{const ns=Math.min(6,Math.max(1,Z.scale*f));f=ns/Z.scale;if(f===1)return;if(Z.scale===1)Z.baseW=F().getBoundingClientRect().width;
-      const c=C();P=P||c;Z.x=(1-f)*(P.x-c.x)+f*Z.x;Z.y=(1-f)*(P.y-c.y)+f*Z.y;Z.scale=ns;if(ns===1){Z.x=0;Z.y=0}apply()};
-    const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>{if(Z.scale===1)return;F().classList.add("anim");Z.scale=1;Z.x=0;Z.y=0;
-      F().style.width=Z.baseW+"px";F().style.transform="translate(-50%,-50%)";
-      setTimeout(()=>{F().classList.remove("anim");apply()},260)},ZOOM_REST)};
+    const C=()=>({x:innerWidth/2,y:innerHeight/2}); // the lifted flag is centred in the viewport
+    const lift=()=>{const fl=F(),r=fl.getBoundingClientRect();Z.baseW=r.width;Z.c0={x:r.left+r.width/2,y:r.top+r.height/2};
+      ZS=document.createElement("div");ZS.className="zscrim";document.body.appendChild(ZS);requestAnimationFrame(()=>ZS&&ZS.classList.add("on"));
+      ZS.addEventListener("click",()=>drop(true));ZS.addEventListener("wheel",e=>{e.preventDefault();bump();zoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY});rest()},{passive:false});
+      fl.classList.add("z");box.classList.add("zooming")};
+    const apply=()=>{const fl=F();fl.style.width=(Z.baseW*Z.scale).toFixed(1)+"px";fl.style.transform=`translate(calc(-50% + ${Z.x}px),calc(-50% + ${Z.y}px))`};
+    // Back to rest: animated unless told otherwise, then the lift and the dimming are undone.
+    const drop=anim=>{clearTimeout(Z.timer);if(Z.scale===1&&!ZS)return;const fl=F(),sc=ZS;ZS=null;
+      if(sc){sc.classList.remove("on");setTimeout(()=>sc.remove(),260)}
+      const finish=()=>{fl.classList.remove("anim","z");box.classList.remove("zooming");fl.style.width=fl.style.transform="";Z.scale=1;Z.x=0;Z.y=0;Z.baseW=0};
+      if(!anim){finish();return}
+      fl.classList.add("anim");Z.scale=1;Z.x=Z.c0.x-C().x;Z.y=Z.c0.y-C().y;apply();setTimeout(finish,260)};
+    // Zoom by f. From rest, the point P (on the page) goes to the centre; once lifted, the point under P stays put.
+    const zoom=(f,P)=>{const ns=Math.min(6,Math.max(1,Z.scale*f));if(ns===Z.scale)return;const c=C();
+      if(Z.scale===1){lift();const q={x:P.x-Z.c0.x,y:P.y-Z.c0.y};Z.scale=ns;Z.x=-ns*q.x;Z.y=-ns*q.y}
+      else{f=ns/Z.scale;Z.x=(1-f)*(P.x-c.x)+f*Z.x;Z.y=(1-f)*(P.y-c.y)+f*Z.y;Z.scale=ns}
+      apply()};
+    const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true),ZOOM_REST)};
     const bump=()=>{clearTimeout(Z.timer);F().classList.remove("anim")};
     box.addEventListener("wheel",e=>{e.preventDefault();bump();zoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY});rest()},{passive:false});
-    box.addEventListener("dblclick",e=>{bump();if(Z.scale>1){Z.scale=1;Z.x=0;Z.y=0;apply()}else zoom(2.5,{x:e.clientX,y:e.clientY});rest()});
+    box.addEventListener("dblclick",e=>{bump();if(Z.scale>1)drop(true);else{zoom(2.5,{x:e.clientX,y:e.clientY});rest()}});
     box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&Z.scale===1)return;box.setPointerCapture(e.pointerId);Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
       Z.start={scale:Z.scale,x:Z.x,y:Z.y,pts:[...Z.pts.values()]};bump()});
     box.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...Z.pts.values()],s0=Z.start;
       if(cur.length===1&&s0.pts.length===1&&Z.scale>1){Z.x=s0.x+cur[0].x-s0.pts[0].x;Z.y=s0.y+cur[0].y-s0.pts[0].y;apply()}
       else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
-        const ns=Math.min(6,Math.max(1,want)),r=ns/s0.scale;if(s0.scale===1&&!Z.baseW)Z.baseW=F().getBoundingClientRect().width;
-        const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},c=C();
-        Z.scale=ns;Z.x=m1.x-c.x-r*(m0.x-c.x-s0.x);Z.y=m1.y-c.y-r*(m0.y-c.y-s0.y);if(ns===1){Z.x=0;Z.y=0}apply()}});
+        const ns=Math.min(6,Math.max(1,want));const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};
+        if(Z.scale===1){if(ns===1)return;lift();s0.x=-(m0.x-Z.c0.x);s0.y=-(m0.y-Z.c0.y)} // the pinched point goes to the centre
+        // A pinch scales about the centre of the screen and the flag follows the fingers' midpoint.
+        const r=ns/s0.scale;Z.scale=ns;Z.x=r*s0.x+(m1.x-m0.x);Z.y=r*s0.y+(m1.y-m0.y);apply()}});
     const up=e=>{Z.pts.delete(e.pointerId);Z.start={scale:Z.scale,x:Z.x,y:Z.y,pts:[...Z.pts.values()]};if(!Z.pts.size)rest()};
     box.addEventListener("pointerup",up);box.addEventListener("pointercancel",up);
+    box._drop=drop;
   });
 }
 
