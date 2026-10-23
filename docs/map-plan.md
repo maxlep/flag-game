@@ -31,6 +31,10 @@ Tile maps (Leaflet with OpenStreetMap, Mapbox, Google) need a network, often a k
    - Capitals could be a later ask type: tap where the capital is, or name the capital of the highlighted country.
 4. Progress: geography is tracked separately from flags ("learned" vs "located"), with its own badges later. Flag Lord stays about flags.
 
+## Later: a sharper map for the viewer
+
+The thumbnails and the learn card keep the 50m file. The viewer should load a second file, `js/data/map10.js`, built by the same script from `ne_10m_admin_0_countries` at the same 8% simplification, the first time it opens, and use it for every map it draws. Measured: 1.6 MB, 480 KB gzipped (3.5x the 50m file), 131k vertices; first paint of a region map about 80 ms in desktop Chrome, so about 0.2 s on a phone; zoom frames stay under budget. Keeping 25% of the points (4 MB, 1 MB gzipped, 220 ms) is too much. What it buys: small islands and microstates get their real coastlines, since the build keeps small shapes unsimplified and 10m has many more of them; large countries look much as now. The hybrid of 10m outlines only for small flags over 50m land was considered and set aside: cheaper, but a 10m island on a 50m neighbour shows slivers where they touch.
+
 ## Later: project on the fly
 
 Step 1 ships pre-projected paths (Equal Earth, one canvas, a Pacific-centred copy for Oceania, a per-frame correction of the vertical stretch). For the whole-world quiz the map should instead be projected in the app around the centre of the view, as a globe you spin: the build writes quantized lon/lat, the app rotates to the view centre and applies one azimuthal projection (about 40 lines). About 60,000 vertices to project per redraw, a few milliseconds; drawing is the cost, so canvas rather than SVG if it isn't smooth. The hard part is clipping shapes at the horizon; azimuthal equidistant shows the whole sphere with no clipping, orthographic needs a cheap back-face clip. The stretch correction and the Pacific set go away with it.
