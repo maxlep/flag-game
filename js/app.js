@@ -516,7 +516,7 @@ function viewQuiz(){
     prompt=`<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
     opts=`<div class="flagopts n${q.opts.length}">${q.opts.map((c,i)=>{
       let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
-      return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
+      return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key${q.ans?"":" one"}">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
     prompt=`<div class="qflag">${img(q.c,"flag big",q.v||0)}</div>`;ask=`<p class="eyebrow">Which country? Type it.</p>`;
     // After the answer the box stays, read-only, so the keyboard stays open; Enter in it moves on.

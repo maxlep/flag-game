@@ -260,6 +260,7 @@ select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px soli
 .flagopts.n16{grid-template-columns:repeat(4,1fr);gap:6px}
 .flagopts.n9 .fopt,.flagopts.n16 .fopt{padding:5px}
 .flagopts.n16 .key{font-size:10px}
+.fopt .key.one{display:flex;align-items:center} /* a lone letter sits in the middle of the reserved two lines */
 .flagopts.n9 .fopt,.flagopts.n16 .fopt{gap:2px}
 .fopt{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;min-width:0}
 .fopt .flag .fl{box-shadow:0 0 0 1px var(--line)}
