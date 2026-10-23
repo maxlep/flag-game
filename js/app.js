@@ -272,6 +272,8 @@ function answer(k){
   S.streak=ok?S.streak+1:0;S.best=Math.max(S.best,S.streak);
   saveRound();render();
   if(S.pace==="drill"&&ok){clearTimeout(S.timer);S.timer=setTimeout(next,650);return}
+  // A card is about to be read: on a phone the keyboard gives the room back. Next (a tap) brings it up again.
+  if(document.body.classList.contains("kb")){const t=$("#typeIn");if(t&&document.activeElement===t)t.blur()}
   requestAnimationFrame(()=>{const mid=$("#qmid"),card=mid&&mid.querySelector(".card.lore");if(!card)return;
     // The whole card if it fits under the flag, otherwise its top.
     card.scrollIntoView({block:card.offsetHeight<mid.clientHeight*0.6?"end":"start",behavior:"smooth"})});
