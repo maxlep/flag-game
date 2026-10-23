@@ -342,6 +342,7 @@ function patchAround(oldLeaf,newLeaf){
 function render(){
   requestAnimationFrame(shade);
   document.body.classList.toggle("quiz",S.view==="quiz");
+  if(S.view==="quiz"){window.scrollTo(0,0);keyboard()} // the screen's height must be right before it is drawn
   if(S.view==="quiz"){
     const old=document.activeElement,oldForm=old&&old.id==="typeIn"&&app.contains(old)?old.closest("form.typebox"):null;
     const html=viewQuiz();
