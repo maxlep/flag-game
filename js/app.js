@@ -755,6 +755,7 @@ function lbApply(){if(!LB)return;const fl=LB.fl;
   if(fl.tagName!=="svg"){fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";fl.style.transform=`translate(${LB.x}px,${LB.y}px)`;return}
   // The map keeps its size and shows the window the same transform would: a point q of it shows at C+t+s·q, so the
   // window is the element's box pulled back through that. Markers are shrunk back so they keep their size on screen.
+  if(!LB.vb0){const b=fl.viewBox.baseVal;LB.vb0={x:b.x,y:b.y,w:b.width,h:b.height}}
   const v=LB.vb0,W=LB.baseW,H=W*v.h/v.w,u=v.w/W,s=LB.scale;
   // The window stays inside the frame: the map carries no land beyond it.
   const mx=(s-1)*W/2,my=(s-1)*H/2;LB.x=Math.max(-mx,Math.min(mx,LB.x));LB.y=Math.max(-my,Math.min(my,LB.y));
@@ -763,7 +764,6 @@ function lbApply(){if(!LB)return;const fl=LB.fl;
 // Entering the map slide: remember its full frame and open zoomed to the country's close frame (data-fit), so zooming
 // out reaches the region and a double tap resets to it.
 function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
-  if(!LB.vb0){const b=fl.viewBox.baseVal;LB.vb0={x:b.x,y:b.y,w:b.width,h:b.height}}
   const f=(fl.dataset.fit||"").split(" ").map(Number);if(f.length!==4)return;
   const v=LB.vb0,u=v.w/LB.baseW,s=Math.min(lbMax(),Math.max(1,Math.min(v.w/f[2],v.h/f[3])));
   LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
