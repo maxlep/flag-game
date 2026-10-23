@@ -91,10 +91,16 @@ const BADGES=[ // roughly in the order people earn them
  {id:"carto",e:"🗺️",n:"Cartographer",h:"Every territory, region and organisation flag learned."},
  {id:"streak100",e:"💯",n:"Centurion",h:"100 correct in a row."},
  {id:"m197",e:"🏆",n:"Completionist",h:"Every country's flag learned."},
- ...REGIONS.map(r=>({id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round on Master, typed, with no misses."})),
+ // Titles: one per region per scope. Lord is Countries, Warden is Territories, Emperor is All; the same three on the world card.
+ ...REGIONS.flatMap(r=>[
+   {id:"lord-"+r,n:"Lord of "+r,e:"🛡️",h:"A full "+r+" round (Countries) on Master, typed, with no misses.",title:1},
+   {id:"warden-"+r,n:"Warden of "+r,e:"🧭",h:"A full "+r+" round (Territories) on Master, typed, with no misses.",title:1},
+   {id:"emperor-"+r,n:"Emperor of "+r,e:"🌐",h:"A full "+r+" round (All) on Master, typed, with no misses.",title:1}]),
  {id:"lord",n:"Flag Lord",e:"👑",h:"A full Whole World round on Master, typed, with no misses. All 197 names exact, no mistakes.",big:1},
+ {id:"warden",n:"Flag Warden",e:"🧭",h:"A full All-territories round on Master, typed, with no misses.",big:1},
  {id:"emperor",e:"🌐",n:"Flag Emperor",h:"A full Everything round on Master, typed, with no misses. Every flag, names exact, no mistakes.",big:1}
 ];
+const TITLE={countries:{k:"lord",e:"🛡️"},territories:{k:"warden",e:"🧭"},all:{k:"emperor",e:"🌐"}};
 const BADGE=Object.fromEntries(BADGES.map(b=>[b.id,b]));
 function checkBadges(){
   const n=S.qs.length,right=S.qs.filter(q=>q.ans===q.c).length,perfect=right===n;
@@ -114,9 +120,8 @@ function checkBadges(){
   if(S.best>=25)award("streak25");if(S.best>=50)award("streak50");if(S.best>=100)award("streak100");
   if(mc>=50)award("m50");if(mc>=100)award("m100");if(mc>=COUNTRIES.length)award("m197");
   if(QUIZ.filter(f=>!f.sov).every(f=>mastered(f.c)))award("carto");
-  if(S.mode==="region"&&S.full&&perfect&&strict&&REGIONS.includes(S.arg)&&S.scope!=="territories")award("lord-"+S.arg);
-  if(S.mode==="all"&&S.full&&perfect&&strict&&S.scope==="countries")award("lord");
-  if(S.mode==="all"&&S.full&&perfect&&strict&&S.scope==="all")award("emperor");
+  if(S.mode==="region"&&S.full&&perfect&&strict&&REGIONS.includes(S.arg)&&TITLE[S.scope])award(TITLE[S.scope].k+"-"+S.arg);
+  if(S.mode==="all"&&S.full&&perfect&&strict&&TITLE[S.scope])award(TITLE[S.scope].k);
   saveB();return earned;
 }
 // Wikipedia article names where they differ from the display name; THE marks "Flag of the …".
@@ -415,13 +420,14 @@ function shell(sub){
 // A home card: the card itself starts a round; the trailing link opens the study list.
 const BOOK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>`;
 function card(o){
-  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${o.mark?`<span class="mark" title="${esc(o.mark)}" aria-label="${esc(o.mark)}">🛡️</span>`:""}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
+  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
   const study=o.study?`<button class="tstudy" onclick="${o.study}" aria-label="Study ${esc(o.name)}">${BOOK}Study</button>`:"";
   return `<div class="tile${o.wide?" wide":""}">${main}${study}</div>`;
 }
 function setCards(list){
   return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
-    return card({name:r,mark:badges["lord-"+r]&&SET.scope==="countries"?"Lord of "+r:"",count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
+    const marks=["lord","warden","emperor"].filter(k=>badges[k+"-"+r]).map(k=>({e:BADGE[k+"-"+r].e,n:BADGE[k+"-"+r].n}));
+    return card({name:r,marks,count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
 }
 const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
 const scopeSeg=(note,label)=>`<div class="seg">${label?'<span class="label">Flags</span>':""}<div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
@@ -434,7 +440,7 @@ function viewHome(){
   ${scopeSeg()}
   <p class="eyebrow">Regions</p>
   <div class="tiles">${setCards(ALLREGIONS)}
-    ${card({wide:true,name:scopeName(),count:learned(SCOPED())+" / "+SCOPED().length+" learned",go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`})}
+    ${card({wide:true,name:scopeName(),marks:["lord","warden","emperor"].filter(k=>badges[k]).map(k=>({e:k==="lord"?"👑":BADGE[k].e,n:BADGE[k].n})),count:learned(SCOPED())+" / "+SCOPED().length+" learned",go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`})}
   </div>
   <p class="eyebrow" style="padding-top:4px">Practice</p>
   <div class="tiles">
@@ -496,7 +502,10 @@ function viewSetup(){
 function viewBadges(){
   const nb=BADGES.filter(b=>badges[b.id]).length;
   return `${shell({title:"Badges",stat:nb+" of "+BADGES.length+" earned"})}
-  <div class="badges">${BADGES.map(b=>`<div class="badge${badges[b.id]?" on":""}${b.big?" big":""}"><span class="be">${b.e}</span><span class="bn">${b.n}</span><span class="bh">${b.h}${badges[b.id]?" Earned "+fmtDate(badges[b.id])+".":""}</span></div>`).join("")}</div>
+  <div class="badges">${BADGES.filter(b=>!b.title).map(b=>`<div class="badge${badges[b.id]?" on":""}${b.big?" big":""}"><span class="be">${b.e}</span><span class="bn">${b.n}</span><span class="bh">${b.h}${badges[b.id]?" Earned "+fmtDate(badges[b.id])+".":""}</span></div>`).join("")}</div>
+  <p class="eyebrow" style="padding-top:6px">Titles</p>
+  <p class="small muted">One for each region and scope: Lord for Countries, Warden for Territories, Emperor for All. A full round on Master, typed, with no misses.</p>
+  <div class="titles">${REGIONS.map(r=>`<div class="trow"><span class="tr">${esc(r)}</span>${["lord","warden","emperor"].map(k=>{const b=BADGE[k+"-"+r],on=badges[b.id];return `<span class="tcell${on?" on":""}" title="${esc(b.n)}${on?" · "+fmtDate(on):""}"><span class="be">${b.e}</span><span class="tn">${k[0].toUpperCase()+k.slice(1)}</span></span>`}).join("")}</div>`).join("")}</div>
   <p class="small muted">A flag counts as learned at 4 points: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert, 4 on Master (3 when picking the flag); a miss costs 2. Badges are kept once earned.</p>`;
 }
 function viewQuiz(){
