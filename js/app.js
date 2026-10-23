@@ -395,6 +395,20 @@ function render(){
   document.body.classList.toggle("quiz",S.view==="quiz");
   if(S.view==="quiz"){window.scrollTo(0,0);keyboard();requestAnimationFrame(fitFlag)} // the screen's height must be right before it is drawn
   if(S.view==="quiz"){
+    // The middle band keeps its scroll position when the same question is drawn again (the leave prompt, a design
+    // switch), so the reader doesn't jump back to the flag.
+    const mid0=$("#qmid"),keep=mid0&&+mid0.dataset.i===S.i&&mid0.scrollTop>0?mid0.scrollTop:0;
+    renderQuiz();
+    if(keep){const m=$("#qmid");if(m)m.scrollTop=keep}
+    return}
+  if(S.view==="done")return app.innerHTML=viewDone();
+  if(S.view==="setup")return app.innerHTML=viewSetup();
+  if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
+  if(S.view==="look")return app.innerHTML=viewLook();
+  if(S.view==="badges")return app.innerHTML=viewBadges();
+  app.innerHTML=viewHome();checkVersion();
+}
+function renderQuiz(){
     const old=document.activeElement,oldForm=old&&old.id==="typeIn"&&app.contains(old)?old.closest("form.typebox"):null;
     const html=viewQuiz();
     if(!oldForm){app.innerHTML=html;const t=$("#typeIn");if(t&&!S.kbOff)t.focus({preventScroll:true});wireZoom();return}
@@ -407,13 +421,7 @@ function render(){
     for(const a of ["readonly","placeholder","enterkeyhint"]){if(ni.hasAttribute(a))old.setAttribute(a,ni.getAttribute(a));else old.removeAttribute(a)}
     if(old.value!==ni.value)old.value=ni.value;
     patchAround(old,ni);
-    wireZoom();return}
-  if(S.view==="done")return app.innerHTML=viewDone();
-  if(S.view==="setup")return app.innerHTML=viewSetup();
-  if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
-  if(S.view==="look")return app.innerHTML=viewLook();
-  if(S.view==="badges")return app.innerHTML=viewBadges();
-  app.innerHTML=viewHome();checkVersion();
+    wireZoom();
 }
 function shell(sub){
   const total=QUIZ.length,m=QUIZ.filter(f=>mastered(f.c)).length,lord=!!badges.lord;
@@ -578,7 +586,7 @@ function viewQuiz(){
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${esc(S.label)} · ${right} right · ${S.i+1} / ${n}</span></div>
   <div class="progress">${dots}</div>
   ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}</div>
-  <div class="qmid" id="qmid">${prompt}${reverse?opts:""}${reveal}</div>
+  <div class="qmid" id="qmid" data-i="${S.i}">${prompt}${reverse?opts:""}${reveal}</div>
   <div class="qdrawer${q.ans?" answered":""}${reverse&&!q.ans?" empty":""}">${q.ans&&(!typed||compact)?"":ask}${reverse?"":opts}${nextBtn}</div>
   </div>`;
 }
@@ -734,7 +742,8 @@ function openViewer(c,o){
   const up=e=>{LB.pts.delete(e.pointerId);const s0=LB.start;
     if(LB.sx){const W=st.clientWidth,dt=Math.max(1,Date.now()-s0.at),fast=Math.abs(LB.sx)/dt>0.5;
       const go=(Math.abs(LB.sx)>W*0.2||fast)?(LB.sx<0?1:-1):0;LB.sx=0;lbGo(Math.min(LB.n-1,Math.max(0,LB.vi+go)))}
-    LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};if(!LB.pts.size)st.classList.remove("drag");
+    if(!LB.pts.size){st.classList.remove("drag");lbSettle(true)}
+    LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};
     if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
       if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){LB.lastTap=null;lbToggle({x:e.clientX,y:e.clientY})}else LB.lastTap={at:now,x:e.clientX,y:e.clientY}}};
   st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
@@ -750,7 +759,13 @@ function lbCenter(){const r=LB.stage.getBoundingClientRect();return {x:r.left+r.
 const lbMax=()=>LB.fl.tagName==="svg"?80:8;
 function lbZoom(f,P){if(!LB)return;const ns=Math.min(lbMax(),Math.max(1,LB.scale*f));f=ns/LB.scale;if(f===1)return;
   const C=lbCenter();P=P||C;LB.x=(1-f)*(P.x-C.x)+f*LB.x;LB.y=(1-f)*(P.y-C.y)+f*LB.y;LB.scale=ns;
-  if(ns===1){LB.x=0;LB.y=0}lbApply()}
+  if(ns===1){LB.x=0;LB.y=0}lbApply();lbSettle(false)}
+// Once the fingers lift, or after a zoom from the buttons or the wheel, the flag is pulled back so it covers the stage
+// with no gap, and is centred along any side where it is smaller than the stage. Animated after a gesture.
+function lbSettle(anim){if(!LB||LB.fl.tagName==="svg")return;const st=LB.stage,W=LB.baseW*LB.scale,H=W*LB.fl.offsetHeight/Math.max(1,LB.fl.offsetWidth);
+  const mx=Math.max(0,(W-st.clientWidth+24)/2),my=Math.max(0,(H-st.clientHeight+24)/2);
+  const x=Math.max(-mx,Math.min(mx,LB.x)),y=Math.max(-my,Math.min(my,LB.y));if(x===LB.x&&y===LB.y)return;
+  LB.x=x;LB.y=y;if(anim){LB.fl.classList.add("snap");clearTimeout(LB.snapT);LB.snapT=setTimeout(()=>LB&&LB.fl.classList.remove("snap"),300)}lbApply()}
 // Zoom by resizing the element rather than transform:scale, so the SVG is re-rendered sharp at every level.
 function lbApply(){if(!LB)return;const fl=LB.fl;
   if(fl.tagName!=="svg"){fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";fl.style.transform=`translate(${LB.x}px,${LB.y}px)`;return}
