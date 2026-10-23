@@ -1,0 +1,3630 @@
+{
+ "checked": "2026-10-23",
+ "source": "English Wikipedia 'Flag of …' infoboxes and articles; British Indian Ocean Territory also from biot.gov.io",
+ "rules": [
+  "adopted = the latest visible change to the design, or the year it was made official; a law that only set shades or wrote down proportions already in use does not count",
+  "readopted flags keep the readoption year",
+  "origin only for the same recognisable design, at least 5 years older, one year, no chains",
+  "'official' only for flags that are official today"
+ ],
+ "flags": [
+  {
+   "c": "ad",
+   "ours": 1993,
+   "current": 1993,
+   "origin": 1866,
+   "kind": "revised",
+   "quote": "1866 (Tricolor) 1993 (official coat of arms)",
+   "note": "Horizontal stripes were used from the late 1800s to the 1930s, and variants with different arms were used until 1993.",
+   "applied": {
+    "adopted": 1993,
+    "origin": [
+     1866,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ae",
+   "ours": 1971,
+   "current": 1971,
+   "origin": null,
+   "kind": null,
+   "quote": "2 December 1971",
+   "note": "",
+   "applied": {
+    "adopted": 1971,
+    "origin": null
+   }
+  },
+  {
+   "c": "af",
+   "ours": 2013,
+   "current": 2013,
+   "origin": 1928,
+   "kind": "readopted",
+   "quote": "The latest version was adopted on August 19, 2013",
+   "note": "The infobox now shows the Taliban flag (1997, reinstated 15 August 2021); the 2013 tricolour remains in use at the UN and the Olympics.",
+   "applied": {
+    "adopted": 2013,
+    "origin": [
+     1928,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ag",
+   "ours": 1967,
+   "current": 1967,
+   "origin": null,
+   "kind": null,
+   "quote": "February 27, 1967",
+   "note": "",
+   "applied": {
+    "adopted": 1967,
+    "origin": null
+   }
+  },
+  {
+   "c": "ai",
+   "ours": 1990,
+   "current": 1999,
+   "origin": 1990,
+   "kind": "revised",
+   "quote": "30 May 1990 (modified coat of arms on 25 January 1999)",
+   "note": "",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1990,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "al",
+   "ours": 1992,
+   "current": 1992,
+   "origin": 1912,
+   "kind": "revised",
+   "quote": "1443 / 1912 (general scheme) / 10 January 1946 (star added) / 7 April 1992 (star removed) / 22 July 2002 (standardized)",
+   "note": "The flag was standardized by Law No. 8926 on 22 July 2002; the article does not say whether that changed the design.",
+   "applied": {
+    "adopted": 1992,
+    "origin": [
+     1912,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "am",
+   "ours": 1990,
+   "current": 1990,
+   "origin": 1918,
+   "kind": "readopted",
+   "quote": "1 August 1918 (re-adopted on 24 August 1990)",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": [
+     1918,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ao",
+   "ours": 1975,
+   "current": 1975,
+   "origin": null,
+   "kind": null,
+   "quote": "11 November 1975",
+   "note": "",
+   "applied": {
+    "adopted": 1975,
+    "origin": null
+   }
+  },
+  {
+   "c": "aq",
+   "ours": null,
+   "current": null,
+   "origin": null,
+   "kind": null,
+   "quote": "",
+   "note": "Antarctica has no official flag; Graham Bartram's design (1996) is the most widely used.",
+   "applied": {
+    "adopted": null,
+    "origin": null
+   }
+  },
+  {
+   "c": "ar",
+   "ours": 1861,
+   "current": 2010,
+   "origin": 1812,
+   "kind": "revised",
+   "quote": "27 February 1812 (original), 1861 (current version), November 2010 (standardization)",
+   "note": "The infobox calls 1861 the current version, but the exact specifications were set by presidential decree in November 2010.",
+   "applied": {
+    "adopted": 1861,
+    "origin": [
+     1812,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "arab",
+   "ours": 1945,
+   "current": 1945,
+   "origin": null,
+   "kind": null,
+   "quote": "8 March 1945 (LoAS)",
+   "note": "",
+   "applied": {
+    "adopted": 1945,
+    "origin": null
+   }
+  },
+  {
+   "c": "as",
+   "ours": 1960,
+   "current": 1960,
+   "origin": null,
+   "kind": null,
+   "quote": "April 17, 1960",
+   "note": "",
+   "applied": {
+    "adopted": 1960,
+    "origin": null
+   }
+  },
+  {
+   "c": "asean",
+   "ours": 1997,
+   "current": 1997,
+   "origin": null,
+   "kind": null,
+   "quote": "31 May 1997 (current iteration)",
+   "note": "",
+   "applied": {
+    "adopted": 1997,
+    "origin": null
+   }
+  },
+  {
+   "c": "at",
+   "ours": 1945,
+   "current": 1945,
+   "origin": 1918,
+   "kind": "official",
+   "quote": "1230 (first recorded use) 1 May 1945 (formally adopted) 14 May 2018 (current version)",
+   "note": "The 2018 'current version' is a Ministry of Defence regulation setting the red to Pantone 186 C; the design did not change.",
+   "applied": {
+    "adopted": 1945,
+    "origin": [
+     1918,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "au",
+   "ours": 1908,
+   "current": 1908,
+   "origin": 1901,
+   "kind": "revised",
+   "quote": "11 February 1903; 8 December 1908 (current seven-pointed Commonwealth Star version); 8 April 1954 (designated as the Australian National Flag and given precedence over the Union Jack)",
+   "note": "The design first flew on 3 September 1901 and was made the Australian National Flag by the Flags Act 1953, in force 1954.",
+   "applied": {
+    "adopted": 1908,
+    "origin": [
+     1901,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "aw",
+   "ours": 1976,
+   "current": 1976,
+   "origin": null,
+   "kind": null,
+   "quote": "18 March 1976",
+   "note": "",
+   "applied": {
+    "adopted": 1976,
+    "origin": null
+   }
+  },
+  {
+   "c": "ax",
+   "ours": 1954,
+   "current": 1954,
+   "origin": null,
+   "kind": null,
+   "quote": "1954",
+   "note": "",
+   "applied": {
+    "adopted": 1954,
+    "origin": null
+   }
+  },
+  {
+   "c": "az",
+   "ours": 1991,
+   "current": 1991,
+   "origin": 1918,
+   "kind": "readopted",
+   "quote": "9 November 1918 (original design); 5 February 1991 (restored); 22 October 2013 (colors standardized)",
+   "note": "The infobox also lists 22 October 2013 when the colours were standardised; the layout dates from 1991.",
+   "applied": {
+    "adopted": 1991,
+    "origin": [
+     1918,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ba",
+   "ours": 1998,
+   "current": 1998,
+   "origin": null,
+   "kind": null,
+   "quote": "4 February 1998 (updated 10 August 2001)",
+   "note": "",
+   "applied": {
+    "adopted": 1998,
+    "origin": null
+   }
+  },
+  {
+   "c": "bb",
+   "ours": 1966,
+   "current": 1966,
+   "origin": null,
+   "kind": null,
+   "quote": "30 November 1966",
+   "note": "",
+   "applied": {
+    "adopted": 1966,
+    "origin": null
+   }
+  },
+  {
+   "c": "bd",
+   "ours": 1972,
+   "current": 1972,
+   "origin": 1971,
+   "kind": "revised",
+   "quote": "17 January 1972",
+   "note": "",
+   "applied": {
+    "adopted": 1972,
+    "origin": null
+   }
+  },
+  {
+   "c": "be",
+   "ours": 1831,
+   "current": 1831,
+   "origin": null,
+   "kind": null,
+   "quote": "23 January 1831",
+   "note": "",
+   "applied": {
+    "adopted": 1831,
+    "origin": null
+   }
+  },
+  {
+   "c": "bf",
+   "ours": 1984,
+   "current": 1984,
+   "origin": null,
+   "kind": null,
+   "quote": "August 4, 1984",
+   "note": "",
+   "applied": {
+    "adopted": 1984,
+    "origin": null
+   }
+  },
+  {
+   "c": "bg",
+   "ours": 1990,
+   "current": 1990,
+   "origin": 1879,
+   "kind": "readopted",
+   "quote": "1879 (first adoption) 27 November 1990 (readoption)",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": [
+     1879,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "bh",
+   "ours": 2002,
+   "current": 2002,
+   "origin": 1932,
+   "kind": "revised",
+   "quote": "14 February 2002",
+   "note": "",
+   "applied": {
+    "adopted": 2002,
+    "origin": [
+     1932,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "bi",
+   "ours": 1982,
+   "current": 1982,
+   "origin": 1967,
+   "kind": "revised",
+   "quote": "28 June 1967 (modified to current aspect ratio on 27 September 1982)",
+   "note": "",
+   "applied": {
+    "adopted": 1982,
+    "origin": [
+     1967,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "bj",
+   "ours": 1990,
+   "current": 1990,
+   "origin": 1959,
+   "kind": "readopted",
+   "quote": "November 16, 1959 (Re-adopted on August 1, 1990)",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": [
+     1959,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "bm",
+   "ours": 1910,
+   "current": 1999,
+   "origin": 1910,
+   "kind": "revised",
+   "quote": "4 October 1910 (modified coat of arms on 25 January 1999)",
+   "note": "",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1910,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "bn",
+   "ours": 1959,
+   "current": 1959,
+   "origin": 1906,
+   "kind": "revised",
+   "quote": "29 September 1959",
+   "note": "",
+   "applied": {
+    "adopted": 1959,
+    "origin": [
+     1906,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "bo",
+   "ours": 1851,
+   "current": 2004,
+   "origin": 1851,
+   "kind": "revised",
+   "quote": "31 October 1851",
+   "note": "The infobox gives only 1851, but the proportions were undefined until Supreme Decree 27630 of 2004 set them and the exact colours.",
+   "applied": {
+    "adopted": 1851,
+    "origin": null
+   }
+  },
+  {
+   "c": "br",
+   "ours": 1992,
+   "current": 1992,
+   "origin": 1889,
+   "kind": "revised",
+   "quote": "19 November 1889 (21-star version); 11 May 1992 (current 27-star version)",
+   "note": "",
+   "applied": {
+    "adopted": 1992,
+    "origin": [
+     1889,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "bs",
+   "ours": 1973,
+   "current": 2006,
+   "origin": 1973,
+   "kind": "revised",
+   "quote": "July 10, 1973 (standardised 1 March 2006)",
+   "note": "The article does not say what changed when the flag was standardised in 2006.",
+   "applied": {
+    "adopted": 1973,
+    "origin": null
+   }
+  },
+  {
+   "c": "bt",
+   "ours": 1969,
+   "current": 1969,
+   "origin": null,
+   "kind": null,
+   "quote": "1969",
+   "note": "",
+   "applied": {
+    "adopted": 1969,
+    "origin": null
+   }
+  },
+  {
+   "c": "bw",
+   "ours": 1966,
+   "current": 1966,
+   "origin": null,
+   "kind": null,
+   "quote": "30 September 1966",
+   "note": "",
+   "applied": {
+    "adopted": 1966,
+    "origin": null
+   }
+  },
+  {
+   "c": "by",
+   "ours": 2012,
+   "current": 2012,
+   "origin": 1995,
+   "kind": "revised",
+   "quote": "7 June 1995 (original design with a thinner ornament pattern) 10 February 2012 (current design with a thicker ornament pattern)",
+   "note": "",
+   "applied": {
+    "adopted": 2012,
+    "origin": [
+     1995,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "bz",
+   "ours": 1981,
+   "current": 2019,
+   "origin": 1981,
+   "kind": "revised",
+   "quote": "21 September 1981 (standardised 28 August 2019)",
+   "note": "",
+   "applied": {
+    "adopted": 1981,
+    "origin": null
+   }
+  },
+  {
+   "c": "ca",
+   "ours": 1965,
+   "current": 1965,
+   "origin": null,
+   "kind": null,
+   "quote": "February 15, 1965",
+   "note": "",
+   "applied": {
+    "adopted": 1965,
+    "origin": null
+   }
+  },
+  {
+   "c": "cc",
+   "ours": 2004,
+   "current": 2004,
+   "origin": null,
+   "kind": null,
+   "quote": "6 April 2004",
+   "note": "The article says the design is not officially recognised by the Australian Government.",
+   "applied": {
+    "adopted": 2004,
+    "origin": null
+   }
+  },
+  {
+   "c": "cd",
+   "ours": 2006,
+   "current": 2006,
+   "origin": 1963,
+   "kind": "readopted",
+   "quote": "18 February 2006",
+   "note": "The 2006 flag returns to the 1963 design (slightly modified in 1966, replaced in 1971) with sky blue instead of royal blue, so whether it counts as the same flag is a judgement call.",
+   "applied": {
+    "adopted": 2006,
+    "origin": [
+     1963,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "cf",
+   "ours": 1958,
+   "current": 1958,
+   "origin": null,
+   "kind": null,
+   "quote": "1 December 1958",
+   "note": "",
+   "applied": {
+    "adopted": 1958,
+    "origin": null
+   }
+  },
+  {
+   "c": "cg",
+   "ours": 1991,
+   "current": 1991,
+   "origin": 1959,
+   "kind": "readopted",
+   "quote": "September 15, 1959 (Re-adopted on 10 June 1991)",
+   "note": "",
+   "applied": {
+    "adopted": 1991,
+    "origin": [
+     1959,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ch",
+   "ours": 1840,
+   "current": 1889,
+   "origin": 1841,
+   "kind": "revised",
+   "quote": "1840",
+   "note": "The infobox says 1840 but the body dates the white cross on red to 1841, fixes the cross shape in 1889 and the cross size and red shade by law in 2017.",
+   "applied": {
+    "adopted": 1889,
+    "origin": [
+     1841,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ci",
+   "ours": 1959,
+   "current": 1959,
+   "origin": null,
+   "kind": null,
+   "quote": "3 December 1959",
+   "note": "",
+   "applied": {
+    "adopted": 1959,
+    "origin": null
+   }
+  },
+  {
+   "c": "ck",
+   "ours": 1979,
+   "current": 1979,
+   "origin": null,
+   "kind": null,
+   "quote": "August 4, 1979",
+   "note": "",
+   "applied": {
+    "adopted": 1979,
+    "origin": null
+   }
+  },
+  {
+   "c": "cl",
+   "ours": 1817,
+   "current": 1912,
+   "origin": 1817,
+   "kind": "revised",
+   "quote": "18 October 1817",
+   "note": "The infobox gives only 1817, but the proportions were fixed in 1854 and the star's diameter in 1912, and the current rules are Supreme Decree 1534 of 1967.",
+   "applied": {
+    "adopted": 1817,
+    "origin": null
+   }
+  },
+  {
+   "c": "cm",
+   "ours": 1975,
+   "current": 1975,
+   "origin": 1957,
+   "kind": "revised",
+   "quote": "26 October 1957 (original tricolor design) 20 May 1975 (current design)",
+   "note": "",
+   "applied": {
+    "adopted": 1975,
+    "origin": [
+     1957,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "cn",
+   "ours": 1949,
+   "current": 1949,
+   "origin": null,
+   "kind": null,
+   "quote": "27 September 1949 (approved) 1 October 1949 (introduced)",
+   "note": "",
+   "applied": {
+    "adopted": 1949,
+    "origin": null
+   }
+  },
+  {
+   "c": "co",
+   "ours": 1861,
+   "current": 1861,
+   "origin": null,
+   "kind": null,
+   "quote": "26 November 1861",
+   "note": "",
+   "applied": {
+    "adopted": 1861,
+    "origin": null
+   }
+  },
+  {
+   "c": "cr",
+   "ours": 1848,
+   "current": 1848,
+   "origin": null,
+   "kind": null,
+   "quote": "29 September 1848",
+   "note": "",
+   "applied": {
+    "adopted": 1848,
+    "origin": null
+   }
+  },
+  {
+   "c": "cu",
+   "ours": 1906,
+   "current": 1906,
+   "origin": 1850,
+   "kind": "official",
+   "quote": "20 May 1902 (modified color on 21 April 1906)",
+   "note": "",
+   "applied": {
+    "adopted": 1902,
+    "origin": [
+     1850,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "cv",
+   "ours": 1992,
+   "current": 1992,
+   "origin": null,
+   "kind": null,
+   "quote": "25 September 1992",
+   "note": "",
+   "applied": {
+    "adopted": 1992,
+    "origin": null
+   }
+  },
+  {
+   "c": "cw",
+   "ours": 1984,
+   "current": 1984,
+   "origin": null,
+   "kind": null,
+   "quote": "2 July 1984",
+   "note": "",
+   "applied": {
+    "adopted": 1984,
+    "origin": null
+   }
+  },
+  {
+   "c": "cx",
+   "ours": 2002,
+   "current": 2002,
+   "origin": 1986,
+   "kind": "official",
+   "quote": "26 January 2002",
+   "note": "The Australian Government says the flag is used in the community but has not been formally adopted.",
+   "applied": {
+    "adopted": 2002,
+    "origin": null
+   }
+  },
+  {
+   "c": "cy",
+   "ours": 1960,
+   "current": 2006,
+   "origin": 1960,
+   "kind": "revised",
+   "quote": "16 August 1960 (original design) 24 April 2006 (current version)",
+   "note": "",
+   "applied": {
+    "adopted": 2006,
+    "origin": [
+     1960,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "cz",
+   "ours": 1920,
+   "current": 1920,
+   "origin": null,
+   "kind": null,
+   "quote": "30 March 1920 (Czechoslovakia and later the Czech Republic)",
+   "note": "",
+   "applied": {
+    "adopted": 1920,
+    "origin": null
+   }
+  },
+  {
+   "c": "de",
+   "ours": 1949,
+   "current": 1949,
+   "origin": 1848,
+   "kind": "readopted",
+   "quote": "3 July 1919 (original proportions) 23 May 1949 (current proportions)",
+   "note": "",
+   "applied": {
+    "adopted": 1949,
+    "origin": [
+     1848,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "dj",
+   "ours": 1977,
+   "current": 1977,
+   "origin": null,
+   "kind": null,
+   "quote": "June 27, 1977",
+   "note": "The article says the FLCS party designed the flag in the 1960s, and that the national flag takes its basic layout and colours from the FLCS flag; it does not say the two were identical.",
+   "applied": {
+    "adopted": 1977,
+    "origin": null
+   }
+  },
+  {
+   "c": "dk",
+   "ours": 1625,
+   "current": 1625,
+   "origin": null,
+   "kind": null,
+   "quote": "15 June 1219 (Dannebrog legend) 8 May 1625 (recognised as national flag)",
+   "note": "Royal use is recorded from the 14th century with no single year, 1219 is a legend, and a 1748 regulation set the proportions still in use.",
+   "applied": {
+    "adopted": 1625,
+    "origin": null
+   }
+  },
+  {
+   "c": "dm",
+   "ours": 1990,
+   "current": 1990,
+   "origin": 1978,
+   "kind": "revised",
+   "quote": "3 November 1978 (last modified 3 November 1990)",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": [
+     1978,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "do",
+   "ours": 1863,
+   "current": 1863,
+   "origin": null,
+   "kind": null,
+   "quote": "6 November 1863",
+   "note": "",
+   "applied": {
+    "adopted": 1863,
+    "origin": null
+   }
+  },
+  {
+   "c": "dz",
+   "ours": 1962,
+   "current": 1962,
+   "origin": 1943,
+   "kind": "official",
+   "quote": "3 July 1962",
+   "note": "The article credits a first version to 1934, says a different flag was adopted in 1940, and says the PPA changed it to the current form in 1943.",
+   "applied": {
+    "adopted": 1962,
+    "origin": [
+     1943,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "ec",
+   "ours": 1860,
+   "current": 2009,
+   "origin": 1860,
+   "kind": "revised",
+   "quote": "26 September 1860 (standardized November 2009)",
+   "note": "The arms were added in 1900 and the 2009 standardisation is uncited in the article, which does not say what it changed.",
+   "applied": {
+    "adopted": 1900,
+    "origin": [
+     1860,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ee",
+   "ours": 1918,
+   "current": 1918,
+   "origin": 1884,
+   "kind": "official",
+   "quote": "21 November 1918",
+   "note": "",
+   "applied": {
+    "adopted": 1918,
+    "origin": [
+     1884,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "eg",
+   "ours": 1984,
+   "current": 1984,
+   "origin": 1952,
+   "kind": "revised",
+   "quote": "October 4, 1984",
+   "note": "",
+   "applied": {
+    "adopted": 1984,
+    "origin": [
+     1952,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "eh",
+   "ours": 1976,
+   "current": 1976,
+   "origin": null,
+   "kind": null,
+   "quote": "27 February 1976",
+   "note": "",
+   "applied": {
+    "adopted": 1976,
+    "origin": null
+   }
+  },
+  {
+   "c": "er",
+   "ours": 1995,
+   "current": 1995,
+   "origin": 1993,
+   "kind": "revised",
+   "quote": "December 5, 1995 (standard version)",
+   "note": "",
+   "applied": {
+    "adopted": 1995,
+    "origin": null
+   }
+  },
+  {
+   "c": "es",
+   "ours": 1981,
+   "current": 1981,
+   "origin": 1785,
+   "kind": "readopted",
+   "quote": "28 May 1785 (original version, as naval and coastal fortifications' ensign); 5 October 1981 (current coat of arms, as established in Act 33/1981)",
+   "note": "",
+   "applied": {
+    "adopted": 1981,
+    "origin": [
+     1785,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "es-ct",
+   "ours": null,
+   "current": 1933,
+   "origin": null,
+   "kind": null,
+   "quote": "25 May 1933 (as official flag of Catalonia)",
+   "note": "The article gives no clear year for the first use of the four red bars on gold as a flag.",
+   "applied": {
+    "adopted": 1933,
+    "origin": null
+   }
+  },
+  {
+   "c": "es-ga",
+   "ours": 1981,
+   "current": 1981,
+   "origin": 1891,
+   "kind": "official",
+   "quote": "6 April 1981 (Current version)",
+   "note": "",
+   "applied": {
+    "adopted": 1981,
+    "origin": [
+     1891,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "es-pv",
+   "ours": 1978,
+   "current": 1978,
+   "origin": 1894,
+   "kind": "official",
+   "quote": "19 October 1936 18 December 1978",
+   "note": "",
+   "applied": {
+    "adopted": 1978,
+    "origin": [
+     1894,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "et",
+   "ours": 1996,
+   "current": 2009,
+   "origin": 1897,
+   "kind": "revised",
+   "quote": "11 October 1897 (original version); 31 October 1996 (current version); 16 May 2009 (modified version)",
+   "note": "The infobox lists a 2009 modified version and the history table ends the 1996 flag in 2009, but the article does not say what changed.",
+   "applied": {
+    "adopted": 1996,
+    "origin": [
+     1897,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "eu",
+   "ours": 1985,
+   "current": 1985,
+   "origin": 1955,
+   "kind": "official",
+   "quote": "9 December 1955 (CoE) 29 June 1985 (EEC)",
+   "note": "The article also says the Communities began using it as a de facto flag from 1986.",
+   "applied": {
+    "adopted": 1985,
+    "origin": [
+     1955,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "fi",
+   "ours": 1918,
+   "current": 1918,
+   "origin": null,
+   "kind": null,
+   "quote": "28 May 1918",
+   "note": "",
+   "applied": {
+    "adopted": 1918,
+    "origin": null
+   }
+  },
+  {
+   "c": "fj",
+   "ours": 1970,
+   "current": 1970,
+   "origin": null,
+   "kind": null,
+   "quote": "10 October 1970",
+   "note": "",
+   "applied": {
+    "adopted": 1970,
+    "origin": null
+   }
+  },
+  {
+   "c": "fk",
+   "ours": 1999,
+   "current": 1999,
+   "origin": 1948,
+   "kind": "revised",
+   "quote": "25 January 1999",
+   "note": "",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1948,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "fm",
+   "ours": 1978,
+   "current": 1978,
+   "origin": 1962,
+   "kind": "revised",
+   "quote": "30 November 1978",
+   "note": "",
+   "applied": {
+    "adopted": 1978,
+    "origin": [
+     1962,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "fo",
+   "ours": 1940,
+   "current": 1940,
+   "origin": 1919,
+   "kind": "official",
+   "quote": "25 April 1940",
+   "note": "",
+   "applied": {
+    "adopted": 1940,
+    "origin": [
+     1919,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "fr",
+   "ours": 1794,
+   "current": 1794,
+   "origin": null,
+   "kind": null,
+   "quote": "15 February 1794 (darker variant on 13 July 2020)",
+   "note": "",
+   "applied": {
+    "adopted": 1794,
+    "origin": null
+   }
+  },
+  {
+   "c": "ga",
+   "ours": 1960,
+   "current": 1960,
+   "origin": null,
+   "kind": null,
+   "quote": "9 August 1960",
+   "note": "",
+   "applied": {
+    "adopted": 1960,
+    "origin": null
+   }
+  },
+  {
+   "c": "gb",
+   "ours": 1801,
+   "current": 1801,
+   "origin": null,
+   "kind": null,
+   "quote": "1606 (Royal decree); 1707 (National flag); 1801 (current design with St Patrick's Saltire)",
+   "note": "",
+   "applied": {
+    "adopted": 1801,
+    "origin": null
+   }
+  },
+  {
+   "c": "gb-eng",
+   "ours": 1552,
+   "current": 1552,
+   "origin": null,
+   "kind": null,
+   "quote": "1552",
+   "note": "The article says 1552 is when it became the only saint's flag allowed in public, not a formal adoption; its use as an English emblem goes back to the Late Middle Ages.",
+   "applied": {
+    "adopted": 1552,
+    "origin": null
+   }
+  },
+  {
+   "c": "gb-nir",
+   "ours": null,
+   "current": null,
+   "origin": null,
+   "kind": null,
+   "quote": "",
+   "note": "There is no official flag for Northern Ireland other than the Union Flag; the Ulster Banner was used by its government from 1953 to 1973.",
+   "applied": {
+    "adopted": null,
+    "origin": null
+   }
+  },
+  {
+   "c": "gb-sct",
+   "ours": 1542,
+   "current": 2003,
+   "origin": 1542,
+   "kind": "revised",
+   "quote": "1542 (Standardised in 2003)",
+   "note": "",
+   "applied": {
+    "adopted": 1542,
+    "origin": null
+   }
+  },
+  {
+   "c": "gb-wls",
+   "ours": 1959,
+   "current": 1959,
+   "origin": null,
+   "kind": null,
+   "quote": "1959 (current version)",
+   "note": "",
+   "applied": {
+    "adopted": 1959,
+    "origin": null
+   }
+  },
+  {
+   "c": "gd",
+   "ours": 1974,
+   "current": 1974,
+   "origin": null,
+   "kind": null,
+   "quote": "7 February 1974",
+   "note": "",
+   "applied": {
+    "adopted": 1974,
+    "origin": null
+   }
+  },
+  {
+   "c": "ge",
+   "ours": 2004,
+   "current": 2004,
+   "origin": null,
+   "kind": null,
+   "quote": "12th century (five cross flag) 14 January 2004 (current design)",
+   "note": "The infobox links the five-cross design to the 12th century and the flag was used by opposition movements from 1991, but no single earlier year is given.",
+   "applied": {
+    "adopted": 2004,
+    "origin": null
+   }
+  },
+  {
+   "c": "gg",
+   "ours": 1985,
+   "current": 1985,
+   "origin": null,
+   "kind": null,
+   "quote": "30 April 1985",
+   "note": "",
+   "applied": {
+    "adopted": 1985,
+    "origin": null
+   }
+  },
+  {
+   "c": "gh",
+   "ours": 1957,
+   "current": 1966,
+   "origin": 1957,
+   "kind": "readopted",
+   "quote": "6 March 1957",
+   "note": "",
+   "applied": {
+    "adopted": 1966,
+    "origin": [
+     1957,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "gi",
+   "ours": 1982,
+   "current": 1982,
+   "origin": null,
+   "kind": null,
+   "quote": "8 November 1982",
+   "note": "",
+   "applied": {
+    "adopted": 1982,
+    "origin": null
+   }
+  },
+  {
+   "c": "gl",
+   "ours": 1985,
+   "current": 1985,
+   "origin": null,
+   "kind": null,
+   "quote": "21 June 1985",
+   "note": "",
+   "applied": {
+    "adopted": 1985,
+    "origin": null
+   }
+  },
+  {
+   "c": "gm",
+   "ours": 1965,
+   "current": 1965,
+   "origin": null,
+   "kind": null,
+   "quote": "18 February 1965",
+   "note": "",
+   "applied": {
+    "adopted": 1965,
+    "origin": null
+   }
+  },
+  {
+   "c": "gn",
+   "ours": 1958,
+   "current": 1958,
+   "origin": null,
+   "kind": null,
+   "quote": "10 November 1958",
+   "note": "",
+   "applied": {
+    "adopted": 1958,
+    "origin": null
+   }
+  },
+  {
+   "c": "gq",
+   "ours": 1968,
+   "current": 1979,
+   "origin": 1968,
+   "kind": "readopted",
+   "quote": "12 October 1968",
+   "note": "The arms and flag were changed from 1978 to 21 August 1979 and then restored, and the article gives no date for when the arms were added to the 1968 flag.",
+   "applied": {
+    "adopted": 1979,
+    "origin": [
+     1968,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "gr",
+   "ours": 1978,
+   "current": 1978,
+   "origin": 1822,
+   "kind": "readopted",
+   "quote": "22 December 1978 (Naval ensign: 1822–1832 & 1970–present, National flag: 1969–1970 & 1978–present)",
+   "note": "",
+   "applied": {
+    "adopted": 1978,
+    "origin": [
+     1822,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "gs",
+   "ours": 1999,
+   "current": 1999,
+   "origin": 1992,
+   "kind": "revised",
+   "quote": "1999",
+   "note": "The article also says the flag was granted on 3 October 1985, which conflicts with its 1992 and 1999 dates.",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1992,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "gt",
+   "ours": 1871,
+   "current": 1997,
+   "origin": 1871,
+   "kind": "revised",
+   "quote": "17 August 1871",
+   "note": "The infobox gives 1871, but the article says the flag reached its current design in 1997 without describing the 1968 and 1997 changes.",
+   "applied": {
+    "adopted": 1871,
+    "origin": null
+   }
+  },
+  {
+   "c": "gu",
+   "ours": 1948,
+   "current": 1948,
+   "origin": 1917,
+   "kind": "revised",
+   "quote": "February 9, 1948",
+   "note": "",
+   "applied": {
+    "adopted": 1948,
+    "origin": [
+     1917,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "gw",
+   "ours": 1973,
+   "current": 1973,
+   "origin": 1961,
+   "kind": "revised",
+   "quote": "24 September 1973",
+   "note": "",
+   "applied": {
+    "adopted": 1973,
+    "origin": [
+     1961,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "gy",
+   "ours": 1966,
+   "current": 1966,
+   "origin": null,
+   "kind": null,
+   "quote": "26 May 1966",
+   "note": "",
+   "applied": {
+    "adopted": 1966,
+    "origin": null
+   }
+  },
+  {
+   "c": "hk",
+   "ours": 1990,
+   "current": 1990,
+   "origin": null,
+   "kind": null,
+   "quote": "Approved on 4 April 1990 by the National People's Congress; first flown on 1 July 1997",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": null
+   }
+  },
+  {
+   "c": "hn",
+   "ours": 1949,
+   "current": 1949,
+   "origin": 1866,
+   "kind": "revised",
+   "quote": "1839 (original design); 26 January 1949 (current design); 27 January 2026 (current usage)",
+   "note": "The 1949 decree set a turquoise blue, but navy blue was used in practice and returned to official use on 27 January 2026.",
+   "applied": {
+    "adopted": 1949,
+    "origin": [
+     1866,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "hr",
+   "ours": 1990,
+   "current": 1990,
+   "origin": 1848,
+   "kind": "revised",
+   "quote": "21 December 1990",
+   "note": "The article says the tricolour has been used since 1848 and also that it has been in continuous use since 1868.",
+   "applied": {
+    "adopted": 1990,
+    "origin": [
+     1848,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ht",
+   "ours": 1986,
+   "current": 1986,
+   "origin": 1806,
+   "kind": "readopted",
+   "quote": "26 February 1986",
+   "note": "",
+   "applied": {
+    "adopted": 1986,
+    "origin": [
+     1806,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "hu",
+   "ours": 1990,
+   "current": 1957,
+   "origin": 1848,
+   "kind": "revised",
+   "quote": "1848 (original design) 23 May 1957 (as state flag) 19 June 1990 (reaffirmed)",
+   "note": "The plain tricolour has been the official flag since 1957; 1990 only reaffirmed it.",
+   "applied": {
+    "adopted": 1957,
+    "origin": [
+     1848,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ic",
+   "ours": 1982,
+   "current": 1982,
+   "origin": 1961,
+   "kind": "official",
+   "quote": "",
+   "note": "The article has no infobox; the 1982 date comes from the Statute of Autonomy of 16 August 1982.",
+   "applied": {
+    "adopted": 1982,
+    "origin": [
+     1961,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "id",
+   "ours": 1950,
+   "current": 1950,
+   "origin": 1928,
+   "kind": "official",
+   "quote": "11 November 1293 (Majapahit Empire); 28 October 1928 (standardized); 17 August 1945 (original); 17 August 1950 (official)",
+   "note": "",
+   "applied": {
+    "adopted": 1950,
+    "origin": [
+     1928,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "ie",
+   "ours": 1937,
+   "current": 1937,
+   "origin": 1848,
+   "kind": "official",
+   "quote": "1922 (constitutional status; 1937)",
+   "note": "The Free State adopted it provisionally in 1922; the 1937 Constitution confirmed it.",
+   "applied": {
+    "adopted": 1937,
+    "origin": [
+     1848,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "il",
+   "ours": 1948,
+   "current": 1948,
+   "origin": 1897,
+   "kind": "official",
+   "quote": "1885 (as flag of Rishon LeZion); August 1897 (by the Zionist movement); 28 October 1948 (by Israel)",
+   "note": "",
+   "applied": {
+    "adopted": 1948,
+    "origin": [
+     1897,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "im",
+   "ours": 1932,
+   "current": 1932,
+   "origin": null,
+   "kind": null,
+   "quote": "1 December 1932",
+   "note": "The article says sources differ on the adoption date (1928 to 1932) and that the triskelion was standardised in July 1968.",
+   "applied": {
+    "adopted": 1932,
+    "origin": null
+   }
+  },
+  {
+   "c": "in",
+   "ours": 1947,
+   "current": 1947,
+   "origin": null,
+   "kind": null,
+   "quote": "22 July 1947",
+   "note": "",
+   "applied": {
+    "adopted": 1947,
+    "origin": null
+   }
+  },
+  {
+   "c": "io",
+   "ours": 1990,
+   "current": 2025,
+   "origin": 1990,
+   "kind": "revised",
+   "quote": "8 November 1990",
+   "note": "The infobox still says 1990, but the article says the flag was updated in October 2025 with the Tudor Crown in place of St Edward's Crown.",
+   "applied": {
+    "adopted": 2025,
+    "origin": [
+     1990,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "iq",
+   "ours": 2008,
+   "current": 2008,
+   "origin": 1963,
+   "kind": "revised",
+   "quote": "22 January 2008 (current design) 31 July 1963 (original three-star design)",
+   "note": "",
+   "applied": {
+    "adopted": 2008,
+    "origin": [
+     1963,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ir",
+   "ours": 1980,
+   "current": 1980,
+   "origin": 1905,
+   "kind": "revised",
+   "quote": "29 July 1980 (current version, representing the Islamic Republic)",
+   "note": "",
+   "applied": {
+    "adopted": 1980,
+    "origin": [
+     1905,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "is",
+   "ours": 1944,
+   "current": 1944,
+   "origin": 1915,
+   "kind": "revised",
+   "quote": "17 June 1944 (standardization from 1918)",
+   "note": "The red cross was added in 1915 and the flag became the national flag in 1918; the 1944 law defined it.",
+   "applied": {
+    "adopted": 1944,
+    "origin": [
+     1915,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "it",
+   "ours": 1946,
+   "current": 1946,
+   "origin": 1797,
+   "kind": "revised",
+   "quote": "29 June 1797 (As the Cisalpine Republic) 18 June 1946 (founding of the Italian Republic) 14 April 2006 (current colour specifications)",
+   "note": "The infobox dates the Cisalpine flag to 1797, but the body says the vertical arrangement was chosen in 1798.",
+   "applied": {
+    "adopted": 1946,
+    "origin": [
+     1797,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "je",
+   "ours": 1981,
+   "current": 1981,
+   "origin": 1757,
+   "kind": "revised",
+   "quote": "7 April 1981",
+   "note": "",
+   "applied": {
+    "adopted": 1981,
+    "origin": [
+     1757,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "jm",
+   "ours": 1962,
+   "current": 1962,
+   "origin": null,
+   "kind": null,
+   "quote": "6 August 1962",
+   "note": "",
+   "applied": {
+    "adopted": 1962,
+    "origin": null
+   }
+  },
+  {
+   "c": "jo",
+   "ours": 1928,
+   "current": 1928,
+   "origin": null,
+   "kind": null,
+   "quote": "16 April 1928",
+   "note": "",
+   "applied": {
+    "adopted": 1928,
+    "origin": null
+   }
+  },
+  {
+   "c": "jp",
+   "ours": 1999,
+   "current": 1999,
+   "origin": 1870,
+   "kind": "official",
+   "quote": "27 February 1868 (civil ensign); 13 August 1999 (national flag)",
+   "note": "The infobox dates the civil ensign to 1868 but the body gives 27 February 1870 (Proclamation No. 57).",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1870,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "ke",
+   "ours": 1963,
+   "current": 1963,
+   "origin": null,
+   "kind": null,
+   "quote": "12 December 1963",
+   "note": "",
+   "applied": {
+    "adopted": 1963,
+    "origin": null
+   }
+  },
+  {
+   "c": "kg",
+   "ours": 2023,
+   "current": 2023,
+   "origin": 1992,
+   "kind": "revised",
+   "quote": "3 March 1992 (first introduction) 26 December 2023 (current version)",
+   "note": "",
+   "applied": {
+    "adopted": 2023,
+    "origin": [
+     1992,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "kh",
+   "ours": 1993,
+   "current": 1993,
+   "origin": 1948,
+   "kind": "readopted",
+   "quote": "1948 – 9 October 1970; 24 September 1993 (readopted)",
+   "note": "",
+   "applied": {
+    "adopted": 1993,
+    "origin": [
+     1948,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ki",
+   "ours": 1979,
+   "current": 1979,
+   "origin": null,
+   "kind": null,
+   "quote": "12 July 1979",
+   "note": "",
+   "applied": {
+    "adopted": 1979,
+    "origin": null
+   }
+  },
+  {
+   "c": "km",
+   "ours": 2001,
+   "current": 2001,
+   "origin": null,
+   "kind": null,
+   "quote": "23 December 2001",
+   "note": "",
+   "applied": {
+    "adopted": 2001,
+    "origin": null
+   }
+  },
+  {
+   "c": "kn",
+   "ours": 1983,
+   "current": 1983,
+   "origin": null,
+   "kind": null,
+   "quote": "19 September 1983",
+   "note": "",
+   "applied": {
+    "adopted": 1983,
+    "origin": null
+   }
+  },
+  {
+   "c": "kp",
+   "ours": 1948,
+   "current": 2026,
+   "origin": 1948,
+   "kind": "revised",
+   "quote": "10 July 1948 (introduced) 8 September 1948 (adopted) 22 October 1992 (standardised) 23 March 2026 (ratio changed)",
+   "note": "The infobox says the ratio changed from 1:2 to 20:33 on 23 March 2026, so our 1:2 artwork may be out of date.",
+   "applied": {
+    "adopted": 1948,
+    "origin": null
+   }
+  },
+  {
+   "c": "kr",
+   "ours": 1949,
+   "current": 1949,
+   "origin": 1883,
+   "kind": "revised",
+   "quote": "27 January 1883 (original version, used by the Joseon dynasty) ... 15 October 1949 (current geometry) 30 May 2011 (current colors)",
+   "note": "The infobox lists 30 May 2011 for the current colours, but it is marked citation needed and the article body only mentions colours fixed by decree in 1997.",
+   "applied": {
+    "adopted": 1949,
+    "origin": [
+     1883,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "kw",
+   "ours": 1961,
+   "current": 1961,
+   "origin": null,
+   "kind": null,
+   "quote": "7 September 1961 Officially hoisted 24 November 1961",
+   "note": "",
+   "applied": {
+    "adopted": 1961,
+    "origin": null
+   }
+  },
+  {
+   "c": "ky",
+   "ours": 1999,
+   "current": 1999,
+   "origin": 1959,
+   "kind": "revised",
+   "quote": "1999",
+   "note": "The article says the older white-disc version is still used officially and the government regards it as correct.",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1959,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "kz",
+   "ours": 1992,
+   "current": 1992,
+   "origin": null,
+   "kind": null,
+   "quote": "4 June 1992",
+   "note": "",
+   "applied": {
+    "adopted": 1992,
+    "origin": null
+   }
+  },
+  {
+   "c": "la",
+   "ours": 1975,
+   "current": 1975,
+   "origin": 1945,
+   "kind": "readopted",
+   "quote": "12 October 1945; 2 December 1975 (re-adopted)",
+   "note": "",
+   "applied": {
+    "adopted": 1975,
+    "origin": [
+     1945,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "lb",
+   "ours": 1990,
+   "current": 1990,
+   "origin": 1943,
+   "kind": "revised",
+   "quote": "7 December 1943 (introduction into the Constitution of Lebanon) 21 September 1990 (cedar standardized to entirely green)",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": [
+     1943,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "lc",
+   "ours": 2002,
+   "current": 2002,
+   "origin": 1967,
+   "kind": "revised",
+   "quote": "1 March 1967 (last modified in 2002)",
+   "note": "",
+   "applied": {
+    "adopted": 2002,
+    "origin": [
+     1967,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "li",
+   "ours": 1982,
+   "current": 1982,
+   "origin": 1921,
+   "kind": "revised",
+   "quote": "30 June 1982",
+   "note": "",
+   "applied": {
+    "adopted": 1982,
+    "origin": [
+     1921,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "lk",
+   "ours": 1972,
+   "current": 1972,
+   "origin": 1948,
+   "kind": "revised",
+   "quote": "22 May 1972",
+   "note": "",
+   "applied": {
+    "adopted": 1972,
+    "origin": [
+     1948,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "lr",
+   "ours": 1847,
+   "current": 1847,
+   "origin": null,
+   "kind": null,
+   "quote": "24 August 1847",
+   "note": "",
+   "applied": {
+    "adopted": 1847,
+    "origin": null
+   }
+  },
+  {
+   "c": "ls",
+   "ours": 2006,
+   "current": 2006,
+   "origin": null,
+   "kind": null,
+   "quote": "4 October 2006",
+   "note": "",
+   "applied": {
+    "adopted": 2006,
+    "origin": null
+   }
+  },
+  {
+   "c": "lt",
+   "ours": 1988,
+   "current": 2004,
+   "origin": 1918,
+   "kind": "revised",
+   "quote": "25 April 1918 (first adoption) 18 November 1988 (restored in 1:2 ratio) 8 July 2004 (current version)",
+   "note": "Restored in 1988 at 1:2; Law IX-2331 of 8 July 2004 changed the ratio to 3:5.",
+   "applied": {
+    "adopted": 1988,
+    "origin": [
+     1918,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "lu",
+   "ours": 1993,
+   "current": 1993,
+   "origin": 1848,
+   "kind": "official",
+   "quote": "1848 (de facto) 1993 (de jure)",
+   "note": "The article says the horizontal layout was set on 12 June 1845 and first used between 1845 and 1848.",
+   "applied": {
+    "adopted": 1993,
+    "origin": [
+     1848,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "lv",
+   "ours": 1990,
+   "current": 1990,
+   "origin": 1921,
+   "kind": "readopted",
+   "quote": "15 June 1921 Restored on 27 February 1990 Current standardization on 28 November 2018 (in use since 1 January 2019)",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": [
+     1921,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ly",
+   "ours": 2011,
+   "current": 2011,
+   "origin": 1951,
+   "kind": "readopted",
+   "quote": "24 December 1951; 23 August 2011 (Battle of Tripoli)",
+   "note": "",
+   "applied": {
+    "adopted": 2011,
+    "origin": [
+     1951,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ma",
+   "ours": 1915,
+   "current": 1915,
+   "origin": null,
+   "kind": null,
+   "quote": "17 November 1915",
+   "note": "",
+   "applied": {
+    "adopted": 1915,
+    "origin": null
+   }
+  },
+  {
+   "c": "mc",
+   "ours": 1881,
+   "current": 1881,
+   "origin": null,
+   "kind": null,
+   "quote": "4 April 1881",
+   "note": "",
+   "applied": {
+    "adopted": 1881,
+    "origin": null
+   }
+  },
+  {
+   "c": "md",
+   "ours": 1990,
+   "current": 1990,
+   "origin": null,
+   "kind": null,
+   "quote": "6 November 1990 (original design) 26 November 2010 (colors standardized)",
+   "note": "The 2010 law standardized the colours and defined the reverse as a mirror image; the design was not otherwise changed.",
+   "applied": {
+    "adopted": 1990,
+    "origin": null
+   }
+  },
+  {
+   "c": "me",
+   "ours": 2004,
+   "current": 2004,
+   "origin": null,
+   "kind": null,
+   "quote": "July 13, 2004",
+   "note": "",
+   "applied": {
+    "adopted": 2004,
+    "origin": null
+   }
+  },
+  {
+   "c": "mg",
+   "ours": 1958,
+   "current": 1958,
+   "origin": null,
+   "kind": null,
+   "quote": "21 October 1958",
+   "note": "",
+   "applied": {
+    "adopted": 1958,
+    "origin": null
+   }
+  },
+  {
+   "c": "mh",
+   "ours": 1979,
+   "current": 1979,
+   "origin": null,
+   "kind": null,
+   "quote": "May 1, 1979",
+   "note": "",
+   "applied": {
+    "adopted": 1979,
+    "origin": null
+   }
+  },
+  {
+   "c": "mk",
+   "ours": 1995,
+   "current": 1995,
+   "origin": null,
+   "kind": null,
+   "quote": "5 October 1995 (as established in the Constitution of North Macedonia)",
+   "note": "",
+   "applied": {
+    "adopted": 1995,
+    "origin": null
+   }
+  },
+  {
+   "c": "ml",
+   "ours": 1961,
+   "current": 1961,
+   "origin": 1959,
+   "kind": "revised",
+   "quote": "4 April 1959",
+   "note": "The infobox gives 4 April 1959, when the flag carried a black kanaga figure; the text says the current flag without it was adopted on 1 March 1961.",
+   "applied": {
+    "adopted": 1961,
+    "origin": null
+   }
+  },
+  {
+   "c": "mm",
+   "ours": 2010,
+   "current": 2010,
+   "origin": null,
+   "kind": null,
+   "quote": "21 October 2010",
+   "note": "",
+   "applied": {
+    "adopted": 2010,
+    "origin": null
+   }
+  },
+  {
+   "c": "mn",
+   "ours": 1992,
+   "current": 1992,
+   "origin": 1945,
+   "kind": "revised",
+   "quote": "10 June 1945 (original version with star); 12 January 1992 (star removed); 8 July 2011 (colours standardised)",
+   "note": "The infobox also lists 8 July 2011 when the colours were standardised; the design dates from 1992.",
+   "applied": {
+    "adopted": 1992,
+    "origin": [
+     1945,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "mo",
+   "ours": 1993,
+   "current": 1993,
+   "origin": null,
+   "kind": null,
+   "quote": "Approved on 31 March 1993 by National People's Congress, first used on 20 December 1999",
+   "note": "",
+   "applied": {
+    "adopted": 1993,
+    "origin": null
+   }
+  },
+  {
+   "c": "mp",
+   "ours": 1985,
+   "current": 1985,
+   "origin": null,
+   "kind": null,
+   "quote": "July 1, 1985",
+   "note": "",
+   "applied": {
+    "adopted": 1985,
+    "origin": null
+   }
+  },
+  {
+   "c": "mq",
+   "ours": 2023,
+   "current": 2023,
+   "origin": 1968,
+   "kind": "official",
+   "quote": "2 February 2023",
+   "note": "",
+   "applied": {
+    "adopted": 2023,
+    "origin": [
+     1968,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "mr",
+   "ours": 2017,
+   "current": 2017,
+   "origin": null,
+   "kind": null,
+   "quote": "25 October 2017",
+   "note": "",
+   "applied": {
+    "adopted": 2017,
+    "origin": [
+     1959,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ms",
+   "ours": 1960,
+   "current": 1999,
+   "origin": 1960,
+   "kind": "revised",
+   "quote": "1960 (modified coat of arms on 25 January 1999)",
+   "note": "The article's text says the shield was used on the Blue Ensign from 1956, while a footnote says 1960.",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1960,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "mt",
+   "ours": 1964,
+   "current": 1964,
+   "origin": 1943,
+   "kind": "revised",
+   "quote": "21 September 1964",
+   "note": "",
+   "applied": {
+    "adopted": 1964,
+    "origin": [
+     1943,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "mu",
+   "ours": 1968,
+   "current": 1968,
+   "origin": null,
+   "kind": null,
+   "quote": "March 12, 1968",
+   "note": "",
+   "applied": {
+    "adopted": 1968,
+    "origin": null
+   }
+  },
+  {
+   "c": "mv",
+   "ours": 1965,
+   "current": 1965,
+   "origin": null,
+   "kind": null,
+   "quote": "25 July 1965",
+   "note": "The article says the 1953 republican flag already had the green panel and hoist-facing crescent, but with a black and white hoist stripe that was removed in 1965, and it gives no clear date for the red and green layout.",
+   "applied": {
+    "adopted": 1965,
+    "origin": null
+   }
+  },
+  {
+   "c": "mw",
+   "ours": 2012,
+   "current": 2012,
+   "origin": 1964,
+   "kind": "readopted",
+   "quote": "6 July 1964; 28 May 2012 (re-adopted)",
+   "note": "",
+   "applied": {
+    "adopted": 2012,
+    "origin": [
+     1964,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "mx",
+   "ours": 1968,
+   "current": 1968,
+   "origin": 1821,
+   "kind": "revised",
+   "quote": "September 16, 1968",
+   "note": "",
+   "applied": {
+    "adopted": 1968,
+    "origin": [
+     1821,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "my",
+   "ours": 1963,
+   "current": 1963,
+   "origin": 1950,
+   "kind": "revised",
+   "quote": "26 May 1950 (original 11-point star and 11 stripes) 16 September 1963 (current 14-point star and 14 stripes)",
+   "note": "",
+   "applied": {
+    "adopted": 1963,
+    "origin": [
+     1950,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "mz",
+   "ours": 1983,
+   "current": 1983,
+   "origin": 1974,
+   "kind": "readopted",
+   "quote": "1 May 1983",
+   "note": "",
+   "applied": {
+    "adopted": 1983,
+    "origin": [
+     1974,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "na",
+   "ours": 1990,
+   "current": 1990,
+   "origin": null,
+   "kind": null,
+   "quote": "21 March 1990",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": null
+   }
+  },
+  {
+   "c": "nc",
+   "ours": 2010,
+   "current": 2010,
+   "origin": 1980,
+   "kind": "official",
+   "quote": "13 July 2010 (non-binding)",
+   "note": "The 2010 vote to fly the FLNKS flag beside the French flag was non-binding, the French flag is the only official one, and a 2025 ruling found the 2010 resolution did not follow the Noumea Accord process.",
+   "applied": {
+    "adopted": 2010,
+    "origin": null
+   }
+  },
+  {
+   "c": "ne",
+   "ours": 1959,
+   "current": 1959,
+   "origin": null,
+   "kind": null,
+   "quote": "23 November 1959",
+   "note": "",
+   "applied": {
+    "adopted": 1959,
+    "origin": null
+   }
+  },
+  {
+   "c": "nf",
+   "ours": 1979,
+   "current": 1979,
+   "origin": null,
+   "kind": null,
+   "quote": "9 June 1979",
+   "note": "",
+   "applied": {
+    "adopted": 1979,
+    "origin": null
+   }
+  },
+  {
+   "c": "ng",
+   "ours": 1960,
+   "current": 1960,
+   "origin": null,
+   "kind": null,
+   "quote": "1 October 1960",
+   "note": "",
+   "applied": {
+    "adopted": 1960,
+    "origin": null
+   }
+  },
+  {
+   "c": "ni",
+   "ours": 1908,
+   "current": 1971,
+   "origin": 1823,
+   "kind": "readopted",
+   "quote": "September 5, 1908; August 27, 1971 (official)",
+   "note": "Nicaragua returned to the 1823 Central American design in 1908, but the flag was made official only in 1971.",
+   "applied": {
+    "adopted": 1908,
+    "origin": [
+     1823,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "nl",
+   "ours": 1949,
+   "current": 1937,
+   "origin": 1596,
+   "kind": "official",
+   "quote": "1575 (first full colour depiction) 1596 (red replacement for orange) 1796 (embellished with Dutch Maiden) 1937 (red reaffirmed) 1949 (colours standardised)",
+   "note": "1949 only set the exact shades; the body says red replaced orange from 1597, mostly after about 1630.",
+   "applied": {
+    "adopted": 1937,
+    "origin": [
+     1596,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "no",
+   "ours": 1821,
+   "current": 1821,
+   "origin": null,
+   "kind": null,
+   "quote": "13 July 1821",
+   "note": "",
+   "applied": {
+    "adopted": 1821,
+    "origin": null
+   }
+  },
+  {
+   "c": "np",
+   "ours": 1962,
+   "current": 1962,
+   "origin": null,
+   "kind": null,
+   "quote": "16 December 1962",
+   "note": "The article says a double-pennon flag was used through the 19th and 20th centuries (with faces on the sun and moon until 1962) but gives no year it was first adopted.",
+   "applied": {
+    "adopted": 1962,
+    "origin": null
+   }
+  },
+  {
+   "c": "nr",
+   "ours": 1968,
+   "current": 1968,
+   "origin": null,
+   "kind": null,
+   "quote": "31 January 1968",
+   "note": "",
+   "applied": {
+    "adopted": 1968,
+    "origin": null
+   }
+  },
+  {
+   "c": "nu",
+   "ours": 1975,
+   "current": 1975,
+   "origin": null,
+   "kind": null,
+   "quote": "15 October 1975",
+   "note": "",
+   "applied": {
+    "adopted": 1975,
+    "origin": null
+   }
+  },
+  {
+   "c": "nz",
+   "ours": 1902,
+   "current": 1902,
+   "origin": 1869,
+   "kind": "official",
+   "quote": "24 March 1902 (in use since 1869)",
+   "note": "",
+   "applied": {
+    "adopted": 1902,
+    "origin": [
+     1869,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "om",
+   "ours": 1970,
+   "current": 2004,
+   "origin": 1970,
+   "kind": "revised",
+   "quote": "22 May 2004 (slight adaptation from 1970)",
+   "note": "",
+   "applied": {
+    "adopted": 2004,
+    "origin": [
+     1970,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "pa",
+   "ours": 1925,
+   "current": 2017,
+   "origin": 1903,
+   "kind": "revised",
+   "quote": "March 25, 1925 (Standardized on December 22, 2017)",
+   "note": "The flag was first used in 1903, ratified by law in 1904 and adopted by Law 48 of 1925, and its colours were set by decree in 2017.",
+   "applied": {
+    "adopted": 1925,
+    "origin": [
+     1903,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "pe",
+   "ours": 1950,
+   "current": 1950,
+   "origin": 1822,
+   "kind": "revised",
+   "quote": "25 February 1825; 31 March 1950 (current version)",
+   "note": "",
+   "applied": {
+    "adopted": 1950,
+    "origin": [
+     1822,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "pf",
+   "ours": 1984,
+   "current": 1984,
+   "origin": null,
+   "kind": null,
+   "quote": "23 November 1984",
+   "note": "The article says the flag of the Kingdom of Tahiti (1788-1880) was the same save for the emblem, but gives no year for that flag.",
+   "applied": {
+    "adopted": 1984,
+    "origin": null
+   }
+  },
+  {
+   "c": "pg",
+   "ours": 1971,
+   "current": 1971,
+   "origin": null,
+   "kind": null,
+   "quote": "1 July 1971",
+   "note": "",
+   "applied": {
+    "adopted": 1971,
+    "origin": null
+   }
+  },
+  {
+   "c": "ph",
+   "ours": 1998,
+   "current": 1998,
+   "origin": 1898,
+   "kind": "revised",
+   "quote": "June 12, 1898 (original version used by the First Philippine Republic) 1936 (current pattern standard) February 12, 1998 (current version reaffirmed by Republic Act No. 8491)",
+   "note": "",
+   "applied": {
+    "adopted": 1998,
+    "origin": [
+     1898,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "pk",
+   "ours": 1947,
+   "current": 1947,
+   "origin": null,
+   "kind": null,
+   "quote": "11 August 1947",
+   "note": "",
+   "applied": {
+    "adopted": 1947,
+    "origin": null
+   }
+  },
+  {
+   "c": "pl",
+   "ours": 1919,
+   "current": 1919,
+   "origin": null,
+   "kind": null,
+   "quote": "1 August 1919 (de jure)",
+   "note": "",
+   "applied": {
+    "adopted": 1919,
+    "origin": null
+   }
+  },
+  {
+   "c": "pn",
+   "ours": 1984,
+   "current": 1984,
+   "origin": null,
+   "kind": null,
+   "quote": "2 April 1984",
+   "note": "",
+   "applied": {
+    "adopted": 1984,
+    "origin": null
+   }
+  },
+  {
+   "c": "pr",
+   "ours": 1952,
+   "current": 1995,
+   "origin": 1895,
+   "kind": "official",
+   "quote": "August 3, 1995 by elected Puerto Rican government after issuing regulation identifying colors but not specifying color shades; medium blue replaced dark blue as de facto shade of triangle",
+   "note": "No shade of blue has ever been set by law: the flag was made official in 1952 (dark blue in practice) and the 1995 regulation made medium blue the de facto shade.",
+   "applied": {
+    "adopted": 1952,
+    "origin": [
+     1895,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "ps",
+   "ours": 1988,
+   "current": 1988,
+   "origin": 1964,
+   "kind": "revised",
+   "quote": "28 May 1964 (PLO) 15 November 1988 (State of Palestine)",
+   "note": "The article says the PLO version used from 1964 into the 1980s had a shorter red triangle, and the design goes back to the 1916 Arab Revolt flag.",
+   "applied": {
+    "adopted": 1988,
+    "origin": [
+     1964,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "pt",
+   "ours": 1911,
+   "current": 1911,
+   "origin": null,
+   "kind": null,
+   "quote": "30 June 1911",
+   "note": "",
+   "applied": {
+    "adopted": 1911,
+    "origin": null
+   }
+  },
+  {
+   "c": "pw",
+   "ours": 1981,
+   "current": 1981,
+   "origin": null,
+   "kind": null,
+   "quote": "1 January 1981",
+   "note": "",
+   "applied": {
+    "adopted": 1981,
+    "origin": null
+   }
+  },
+  {
+   "c": "py",
+   "ours": 2013,
+   "current": 2013,
+   "origin": 1842,
+   "kind": "revised",
+   "quote": "1842 (last modified July 15, 2013)",
+   "note": "",
+   "applied": {
+    "adopted": 2013,
+    "origin": [
+     1842,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "qa",
+   "ours": 1971,
+   "current": 1971,
+   "origin": 1949,
+   "kind": "revised",
+   "quote": "9 July 1971 (Slight adaptation from 1949)",
+   "note": "The infobox gives 1949 as the origin, but the history section dates the nine-point serration to 1932 and the maroon to 1936.",
+   "applied": {
+    "adopted": 1971,
+    "origin": [
+     1949,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "ro",
+   "ours": 1989,
+   "current": 1989,
+   "origin": 1867,
+   "kind": "revised",
+   "quote": "1834 14 June 1848 1 July 1866 27 December 1989 (standardized 1995, updated 19 June 2023)",
+   "note": "",
+   "applied": {
+    "adopted": 1989,
+    "origin": [
+     1866,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "rs",
+   "ours": 2004,
+   "current": 2010,
+   "origin": 1882,
+   "kind": "readopted",
+   "quote": "2004; 2010 (standardised)",
+   "note": "The 2010 standardisation set colour values and redesigned the coat of arms; the Kingdom of Serbia used a tricolour state flag with arms from 1882 to 1918.",
+   "applied": {
+    "adopted": 2004,
+    "origin": [
+     1882,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ru",
+   "ours": 1991,
+   "current": 1993,
+   "origin": 1705,
+   "kind": "readopted",
+   "quote": "1705 (for vessels) 1883 (for land use) 1896 (national flag); 22 August 1991 (de facto restored) 1 November 1991 (de jure restored) 11 December 1993 (colours standardised) 25 December 2000 (legalised)",
+   "note": "The 1991 flag was 1:2 with lighter shades; the 1993 decree set 2:3 and darker shades, and a 2000 law gave it statutory basis.",
+   "applied": {
+    "adopted": 1991,
+    "origin": [
+     1705,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "rw",
+   "ours": 2001,
+   "current": 2001,
+   "origin": null,
+   "kind": null,
+   "quote": "31 December 2001",
+   "note": "",
+   "applied": {
+    "adopted": 2001,
+    "origin": null
+   }
+  },
+  {
+   "c": "sa",
+   "ours": 1973,
+   "current": 1973,
+   "origin": 1938,
+   "kind": "official",
+   "quote": "15 March 1973",
+   "note": "",
+   "applied": {
+    "adopted": 1973,
+    "origin": [
+     1938,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "sb",
+   "ours": 1977,
+   "current": 1977,
+   "origin": null,
+   "kind": null,
+   "quote": "18 November 1977",
+   "note": "",
+   "applied": {
+    "adopted": 1977,
+    "origin": null
+   }
+  },
+  {
+   "c": "sc",
+   "ours": 1996,
+   "current": 1996,
+   "origin": null,
+   "kind": null,
+   "quote": "8 January 1996",
+   "note": "",
+   "applied": {
+    "adopted": 1996,
+    "origin": null
+   }
+  },
+  {
+   "c": "sd",
+   "ours": 1970,
+   "current": 1970,
+   "origin": null,
+   "kind": null,
+   "quote": "20 May 1970",
+   "note": "",
+   "applied": {
+    "adopted": 1970,
+    "origin": null
+   }
+  },
+  {
+   "c": "se",
+   "ours": 1906,
+   "current": 1906,
+   "origin": 1562,
+   "kind": "revised",
+   "quote": "22 June 1906",
+   "note": "",
+   "applied": {
+    "adopted": 1906,
+    "origin": [
+     1562,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "sg",
+   "ours": 1965,
+   "current": 1959,
+   "origin": null,
+   "kind": null,
+   "quote": "3 December 1959 (State of Singapore); 9 August 1965 (Republic of Singapore)",
+   "note": "The design was adopted in 1959 and kept unchanged at independence in 1965.",
+   "applied": {
+    "adopted": 1959,
+    "origin": null
+   }
+  },
+  {
+   "c": "sh-ac",
+   "ours": 2013,
+   "current": 2013,
+   "origin": null,
+   "kind": null,
+   "quote": "11 May 2013",
+   "note": "",
+   "applied": {
+    "adopted": 2013,
+    "origin": null
+   }
+  },
+  {
+   "c": "sh-hl",
+   "ours": 1984,
+   "current": 2019,
+   "origin": 1984,
+   "kind": "revised",
+   "quote": "1984",
+   "note": "The infobox gives 1984, but the article says minor updates were made to the shield, and so the flag, in April 2019, and that Admiralty authorisation came only in 1994.",
+   "applied": {
+    "adopted": 1984,
+    "origin": null
+   }
+  },
+  {
+   "c": "sh-ta",
+   "ours": 2002,
+   "current": 2002,
+   "origin": null,
+   "kind": null,
+   "quote": "20 October 2002",
+   "note": "",
+   "applied": {
+    "adopted": 2002,
+    "origin": null
+   }
+  },
+  {
+   "c": "si",
+   "ours": 1991,
+   "current": 1991,
+   "origin": null,
+   "kind": null,
+   "quote": "25 June 1991",
+   "note": "The infobox gives 25 June 1991 and the body 27 June 1991; the plain tricolour dates from 1848 but the arms were added in 1991.",
+   "applied": {
+    "adopted": 1991,
+    "origin": null
+   }
+  },
+  {
+   "c": "sk",
+   "ours": 1992,
+   "current": 1992,
+   "origin": null,
+   "kind": null,
+   "quote": "23 November 1938 (tricolour only) 3 September 1992 (current design)",
+   "note": "The infobox lists the plain white, blue and red tricolour from 1938; the coat of arms was added in 1992.",
+   "applied": {
+    "adopted": 1992,
+    "origin": [
+     1938,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "sl",
+   "ours": 1961,
+   "current": 1961,
+   "origin": null,
+   "kind": null,
+   "quote": "27 April 1961",
+   "note": "",
+   "applied": {
+    "adopted": 1961,
+    "origin": null
+   }
+  },
+  {
+   "c": "sm",
+   "ours": 2011,
+   "current": 2011,
+   "origin": null,
+   "kind": null,
+   "quote": "Early 1800s (standardised on 22 July 2011)",
+   "note": "The infobox dates the flag to the early 1800s without a year; the article's first record of the white and blue bicolour is 1829, and earlier flags were unstandardised.",
+   "applied": {
+    "adopted": 2011,
+    "origin": null
+   }
+  },
+  {
+   "c": "sn",
+   "ours": 1960,
+   "current": 1960,
+   "origin": 1959,
+   "kind": "revised",
+   "quote": "20 August 1960",
+   "note": "The 1960 flag keeps the Mali Federation tricolour of 4 April 1959 and replaces its kanaga figure with a green star, so counting it as the same design is a judgement call.",
+   "applied": {
+    "adopted": 1960,
+    "origin": null
+   }
+  },
+  {
+   "c": "so",
+   "ours": 1954,
+   "current": 1954,
+   "origin": null,
+   "kind": null,
+   "quote": "12 October 1954",
+   "note": "",
+   "applied": {
+    "adopted": 1954,
+    "origin": null
+   }
+  },
+  {
+   "c": "sr",
+   "ours": 1975,
+   "current": 1975,
+   "origin": null,
+   "kind": null,
+   "quote": "25 November 1975",
+   "note": "",
+   "applied": {
+    "adopted": 1975,
+    "origin": null
+   }
+  },
+  {
+   "c": "ss",
+   "ours": 2011,
+   "current": 2011,
+   "origin": 2005,
+   "kind": "official",
+   "quote": "9 July 2005 9 July 2011 (as national flag) 25 August 2023 (standardized)",
+   "note": "On 25 August 2023 the Media Authority named the light blue triangle and upright star as the correct version, a standardisation rather than a redesign.",
+   "applied": {
+    "adopted": 2011,
+    "origin": [
+     2005,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "st",
+   "ours": 1975,
+   "current": 1975,
+   "origin": null,
+   "kind": null,
+   "quote": "12 July 1975",
+   "note": "",
+   "applied": {
+    "adopted": 1975,
+    "origin": null
+   }
+  },
+  {
+   "c": "sv",
+   "ours": 1916,
+   "current": 1916,
+   "origin": 1822,
+   "kind": "readopted",
+   "quote": "20 February 1822 (original design); 24 March 1916 (current design); 29 January 1922 (current use)",
+   "note": "",
+   "applied": {
+    "adopted": 1916,
+    "origin": [
+     1822,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "sx",
+   "ours": 1985,
+   "current": 1985,
+   "origin": null,
+   "kind": null,
+   "quote": "13 June 1985",
+   "note": "",
+   "applied": {
+    "adopted": 1985,
+    "origin": null
+   }
+  },
+  {
+   "c": "sy",
+   "ours": 2025,
+   "current": 2025,
+   "origin": 1930,
+   "kind": "readopted",
+   "quote": "14 May 1930 (first adopted under a 1:2 ratio) Late 2011 (first used by the Syrian opposition) 8 December 2024 (first used by the Syrian caretaker government, de facto) 13 March 2025 (official adoption)",
+   "note": "",
+   "applied": {
+    "adopted": 2025,
+    "origin": [
+     1930,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "sz",
+   "ours": 1968,
+   "current": 1968,
+   "origin": 1967,
+   "kind": "official",
+   "quote": "6 October 1968",
+   "note": "The infobox also lists 2011 under Adopted without explaining it.",
+   "applied": {
+    "adopted": 1968,
+    "origin": null
+   }
+  },
+  {
+   "c": "tc",
+   "ours": 1968,
+   "current": 1999,
+   "origin": 1968,
+   "kind": "revised",
+   "quote": "7 November 1968 (modified coat of arms on 25 January 1999)",
+   "note": "",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1968,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "td",
+   "ours": 1959,
+   "current": 1959,
+   "origin": null,
+   "kind": null,
+   "quote": "November 6, 1959",
+   "note": "",
+   "applied": {
+    "adopted": 1959,
+    "origin": null
+   }
+  },
+  {
+   "c": "tf",
+   "ours": 2007,
+   "current": 2007,
+   "origin": 1958,
+   "kind": "revised",
+   "quote": "23 February 2007",
+   "note": "",
+   "applied": {
+    "adopted": 2007,
+    "origin": [
+     1958,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "tg",
+   "ours": 1960,
+   "current": 1960,
+   "origin": null,
+   "kind": null,
+   "quote": "27 April 1960",
+   "note": "",
+   "applied": {
+    "adopted": 1960,
+    "origin": null
+   }
+  },
+  {
+   "c": "th",
+   "ours": 1917,
+   "current": 1917,
+   "origin": null,
+   "kind": null,
+   "quote": "28 September 1917 (standardised on 30 September 2017)",
+   "note": "",
+   "applied": {
+    "adopted": 1917,
+    "origin": null
+   }
+  },
+  {
+   "c": "tj",
+   "ours": 1992,
+   "current": 1992,
+   "origin": null,
+   "kind": null,
+   "quote": "24 November 1992",
+   "note": "",
+   "applied": {
+    "adopted": 1992,
+    "origin": null
+   }
+  },
+  {
+   "c": "tk",
+   "ours": 2009,
+   "current": 2009,
+   "origin": null,
+   "kind": null,
+   "quote": "September 7, 2009",
+   "note": "",
+   "applied": {
+    "adopted": 2009,
+    "origin": null
+   }
+  },
+  {
+   "c": "tl",
+   "ours": 2002,
+   "current": 2002,
+   "origin": 1975,
+   "kind": "readopted",
+   "quote": "20 May 2002",
+   "note": "",
+   "applied": {
+    "adopted": 2002,
+    "origin": [
+     1975,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "tm",
+   "ours": 2001,
+   "current": 2001,
+   "origin": 1992,
+   "kind": "revised",
+   "quote": "19 February 1992 (original version) 24 January 2001 (current version)",
+   "note": "",
+   "applied": {
+    "adopted": 2001,
+    "origin": [
+     1992,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "tn",
+   "ours": 1827,
+   "current": 1999,
+   "origin": 1827,
+   "kind": "revised",
+   "quote": "20 October 1827",
+   "note": "The infobox gives 1827, but sources disagree on the first adoption (1827, 1831 or 1835), and Organic Law 99-56 of 1999 first fixed the exact proportions with the look virtually unchanged.",
+   "applied": {
+    "adopted": 1827,
+    "origin": null
+   }
+  },
+  {
+   "c": "to",
+   "ours": 1875,
+   "current": 1875,
+   "origin": null,
+   "kind": null,
+   "quote": "4 November 1875",
+   "note": "",
+   "applied": {
+    "adopted": 1875,
+    "origin": null
+   }
+  },
+  {
+   "c": "tr",
+   "ours": 1936,
+   "current": 1936,
+   "origin": 1844,
+   "kind": "revised",
+   "quote": "1844 (Ottoman flag) 29 May 1936 (standardized)",
+   "note": "",
+   "applied": {
+    "adopted": 1936,
+    "origin": [
+     1844,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "tt",
+   "ours": 1962,
+   "current": 1962,
+   "origin": null,
+   "kind": null,
+   "quote": "31 August 1962",
+   "note": "",
+   "applied": {
+    "adopted": 1962,
+    "origin": null
+   }
+  },
+  {
+   "c": "tv",
+   "ours": 1997,
+   "current": 1997,
+   "origin": 1978,
+   "kind": "readopted",
+   "quote": "1 October 1978 (original) 11 April 1997 (readopted)",
+   "note": "",
+   "applied": {
+    "adopted": 1997,
+    "origin": [
+     1978,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "tw",
+   "ours": 1928,
+   "current": 1928,
+   "origin": 1906,
+   "kind": "official",
+   "quote": "1895 (by Revive China Society, original version) 1906 (addition of the red field) 23 October 1911 (naval flag) 5 May 1921 (by Guangzhou government) 17 December 1928 (in mainland China) 25 October 1945 (in Taiwan) 24 October 1954 (standardized)",
+   "note": "The size and ratio were standardised by law in 1954.",
+   "applied": {
+    "adopted": 1928,
+    "origin": [
+     1906,
+     "official"
+    ]
+   }
+  },
+  {
+   "c": "tz",
+   "ours": 1964,
+   "current": 1964,
+   "origin": null,
+   "kind": null,
+   "quote": "30 June 1964",
+   "note": "",
+   "applied": {
+    "adopted": 1964,
+    "origin": null
+   }
+  },
+  {
+   "c": "ua",
+   "ours": 1992,
+   "current": 1992,
+   "origin": 1918,
+   "kind": "readopted",
+   "quote": "22 March 1918 (officially adopted); 24 August 1991 (de facto restored); 28 January 1992 (officially restored, current design)",
+   "note": "",
+   "applied": {
+    "adopted": 1992,
+    "origin": [
+     1918,
+     "readopted"
+    ]
+   }
+  },
+  {
+   "c": "ug",
+   "ours": 1962,
+   "current": 1962,
+   "origin": null,
+   "kind": null,
+   "quote": "9 October 1962",
+   "note": "",
+   "applied": {
+    "adopted": 1962,
+    "origin": null
+   }
+  },
+  {
+   "c": "un",
+   "ours": 1947,
+   "current": 1947,
+   "origin": null,
+   "kind": null,
+   "quote": "20 October 1947",
+   "note": "",
+   "applied": {
+    "adopted": 1947,
+    "origin": null
+   }
+  },
+  {
+   "c": "us",
+   "ours": 1960,
+   "current": 1960,
+   "origin": 1777,
+   "kind": "revised",
+   "quote": "December 3, 1775 (Continental Union Flag); June 14, 1777 (13-star version); July 4, 1960 (current 50-star version)",
+   "note": "",
+   "applied": {
+    "adopted": 1960,
+    "origin": [
+     1777,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "uy",
+   "ours": 1830,
+   "current": 1830,
+   "origin": 1828,
+   "kind": "revised",
+   "quote": "18 December 1828 (first design) 11 July 1830 (modification)",
+   "note": "The article gives the 1828 flag as 9 blue stripes in one place and 19 stripes in another, and dates its approval 16 December in the text.",
+   "applied": {
+    "adopted": 1830,
+    "origin": null
+   }
+  },
+  {
+   "c": "uz",
+   "ours": 1991,
+   "current": 1991,
+   "origin": null,
+   "kind": null,
+   "quote": "18 November 1991",
+   "note": "",
+   "applied": {
+    "adopted": 1991,
+    "origin": null
+   }
+  },
+  {
+   "c": "va",
+   "ours": 1929,
+   "current": 2023,
+   "origin": 1929,
+   "kind": "revised",
+   "quote": "7 June 1929 (original adoption); 7 June 2023 (most recent modification)",
+   "note": "The article lists a 2023 modification (and a 2001 version change) but does not say what changed visually.",
+   "applied": {
+    "adopted": 1929,
+    "origin": null
+   }
+  },
+  {
+   "c": "vc",
+   "ours": 1985,
+   "current": 1985,
+   "origin": null,
+   "kind": null,
+   "quote": "12 October 1985",
+   "note": "",
+   "applied": {
+    "adopted": 1985,
+    "origin": null
+   }
+  },
+  {
+   "c": "ve",
+   "ours": 2006,
+   "current": 2006,
+   "origin": 1811,
+   "kind": "revised",
+   "quote": "12 March 2006",
+   "note": "",
+   "applied": {
+    "adopted": 2006,
+    "origin": [
+     1811,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "vg",
+   "ours": 1960,
+   "current": 1999,
+   "origin": 1960,
+   "kind": "revised",
+   "quote": "15 November 1960 (modified coat of arms on 25 January 1999)",
+   "note": "",
+   "applied": {
+    "adopted": 1999,
+    "origin": [
+     1960,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "vi",
+   "ours": 1921,
+   "current": 1921,
+   "origin": null,
+   "kind": null,
+   "quote": "May 17, 1921",
+   "note": "",
+   "applied": {
+    "adopted": 1921,
+    "origin": null
+   }
+  },
+  {
+   "c": "vn",
+   "ours": 1955,
+   "current": 1955,
+   "origin": 1940,
+   "kind": "revised",
+   "quote": "23 November 1940 (Cochinchina uprising) 2 September 1945 (Democratic Republic of Vietnam) 30 November 1955 (current version) 2 July 1976 (reunified Socialist Republic of Vietnam)",
+   "note": "",
+   "applied": {
+    "adopted": 1955,
+    "origin": [
+     1940,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "vu",
+   "ours": 1980,
+   "current": 1980,
+   "origin": null,
+   "kind": null,
+   "quote": "18 February 1980",
+   "note": "",
+   "applied": {
+    "adopted": 1980,
+    "origin": null
+   }
+  },
+  {
+   "c": "wf",
+   "ours": 1985,
+   "current": 1985,
+   "origin": null,
+   "kind": null,
+   "quote": "1985",
+   "note": "The local flag is unofficial (the French flag is used on official occasions) and already appears in a 1983 Larousse encyclopedia.",
+   "applied": {
+    "adopted": 1985,
+    "origin": null
+   }
+  },
+  {
+   "c": "ws",
+   "ours": 1962,
+   "current": 1962,
+   "origin": 1948,
+   "kind": "revised",
+   "quote": "24 February 1949 (introduced) 1 January 1962 (adopted)",
+   "note": "",
+   "applied": {
+    "adopted": 1962,
+    "origin": [
+     1948,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "xk",
+   "ours": 2008,
+   "current": 2008,
+   "origin": null,
+   "kind": null,
+   "quote": "17 February 2008",
+   "note": "",
+   "applied": {
+    "adopted": 2008,
+    "origin": null
+   }
+  },
+  {
+   "c": "ye",
+   "ours": 1990,
+   "current": 1990,
+   "origin": null,
+   "kind": null,
+   "quote": "22 May 1990",
+   "note": "",
+   "applied": {
+    "adopted": 1990,
+    "origin": null
+   }
+  },
+  {
+   "c": "za",
+   "ours": 1994,
+   "current": 1994,
+   "origin": null,
+   "kind": null,
+   "quote": "27 April 1994",
+   "note": "",
+   "applied": {
+    "adopted": 1994,
+    "origin": null
+   }
+  },
+  {
+   "c": "zm",
+   "ours": 1996,
+   "current": 1996,
+   "origin": 1964,
+   "kind": "revised",
+   "quote": "24 October 1964 (modified in 1996)",
+   "note": "",
+   "applied": {
+    "adopted": 1996,
+    "origin": [
+     1964,
+     "revised"
+    ]
+   }
+  },
+  {
+   "c": "zw",
+   "ours": 1980,
+   "current": 1980,
+   "origin": null,
+   "kind": null,
+   "quote": "April 18th, 1980",
+   "note": "",
+   "applied": {
+    "adopted": 1980,
+    "origin": null
+   }
+  }
+ ]
+}
