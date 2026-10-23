@@ -694,13 +694,15 @@ function wireZoom(){
       const finish=()=>{fl.classList.remove("anim","z");box.classList.remove("zooming");fl.style.width=fl.style.transform="";Z.scale=1;Z.x=0;Z.y=0;Z.baseW=0};
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.x=Z.c0.x-C().x;Z.y=Z.c0.y-C().y;apply();setTimeout(finish,260)};
-    // Zoom by f. From rest, the point P (on the page) goes to the centre; once lifted, the point under P stays put.
-    const zoom=(f,P)=>{const ns=Math.min(6,Math.max(1,Z.scale*f));if(ns===Z.scale)return;const c=C();
-      if(Z.scale===1){lift();const q={x:P.x-Z.c0.x,y:P.y-Z.c0.y};Z.scale=ns;Z.x=-ns*q.x;Z.y=-ns*q.y}
-      else{f=ns/Z.scale;Z.x=(1-f)*(P.x-c.x)+f*Z.x;Z.y=(1-f)*(P.y-c.y)+f*Z.y;Z.scale=ns}
+    // Zoom by f. From rest, the flag glides to the centre with the point P (on the page) in the middle; after that,
+    // scrolling scales about the centre, so the spot you chose stays there until you drag.
+    const zoom=(f,P)=>{const ns=Math.min(6,Math.max(1,Z.scale*f));if(ns===Z.scale)return;
+      if(Z.scale===1){lift();const fl=F(),c=C();Z.x=Z.c0.x-c.x;Z.y=Z.c0.y-c.y;apply();void fl.offsetWidth;fl.classList.add("anim");
+        const q={x:P.x-Z.c0.x,y:P.y-Z.c0.y};Z.scale=ns;Z.x=-ns*q.x;Z.y=-ns*q.y;setTimeout(()=>fl.classList.remove("anim"),260)}
+      else{f=ns/Z.scale;Z.x*=f;Z.y*=f;Z.scale=ns}
       apply()};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true),ZOOM_REST)};
-    const bump=()=>{clearTimeout(Z.timer);F().classList.remove("anim")};
+    const bump=()=>{clearTimeout(Z.timer);if(Z.scale>1)F().classList.remove("anim")};
     box.addEventListener("wheel",e=>{e.preventDefault();bump();zoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY});rest()},{passive:false});
     box.addEventListener("dblclick",e=>{bump();if(Z.scale>1)drop(true);else{zoom(2.5,{x:e.clientX,y:e.clientY});rest()}});
     box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&Z.scale===1)return;box.setPointerCapture(e.pointerId);Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
