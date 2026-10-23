@@ -199,12 +199,13 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .group .hint{font-size:14px;color:var(--ink);max-width:65ch}
 .missed{display:flex;flex-wrap:wrap;gap:8px}
 .badges{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.badge{display:grid;grid-template-columns:36px 1fr;column-gap:10px;row-gap:2px;align-items:start;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;opacity:.55}
-.badge .be{grid-row:1/3;font-size:28px;line-height:1.2;filter:grayscale(1);text-align:center}
+.badge{display:grid;grid-template-columns:36px 1fr;column-gap:10px;row-gap:2px;align-items:start;grid-auto-rows:auto;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;opacity:.55}
+.badge .be{grid-row:1/4;font-size:28px;line-height:1.2;filter:grayscale(1);text-align:center}
 .badge.on .be{filter:none}
 .badge.big .be{font-size:40px}
 .badge.on{opacity:1;border-color:var(--gold);background:var(--surface)}
 .badge .bn{font-family:var(--display);font-weight:700;font-size:15px;line-height:1.2}
+.badge .bw{font:11px var(--mono);color:var(--muted);letter-spacing:.02em;margin-top:-1px}
 .badge .bh{font-size:12px;color:var(--muted);line-height:1.35}
 .badge.on .bh{color:var(--ink)}
 .badge.big{grid-column:1/-1;grid-template-columns:56px 1fr}
