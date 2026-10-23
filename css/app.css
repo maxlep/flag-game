@@ -199,7 +199,7 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .group .hint{font-size:14px;color:var(--ink);max-width:65ch}
 .missed{display:flex;flex-wrap:wrap;gap:8px}
 .badges{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.badge{display:grid;grid-template-columns:36px 1fr;column-gap:10px;row-gap:2px;align-items:start;grid-auto-rows:auto;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;opacity:.55}
+.badge{display:grid;grid-template-columns:36px 1fr;column-gap:10px;row-gap:2px;align-items:start;align-content:start;grid-auto-rows:auto;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;opacity:.55}
 .badge .be{grid-row:1/4;font-size:28px;line-height:1.2;filter:grayscale(1);text-align:center}
 .badge.on .be{filter:none}
 .badge.big .be{font-size:40px}
