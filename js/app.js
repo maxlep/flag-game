@@ -307,6 +307,9 @@ function shade(){const st=app.querySelector(".sticky"),dk=app.querySelector(".do
   if(st)st.classList.toggle("scrolled",y>4);
   if(dk)dk.classList.toggle("lift",left>4)}
 window.addEventListener("scroll",shade,{passive:true});window.addEventListener("resize",shade);app.addEventListener("scroll",shade,true);
+// On the quiz screen only the middle band scrolls, and only when it has something to scroll; any other touch drag is
+// swallowed so a phone can't scroll the page beneath (iOS does that even with the body locked).
+app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid");if(!(m&&m.contains(e.target)&&m.scrollHeight>m.clientHeight))e.preventDefault()},{passive:false});
 // On a phone the keyboard halves the screen and the browser centres the answer box, pushing the flag off the top.
 // When the box has focus and the visual viewport shrinks, the flag is capped to the space left and the page is
 // scrolled to the top, so flag and box share the screen.
