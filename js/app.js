@@ -717,16 +717,20 @@ function wireZoom(){
     const F=()=>Z.fl||box.querySelector(".fl:not([hidden])");
     const Q=()=>{const q=app.querySelector(".qscreen");return q?q.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight}};
     const C=()=>{const q=Q();return {x:q.width/2,y:q.height/2}};
-    // Lift: measure the flag where it sits, then move it into the dimming layer at the same spot, in pixels.
+    // Lift: measure the flag where it sits and put a copy of it into the dimming layer at the same spot, in pixels.
+    // The original stays where it is (dimmed under the layer), so nothing in the page changes or repaints; the copy is
+    // shown once its image has decoded, so it doesn't blink in.
     const up=()=>{if(Z.fl)return;const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
       Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
-      scrimOn(box);Z.fl=fl;ZS.appendChild(fl);fl.classList.add("z");Z.scale=1;Z.px=Z.py=0;apply();void fl.offsetWidth};
+      scrimOn(box);const cp=fl.cloneNode(true);cp.classList.add("z");cp.style.visibility="hidden";ZS.appendChild(cp);Z.fl=cp;
+      const im=cp.querySelector("img");(im&&im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>{cp.style.visibility=""});
+      Z.scale=1;Z.px=Z.py=0;apply();void cp.offsetWidth};
     const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
       const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
       fl.style.width=w.toFixed(1)+"px";fl.style.left=(cx-w/2).toFixed(1)+"px";fl.style.top=(cy-h/2).toFixed(1)+"px"};
     const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
     const drop=anim=>{live();const fl=Z.fl;if(!fl)return;scrimOff();
-      const finish=()=>{fl.classList.remove("anim","z");fl.style.width=fl.style.left=fl.style.top="";box.insertBefore(fl,box.firstChild);Z.fl=null;Z.scale=1;Z.px=Z.py=0};
+      const finish=()=>{fl.remove();Z.fl=null;Z.scale=1;Z.px=Z.py=0};
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true),ZOOM_REST)};
