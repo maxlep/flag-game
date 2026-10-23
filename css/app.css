@@ -64,15 +64,17 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* The quiz is a screen, not a page: header, a middle band that scrolls, and an answer drawer pinned above the bottom
    edge (or above the keyboard). Its height follows the visible viewport, set by keyboard() in app.js. */
 body.quiz{overflow:hidden;position:fixed;inset:0;width:100%}
-.qscreen{position:fixed;left:0;right:0;top:0;height:var(--vvh,100vh);transform:translateY(0);touch-action:none;display:flex;flex-direction:column;background:var(--bg);z-index:4;
+.qscreen{position:fixed;left:0;right:0;top:0;height:var(--vvh,100vh);transform:translateY(0);touch-action:none;display:flex;flex-direction:column;background:var(--bg);z-index:4}
+/* Each band carries the side gutters itself, so the middle band's scrollbar rides the edge of the screen. */
+.qscreen>*{width:100%;max-width:calc(560px + 2 * max(16px,env(safe-area-inset-left,0px)));margin-left:auto;margin-right:auto;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.qscreen>*{width:100%;max-width:560px;margin-left:auto;margin-right:auto}
 .qscreen .sticky{position:relative;top:auto;margin-top:0;padding-top:calc(12px + env(safe-area-inset-top,0px));flex:none}
-.qmid{flex:1;min-height:0;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:16px;padding:14px 0 16px;scrollbar-width:thin}
+.qscreen .zscrim{padding:0;max-width:none}
+.qmid{flex:1;min-height:0;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:16px;padding-top:14px;padding-bottom:16px;scrollbar-width:thin}
 .qmid>*{flex:none}
 /* Only with the keyboard up does the visible viewport drift from the page; follow it then. */
 body.kb .qscreen{transform:translateY(var(--vvt,0px))}
-.qdrawer{position:relative;flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 0 calc(22px + env(safe-area-inset-bottom,0px))}
+.qdrawer{position:relative;flex:none;display:flex;flex-direction:column;gap:10px;padding-top:12px;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
 body.kb .qdrawer{padding-bottom:8px} /* riding the top of the keyboard */
 .qdrawer,.qscreen .sticky{touch-action:none} /* only the middle band scrolls; a drag here must not move the page */
 .qdrawer .eyebrow{margin-bottom:-2px}
