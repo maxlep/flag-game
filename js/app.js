@@ -327,7 +327,10 @@ function keyboard(){
   const vv=window.visualViewport;if(vv&&vv.scale>1.02)return; // pinch-zoomed: leave the layout alone
   // In the home-screen app innerHeight itself shrinks with the keyboard, so compare with the tallest height seen.
   FULLH=Math.max(FULLH,window.innerHeight,vv?vv.height*vv.scale:0);
-  const h=vv?Math.round(vv.height*vv.scale):window.innerHeight,open=h<FULLH-120,was=document.body.classList.contains("kb");
+  let h=vv?Math.round(vv.height*vv.scale):window.innerHeight;const open=h<FULLH-120,was=document.body.classList.contains("kb");
+  // The keyboard can grow after it opens (a prediction bar on the first keystroke). Remember the smallest height seen
+  // with it up and lay out for that from the start, so the screen doesn't resize mid-round next time.
+  if(open){const k=+localStorage.getItem("flaglore.kbh")||0;if(!k||h<k)try{localStorage.setItem("flaglore.kbh",h)}catch(e){}if(k&&k<h&&h-k<120)h=k}
   if(Math.abs(h-VVH)>24){VVH=h;document.documentElement.style.setProperty("--vvh",h+"px")}
   document.documentElement.style.setProperty("--vvt",(vv?Math.round(vv.offsetTop):0)+"px");
   document.body.classList.toggle("kb",open);
