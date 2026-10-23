@@ -138,6 +138,8 @@ function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
 function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";const y=typeof ADOPTED==="object"&&ADOPTED[c];
   const where=f.sov?f.r:geoOf(f)+" · territory";
   return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+where:""} · ${wl(L.flag,y?"Flag adopted "+y:"Flag","The flag on Wikipedia")}`}
+// A small map of the flag's region, the country filled in; opens the viewer on the map slide.
+function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openFlag('${c}','map')" title="Open the map">${mapSVG({code:c,cls:"sm"})}</button>`:""}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
@@ -363,6 +365,7 @@ function keyboard(){
 }
 if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard);window.visualViewport.addEventListener("scroll",keyboard)}
 window.addEventListener("resize",keyboard);
+window.addEventListener("resize",()=>{if(LB&&LB.scale===1){lbFit();LB.baseW=LB.fl.getBoundingClientRect().width}});
 // On focus, shrink the screen to the keyboard's remembered height before the keyboard appears, so the field is already
 // above it and the phone has no reason to shove the page to reveal it. The real height refines it as the keyboard settles.
 let PRE_T=0;
@@ -563,6 +566,7 @@ function viewQuiz(){
       ${reverse?img(q.c,"flag",q.v||0)+vchips(q.c,q.v||0,"setQVar(%i)"):""}
       <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p>${useLine(q.c,q.v||0)}${reverse?"":vchips(q.c,q.v||0,"setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
+      ${mapCard(q.c)}
       ${miss}
     </div>`;
   }
@@ -641,7 +645,7 @@ function viewStudy(){
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
   const status=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}${mapHas(f.c)?` · <button type="button" class="wl" onclick="openFlag('${f.c}','map')">Map</button>`:""}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
@@ -694,16 +698,17 @@ let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
 function openFlag(c,vi=0){
   closeFlag();
   const el=document.createElement("div");el.className="lb";el.id="lb";
-  const v=VARS(c),n=v?v.length:1;
+  const v=VARS(c),nd=v?v.length:1,hasMap=mapHas(c),n=nd+(hasMap?1:0);
+  if(vi==="map")vi=hasMap?nd:0;
   el.innerHTML=`<div class="lb-top"><span class="nm">${esc(BY[c].n)}</span><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack">${Array.from({length:n},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("")}</div></div>
-    <div class="lb-var" id="lbVar">${useLine(c,vi)}${vchips(c,vi,"lbGo(%i)")}</div>
-    <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset${v?" · swipe for the other design":""}</p>`;
+    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack">${Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("")}${hasMap?`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap"})}</div>`:""}</div></div>
+    <div class="lb-var" id="lbVar"></div>
+    <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset${n>1?" · swipe for "+(v&&hasMap?"the other designs and the map":v?"the other design":"the map"):""}</p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
-  LB={c,vi,n,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track,fls:[...el.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]};
-  LB.fl=LB.fls[vi];LB.baseW=LB.fl.getBoundingClientRect().width;
+  LB={c,vi,n,nd,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track,fls:[...el.querySelectorAll(".lb-slide .flag .fl:not([hidden])"),...el.querySelectorAll(".lb-slide .map")]};
+  lbFit();LB.fl=LB.fls[vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbCaption();
   lbTrack(false);
   const st=stage;
   st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:Date.now()});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};LB.moved=false;st.classList.add("drag")});
@@ -740,10 +745,19 @@ function lbZoom(f,P){if(!LB)return;const ns=Math.min(8,Math.max(1,LB.scale*f));f
   const C=lbCenter();P=P||C;LB.x=(1-f)*(P.x-C.x)+f*LB.x;LB.y=(1-f)*(P.y-C.y)+f*LB.y;LB.scale=ns;
   if(ns===1){LB.x=0;LB.y=0}lbApply()}
 // Zoom by resizing the element rather than transform:scale, so the SVG is re-rendered sharp at every level.
-function lbApply(){if(!LB)return;LB.fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px)`}
+function lbApply(){if(!LB)return;LB.fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px)`;
+  // Map markers keep their size on screen as the map grows.
+  if(LB.fl.tagName==="svg")LB.fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/LB.scale).toFixed(2))})}
 // The strip of designs: slide vi is in view, offset by the finger while dragging. Animated only when snapping.
 function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(calc(${-100*LB.vi}% + ${LB.sx}px))`}
-function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();$("#lbVar").innerHTML=useLine(LB.c,i)+vchips(LB.c,i,"lbGo(%i)")}LB.sx=0;lbTrack(true)}
+function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}LB.sx=0;lbTrack(true)}
+// The map slide is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
+function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,st=LB.stage,W=st.clientWidth-48,H=st.clientHeight-24;m.style.width=Math.min(W,H*vb.width/vb.height).toFixed(1)+"px"}
+// Under the stage: the design's name and chips on a flag slide; the capital and region on the map slide. A Flag · Map
+// switch when both exist.
+function lbCaption(){if(!LB)return;const c=LB.c,i=LB.vi,f=BY[c],onMap=i>=LB.nd;
+  const sw=LB.nd<LB.n?`<div class="vchips"><button type="button" class="chipbtn${onMap?"":" on"}" onclick="lbGo(0)">Flag</button><button type="button" class="chipbtn${onMap?" on":""}" onclick="lbGo(${LB.nd})">Map</button></div>`:"";
+  $("#lbVar").innerHTML=onMap?`<p class="vline">${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}</p>${sw}`:useLine(c,i)+`<div class="row" style="gap:8px;justify-content:center">${vchips(c,i,"lbGo(%i)")}${sw}</div>`}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
 
 // Zoom on the question flag. Desktop: scroll over it to zoom; as it grows it drifts from its place toward the middle of

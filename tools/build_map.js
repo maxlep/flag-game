@@ -81,9 +81,9 @@ for(const [name,cfg] of Object.entries(SETS)){
   const boxes=frames.map(([n,f])=>{const b=n==="World"?[0,0,W,H]:pixBox(f.box);out.frame[n]={set:name,box:b};return b});
   const inFrames=b=>name==="world"||boxes.some(x=>b[0][0]<x[2]&&b[1][0]>x[0]&&b[0][1]<x[3]&&b[1][1]>x[1]);
   const mainPoly=f=>{const g=f.geometry;if(g.type!=="MultiPolygon")return f;let best=null,ba=-1;for(const co of g.coordinates){const a=pathGen.area({type:"Polygon",coordinates:co});if(a>ba){ba=a;best=co}}return {type:"Feature",geometry:{type:"Polygon",coordinates:best}}};
-  const S={land:[],shape:{},pt:{},box:{},area:{},cap:{}};
+  const S={land:[],lbox:[],shape:{},pt:{},box:{},area:{},cap:{}};
   simplified.forEach((f,i)=>{const meta=feats[i];const d=pathGen(f);if(!d)return;const b=pathGen.bounds(f);if(!inFrames(b))return;
-    if(meta.base)S.land.push(fmt(d));
+    if(meta.base){S.land.push(fmt(d));S.lbox.push([r1(b[0][0]),r1(b[0][1]),r1(b[1][0]),r1(b[1][1])])}
     if(!meta.c)return;
     S.shape[meta.c]=fmt(d);
     // The box and centre come from the largest polygon alone, so an outlying island (the Aleutians, French Guiana) doesn't pull them away from the body.

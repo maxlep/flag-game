@@ -4,6 +4,8 @@
 
 // The frame a flag is best seen in: its region, or the world for the organisations.
 function mapFrameFor(c){const f=BY[c],r=f.sov?f.r:GEO[c];return MAP.frame[r]?r:"World"}
+// Is there a shape for this flag? (The organisations have none.)
+const mapHas=c=>!!MAP.set[MAP.frame[mapFrameFor(c)].set].shape[c];
 // The frame's box, widened to take in a flag whose centre lies outside it (a far-flung territory).
 function mapBox(frame,code){
   const fr=MAP.frame[frame],S=MAP.set[fr.set];let [x0,y0,x1,y1]=fr.box;
@@ -18,7 +20,8 @@ function mapSVG(o){
   let [x0,y0,x1,y1]=mapBox(frame,o.code);
   const pad=(o.pad===undefined?0.04:o.pad)*Math.max(x1-x0,y1-y0);x0-=pad;y0-=pad;x1+=pad;y1+=pad;
   const w=x1-x0,h=y1-y0,dot=Math.max(1.5,w*0.011);
-  const land=S.land.map(d=>`<path d="${d}"/>`).join("");
+  // Only the land that falls in the frame; a region map doesn't carry the whole world's outlines.
+  const land=S.land.map((d,i)=>{const b=S.lbox[i];return b[0]<x1&&b[2]>x0&&b[1]<y1&&b[3]>y0?`<path d="${d}"/>`:""}).join("");
   let hi="";
   if(o.code&&S.shape[o.code]){
     const [px,py]=S.pt[o.code],b=S.box[o.code],tiny=Math.hypot(b[2]-b[0],b[3]-b[1])<w*0.04;
