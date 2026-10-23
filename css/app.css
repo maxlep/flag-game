@@ -64,10 +64,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* Keyboard open on a phone (body.kb): the question flag shrinks to what fits above the answer box. */
 .flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .flag.big.zooming{touch-action:none;z-index:32}
-.flag.big .fl.z{position:fixed;left:50vw;top:50vh;max-width:none;max-height:none;z-index:31;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 24px 60px rgba(0,0,0,.5)}
+.flag.big .fl.z{position:fixed;max-width:none;max-height:none;z-index:31;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 24px 60px rgba(0,0,0,.5)}
 .zscrim{position:fixed;inset:0;z-index:30;background:rgba(8,12,20,.85);opacity:0;transition:opacity .25s}
 .zscrim.on{opacity:1}
-.flag.big .fl.anim{transition:width .25s cubic-bezier(.2,.7,.2,1),transform .25s cubic-bezier(.2,.7,.2,1)}
+.flag.big .fl.anim{transition:width .25s cubic-bezier(.2,.7,.2,1),left .25s cubic-bezier(.2,.7,.2,1),top .25s cubic-bezier(.2,.7,.2,1)}
 .flag.big img{-webkit-user-drag:none;pointer-events:none}
 body.kb .flag.big{max-height:calc(var(--vvh,9999px) - 240px)}
 body.kb .flag.big .fl{width:min(var(--w,100%),calc((var(--vvh,9999px) - 240px) * var(--r,1.3333)))}

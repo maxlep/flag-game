@@ -690,18 +690,22 @@ function wireZoom(){
     const Z={scale:1,px:0,py:0,lift:0,pts:new Map(),timer:null,finishT:null};
     const C=()=>({x:innerWidth/2,y:innerHeight/2});
     // Take the flag out of the page flow (fixed, at the same spot) so it can grow over everything.
-    const up=()=>{const fl=F();if(fl.classList.contains("z"))return;const r=fl.getBoundingClientRect();Z.baseW=r.width;Z.c0={x:r.left+r.width/2,y:r.top+r.height/2};fl.classList.add("z");box.classList.add("zooming");scrimOn(box)};
-    const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0;
-      fl.style.width=(Z.baseW*Z.scale).toFixed(1)+"px";
-      fl.style.transform=`translate(calc(-50% + ${(Z.c0.x-c.x)*(1-k)+Z.px}px),calc(-50% + ${(Z.c0.y-c.y)*(1-k)+Z.py}px))`};
+    // Everything is set in pixels (left, top, width), never percentages or transforms, so transitions interpolate cleanly.
+    const up=()=>{const fl=F();if(fl.classList.contains("z"))return;const r=fl.getBoundingClientRect();Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left+r.width/2,y:r.top+r.height/2};
+      fl.classList.add("z");box.classList.add("zooming");scrimOn(box);Z.scale=1;Z.px=Z.py=0;apply();void fl.offsetWidth};
+    const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
+      const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
+      fl.style.width=w.toFixed(1)+"px";fl.style.left=(cx-w/2).toFixed(1)+"px";fl.style.top=(cy-h/2).toFixed(1)+"px"};
     const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
     const drop=anim=>{live();const fl=F();if(!fl.classList.contains("z"))return;scrimOff();
-      const finish=()=>{fl.classList.remove("anim","z");box.classList.remove("zooming");fl.style.width=fl.style.transform="";Z.scale=1;Z.px=Z.py=0};
+      const finish=()=>{fl.classList.remove("anim","z");box.classList.remove("zooming");fl.style.width=fl.style.left=fl.style.top="";Z.scale=1;Z.px=Z.py=0};
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true),ZOOM_REST)};
     const zoomTo=(ns,lift)=>{ns=Math.min(6,Math.max(1,ns));if(ns===Z.scale&&F().classList.contains("z"))return;live();up();Z.lift=lift;Z.scale=ns;apply()};
-    const wheel=e=>{const first=!F().classList.contains("z");zoomTo(Z.scale*Math.exp(-e.deltaY*0.0015),1);if(first){const fl=F();fl.classList.add("anim");setTimeout(()=>fl.classList.remove("anim"),260)}rest()};
+    // The first scroll glides out from the flag's place; later ones follow the wheel directly.
+    const wheel=e=>{const first=!F().classList.contains("z"),ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(first&&ns<=1)return;
+      if(first)up();zoomTo(ns,1);if(first){const fl=F();fl.classList.add("anim");setTimeout(()=>fl.classList.remove("anim"),260)}rest()};
     box.addEventListener("wheel",e=>{e.preventDefault();wheel(e)},{passive:false});
     box.addEventListener("dblclick",()=>{if(Z.scale>1)drop(true);else{zoomTo(3,1);rest()}});
     box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&Z.scale===1)return;box.setPointerCapture(e.pointerId);Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
