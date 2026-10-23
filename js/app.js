@@ -336,8 +336,8 @@ let VVH=0,FULLH=0;
 // the drawer and the keyboard.
 // Computed from the screen's target height, not the band's current one, which may be mid-transition.
 function fitFlag(){const mid=$("#qmid"),head=app.querySelector(".qscreen .sticky"),dr=app.querySelector(".qdrawer");if(!mid||!head||!dr)return;
-  const cs=getComputedStyle(mid),chips=mid.querySelector(".flag.big + .vchips");
-  const h=(VVH||window.innerHeight)-head.offsetHeight-dr.offsetHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-(chips?chips.offsetHeight+parseFloat(cs.rowGap||cs.gap||0):0);
+  const cs=getComputedStyle(mid);
+  const h=(VVH||window.innerHeight)-head.offsetHeight-dr.offsetHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
   document.documentElement.style.setProperty("--flagh",Math.round(h)+"px")}
 function keyboard(){
   const vv=window.visualViewport;if(vv&&vv.scale>1.02)return; // pinch-zoomed: leave the layout alone
@@ -512,14 +512,14 @@ function viewQuiz(){
       let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
-    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}`;ask=`<p class="eyebrow">Which country? Type it.</p>`;
+    prompt=`<div class="qflag">${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}</div>`;ask=`<p class="eyebrow">Which country? Type it.</p>`;
     // After the answer the box stays, read-only, so the keyboard stays open; Enter in it moves on.
     opts=`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" name="q" type="text" inputmode="text" enterkeyhint="${q.ans?"next":"go"}" ${q.ans?"readonly":""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans?"Enter for next":strict?"Spell it exactly":"Your answer"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
       ${strict||compact?"":'<div class="sugg" id="sugg"></div>'}
       <div class="row">${q.ans?`<button type="button" class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`:`<button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button>`}</div></form>`;
   } else {
-    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}`;ask=`<p class="eyebrow">Which country?</p>`;
+    prompt=`<div class="qflag">${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}</div>`;ask=`<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
       let cls="opt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')"><span class="key">${letters[i]}</span><span>${esc(BY[c].n)}</span></button>`}).join("")}</div>`;

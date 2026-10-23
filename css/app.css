@@ -60,7 +60,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .top .stat{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 
 .flag{width:100%;max-width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
-.flag+.vchips{margin-top:-6px}
+
 /* The quiz is a screen, not a page: header, a middle band that scrolls, and an answer drawer pinned above the bottom
    edge (or above the keyboard). Its height follows the visible viewport, set by keyboard() in app.js. */
 body.quiz{overflow:hidden;position:fixed;inset:0;width:100%}
@@ -97,8 +97,13 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 :root[data-theme="dark"] .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}}
 /* The question flag shrinks to what the middle band can show above the drawer and the keyboard. */
-.qmid .flag.big{max-height:max(110px,var(--flagh,9999px));transition:max-height .25s cubic-bezier(.2,.7,.2,1)}
-.qmid .flag.big .fl{width:min(var(--w,100%),calc(max(110px,var(--flagh,9999px)) * var(--r,1.3333)));transition:width .25s cubic-bezier(.2,.7,.2,1)}
+/* The question flag hugs its artwork (no 4:3 slot) so it can take the band's full height; the design chips sit on it. */
+.qflag{position:relative;display:flex;justify-content:center}
+.qmid .flag.big{aspect-ratio:auto;height:auto;max-height:max(110px,var(--flagh,9999px));transition:max-height .25s cubic-bezier(.2,.7,.2,1)}
+.qflag .vchips{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);margin:0;padding:3px;border-radius:999px;background:rgba(8,12,20,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.qflag .vchips .chipbtn{color:#fff;background:transparent}
+.qflag .vchips .chipbtn.on{background:#fff;color:#111}
+.qmid .flag.big .fl{width:min(100%,calc(max(110px,var(--flagh,9999px)) * var(--r,1.3333)));transition:width .25s cubic-bezier(.2,.7,.2,1)}
 .flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .zscrim{position:fixed;inset:0;z-index:30;background:rgba(8,12,20,.85);opacity:0;transition:opacity .12s;touch-action:none;user-select:none;-webkit-user-select:none}
 .qscreen .zscrim{position:absolute}
