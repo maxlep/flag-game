@@ -1,0 +1,42 @@
+# Deploys main at the site root and the preview branch under /preview/, as one GitHub Pages site.
+# Pages must be set to "GitHub Actions" as its source (Settings > Pages > Build and deployment).
+name: Pages
+on:
+  push:
+    branches: [main, preview]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site
+      - name: Add the preview branch under /preview/
+        run: |
+          if git -C site ls-remote --exit-code --heads origin preview >/dev/null 2>&1; then
+            git clone --depth 1 --branch preview "https://github.com/${GITHUB_REPOSITORY}.git" site/preview
+            rm -rf site/preview/.git site/preview/.github
+            # Tell the two apart on a phone's home screen and in the page title.
+            sed -i 's/"short_name": "Flags"/"short_name": "Flags preview"/; s/"name": "Flags of the World"/"name": "Flags of the World (preview)"/' site/preview/manifest.webmanifest
+            sed -i 's|<meta name="apple-mobile-web-app-title" content="Flags">|<meta name="apple-mobile-web-app-title" content="Flags preview">|' site/preview/index.html
+          else
+            echo "no preview branch; deploying main only"
+          fi
+          rm -rf site/.git site/.github
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
