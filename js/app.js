@@ -735,6 +735,9 @@ function wireZoom(){
     const up=()=>{if(Z.fl)return;const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
       Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
       scrimOn(box);const cp=fl.cloneNode(true);cp.classList.add("z");ZS.appendChild(cp);Z.fl=cp;
+      // Typing waits: the keyboard goes away so the whole screen is free. A tap on the field brings it back afterwards
+      // (a tap that drops the flag refocuses the field itself; a timer can't open a keyboard).
+      const inp=$("#typeIn");Z.refocus=inp&&document.activeElement===inp;if(Z.refocus)inp.blur();
       cp.classList.add("in"); // shown at once: the pinch or the wheel is what moves it
       Z.scale=1;Z.px=Z.py=0;apply();void cp.offsetWidth};
     const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
@@ -743,6 +746,7 @@ function wireZoom(){
     const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
     const drop=(anim,byTimer)=>{live();const fl=Z.fl;if(!fl)return;scrimOff();
       const finish=()=>{fl.remove();Z.fl=null;Z.scale=1;Z.px=Z.py=0};
+      if(Z.refocus){Z.refocus=false;const inp=$("#typeIn");if(inp&&!byTimer)inp.focus({preventScroll:true})}
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true,true),ZOOM_REST)};
