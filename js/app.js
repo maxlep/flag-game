@@ -509,8 +509,8 @@ function viewQuiz(){
     // After the answer the box stays, read-only, so the keyboard stays open; Enter in it moves on.
     opts=`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" name="q" type="text" inputmode="text" enterkeyhint="${q.ans?"next":"go"}" ${q.ans?"readonly":""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans?"Enter for next":strict?"Spell it exactly":"Your answer"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
-      ${strict||q.ans?"":'<div class="sugg" id="sugg"></div>'}
-      ${q.ans?"":`<div class="row"><button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`}</form>`;
+      ${strict?"":'<div class="sugg" id="sugg"></div>'}
+      <div class="row">${q.ans?`<button type="button" class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`:`<button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button>`}</div></form>`;
   } else {
     prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}`;ask=`<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
@@ -546,14 +546,14 @@ function viewQuiz(){
       ${miss}
     </div>`;
   }
-  const nextBtn=q.ans?`<button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`:"";
+  const nextBtn=q.ans&&!typed?`<button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i+1<n?"Next":"See results"}</button>`:"";
   const right=S.qs.filter(x=>x.ans===x.c).length;
   return `<div class="qscreen">
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${location.hash==="#debug"?`vv ${VVH} full ${FULLH} in ${innerHeight} off ${getComputedStyle(document.documentElement).getPropertyValue("--vvt")} flag ${getComputedStyle(document.documentElement).getPropertyValue("--flagh")} ${document.body.classList.contains("kb")?"kb":""}`:`${esc(S.label)} · ${right} right · ${S.i+1} / ${n}`}</span></div>
   ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}
   <div class="progress">${dots}</div></div>
   <div class="qmid" id="qmid">${prompt}${reverse?opts:""}${reveal}</div>
-  <div class="qdrawer${q.ans?" answered":""}${reverse&&!q.ans?" empty":""}">${q.ans?"":ask}${reverse?"":opts}${nextBtn}</div>
+  <div class="qdrawer${q.ans?" answered":""}${reverse&&!q.ans?" empty":""}">${q.ans&&!typed?"":ask}${reverse?"":opts}${nextBtn}</div>
   </div>`;
 }
 const SITE="https://maxlep.github.io/flag-game/";
