@@ -38,7 +38,9 @@ function mapFit(frame,code,aspect,sy){
   return box;
 }
 
-// o: {frame, code, fit:aspect, cap:true|false, pad:0.04, cls:"", id:""}. Returns the SVG markup.
+// o: {frame, code, fit:aspect, aspect, cap:true|false, pad:0.04, cls:"", id:""}. Returns the SVG markup.
+// fit frames the country closely at that aspect ratio; aspect instead widens the frame to that ratio (for a map that
+// fills a screen). The SVG carries data-fit, the close frame in its own units, for a viewer that opens zoomed to it.
 function mapSVG(o){
   const frame=o.frame||(o.code?mapFrameFor(o.code):"World"),S=MAP.set[MAP.frame[frame].set];
   const fit=o.fit&&o.code&&S.box[o.code];
@@ -46,7 +48,10 @@ function mapSVG(o){
   if(frame!=="World"){const b=fit?S.box[o.code]:mapBox(frame,o.code);sy=1/mapKy((b[1]+b[3])/2)}
   let [x0,y0,x1,y1]=fit?mapFit(frame,o.code,o.fit,sy):mapBox(frame,o.code);
   const pad=(o.pad===undefined?0.04:o.pad)*Math.max(x1-x0,y1-y0);x0-=pad;y0-=pad;x1+=pad;y1+=pad;
+  if(o.aspect){const cur=(x1-x0)/((y1-y0)*sy);if(cur<o.aspect){const d=(o.aspect*(y1-y0)*sy-(x1-x0))/2;x0-=d;x1+=d}else{const d=((x1-x0)/(o.aspect*sy)-(y1-y0))/2;y0-=d;y1+=d}}
   const w=x1-x0,h=y1-y0,dot=Math.max(1.5,w*0.011),Y=y=>(y*sy).toFixed(1);
+  let fitAttr="";
+  if(o.code&&S.box[o.code]&&!fit){const f=mapFit(frame,o.code,w/(h*sy),sy);fitAttr=` data-fit="${f[0].toFixed(1)} ${Y(f[1])} ${(f[2]-f[0]).toFixed(1)} ${Y(f[3]-f[1])}"`}
   // Only the land that falls in the frame; a region map doesn't carry the whole world's outlines.
   const land=S.land.map((d,i)=>{const b=S.lbox[i];return b[0]<x1&&b[2]>x0&&b[1]<y1&&b[3]>y0?`<path d="${d}"/>`:""}).join("");
   let hi="",marks="";
@@ -57,5 +62,5 @@ function mapSVG(o){
     if(o.cap!==false&&S.cap[o.code]){const [cx,cy]=S.cap[o.code];marks+=`<circle class="cap" cx="${cx}" cy="${Y(cy)}" r="${(dot*0.8).toFixed(1)}"/>`}
   }
   // Outlines are drawn through the vertical correction; the markers sit outside it so they stay round.
-  return `<svg class="map${o.cls?" "+o.cls:""}"${o.id?` id="${o.id}"`:""} viewBox="${x0.toFixed(1)} ${Y(y0)} ${w.toFixed(1)}  ${Y(h)}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect class="sea" x="${x0.toFixed(1)}" y="${Y(y0)}" width="${w.toFixed(1)}" height="${Y(h)}"/><g transform="scale(1,${sy.toFixed(4)})"><g class="land">${land}</g>${hi}</g>${marks}</svg>`;
+  return `<svg class="map${o.cls?" "+o.cls:""}"${o.id?` id="${o.id}"`:""}${fitAttr} viewBox="${x0.toFixed(1)} ${Y(y0)} ${w.toFixed(1)}  ${Y(h)}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect class="sea" x="${x0.toFixed(1)}" y="${Y(y0)}" width="${w.toFixed(1)}" height="${Y(h)}"/><g transform="scale(1,${sy.toFixed(4)})"><g class="land">${land}</g>${hi}</g>${marks}</svg>`;
 }

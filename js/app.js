@@ -702,13 +702,15 @@ function openFlag(c,vi=0){
   if(vi==="map")vi=hasMap?nd:0;
   el.innerHTML=`<div class="lb-top"><span class="nm">${esc(BY[c].n)}</span><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack">${Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("")}${hasMap?`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap"})}</div>`:""}</div></div>
+    <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack">${Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("")}</div></div>
     <div class="lb-var" id="lbVar"></div>
     <p class="lb-hint">Pinch or scroll to zoom · drag to pan · double-tap to reset${n>1?" · swipe for "+(v&&hasMap?"the other designs and the map":v?"the other design":"the map"):""}</p>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
+  // The map slide fills the stage, so it is framed to the stage's shape once that is known.
+  if(hasMap)track.insertAdjacentHTML("beforeend",`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:(stage.clientWidth-48)/(stage.clientHeight-24),pad:0})}</div>`);
   LB={c,vi,n,nd,scale:1,x:0,y:0,sx:0,pts:new Map(),el,stage,track,fls:[...el.querySelectorAll(".lb-slide .flag .fl:not([hidden])"),...el.querySelectorAll(".lb-slide .map")]};
-  lbFit();LB.fl=LB.fls[vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbCaption();
+  lbFit();LB.fl=LB.fls[vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbCaption();lbMapHome();
   lbTrack(false);
   const st=stage;
   st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:Date.now()});LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};LB.moved=false;st.classList.add("drag")});
@@ -720,7 +722,7 @@ function openFlag(c,vi=0){
         const W=st.clientWidth,atEnd=(LB.vi===0&&dx>0)||(LB.vi===LB.n-1&&dx<0);LB.sx=atEnd?dx*0.3:dx;lbTrack(false);if(Math.abs(dx)>6)LB.moved=true}
       else if(LB.scale>1){LB.x=s0.x+dx;LB.y=s0.y+dy;if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;lbApply()}
     }
-    else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));const ns=Math.min(8,Math.max(1,want)),r=ns/s0.scale;
+    else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));const ns=Math.min(lbMax(),Math.max(1,want)),r=ns/s0.scale;
       const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},C=lbCenter();
       // keep the point under the fingers' midpoint fixed while scaling, then follow the midpoint
       LB.scale=ns;LB.x=m1.x-C.x-r*(m0.x-C.x-s0.x);LB.y=m1.y-C.y-r*(m0.y-C.y-s0.y);LB.sx=0;LB.moved=true;lbApply();lbTrack(false)}
@@ -741,16 +743,29 @@ function openFlag(c,vi=0){
 // offset q shows at C+t+s·q. Zooming by f about a screen point P keeps the point under P fixed: t' = (1-f)(P-C) + f·t.
 function lbToggle(P){if(!LB)return;if(LB.scale>1){LB.scale=1;LB.x=0;LB.y=0;lbApply()}else lbZoom(2.5,P)}
 function lbCenter(){const r=LB.stage.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}}
-function lbZoom(f,P){if(!LB)return;const ns=Math.min(8,Math.max(1,LB.scale*f));f=ns/LB.scale;if(f===1)return;
+// The flag zooms to 8x. The map zooms by its viewBox, so it can go much further and still be sharp.
+const lbMax=()=>LB.fl.tagName==="svg"?80:8;
+function lbZoom(f,P){if(!LB)return;const ns=Math.min(lbMax(),Math.max(1,LB.scale*f));f=ns/LB.scale;if(f===1)return;
   const C=lbCenter();P=P||C;LB.x=(1-f)*(P.x-C.x)+f*LB.x;LB.y=(1-f)*(P.y-C.y)+f*LB.y;LB.scale=ns;
   if(ns===1){LB.x=0;LB.y=0}lbApply()}
 // Zoom by resizing the element rather than transform:scale, so the SVG is re-rendered sharp at every level.
-function lbApply(){if(!LB)return;LB.fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";LB.fl.style.transform=`translate(${LB.x}px,${LB.y}px)`;
-  // Map markers keep their size on screen as the map grows.
-  if(LB.fl.tagName==="svg")LB.fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/LB.scale).toFixed(2))})}
+function lbApply(){if(!LB)return;const fl=LB.fl;
+  if(fl.tagName!=="svg"){fl.style.width=(LB.baseW*LB.scale).toFixed(1)+"px";fl.style.transform=`translate(${LB.x}px,${LB.y}px)`;return}
+  // The map keeps its size and shows the window the same transform would: a point q of it shows at C+t+s·q, so the
+  // window is the element's box pulled back through that. Markers are shrunk back so they keep their size on screen.
+  const v=LB.vb0,W=LB.baseW,H=W*v.h/v.w,u=v.w/W,s=LB.scale;
+  fl.setAttribute("viewBox",`${(v.x+v.w/2-(W/2+LB.x)*u/s).toFixed(2)} ${(v.y+v.h/2-(H/2+LB.y)*u/s).toFixed(2)} ${(v.w/s).toFixed(2)} ${(v.h/s).toFixed(2)}`);
+  fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/s).toFixed(2))})}
+// Entering the map slide: remember its full frame and open zoomed to the country's close frame (data-fit), so zooming
+// out reaches the region and a double tap resets to it.
+function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
+  if(!LB.vb0){const b=fl.viewBox.baseVal;LB.vb0={x:b.x,y:b.y,w:b.width,h:b.height}}
+  const f=(fl.dataset.fit||"").split(" ").map(Number);if(f.length!==4)return;
+  const v=LB.vb0,u=v.w/LB.baseW,s=Math.min(lbMax(),Math.max(1,Math.min(v.w/f[2],v.h/f[3])));
+  LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
 // The strip of designs: slide vi is in view, offset by the finger while dragging. Animated only when snapping.
 function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(calc(${-100*LB.vi}% + ${LB.sx}px))`}
-function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}LB.sx=0;lbTrack(true)}
+function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption();lbMapHome()}LB.sx=0;lbTrack(true)}
 // The map slide is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
 function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,st=LB.stage,W=st.clientWidth-48,H=st.clientHeight-24;m.style.width=Math.min(W,H*vb.width/vb.height).toFixed(1)+"px"}
 // Under the stage: a line naming what's shown (the design, or the capital and region on the map) and one row of
