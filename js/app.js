@@ -460,21 +460,21 @@ function viewQuiz(){
   const dots=n>30?`<i class="now" style="flex:${S.i+1} 1 0"></i><i style="flex:${n-S.i-1} 1 0"></i>`:S.qs.map((x,i)=>`<i class="${x.ans?(x.ans===x.c?"ok":"bad"):(i===S.i?"now":"")}"></i>`).join("");
   const letters="ABCDEFGHIJKLMNOP";
   const reverse=S.dir==="flag",typed=TYPED(S.diff)&&!reverse,strict=S.diff==="master";
-  let prompt,opts;
+  let prompt,opts,ask="";
   if(reverse){
     prompt=`<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
     opts=`<div class="flagopts n${q.opts.length}">${q.opts.map((c,i)=>{
       let cls="fopt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')">${img(c,"flag sm",q.ov?q.ov[i]:0)}<span class="key">${letters[i]}${q.ans?" · "+esc(BY[c].n):""}</span></button>`}).join("")}</div>`;
   } else if(typed){
-    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country? Type it.</p>`;
+    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}`;ask=`<p class="eyebrow">Which country? Type it.</p>`;
     // After the answer the box stays, read-only, so the keyboard stays open; Enter in it moves on.
     opts=`<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" type="text" enterkeyhint="${q.ans?"next":"go"}" ${q.ans?"readonly":""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans?"Enter for next":strict?"Exact name":"Country name"}" value="${esc(q.typed||"")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict?"":"const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
       ${strict||q.ans?"":'<div class="sugg" id="sugg"></div>'}
       ${q.ans?"":`<div class="row"><button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`}</form>`;
   } else {
-    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country?</p>`;
+    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}`;ask=`<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
       let cls="opt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')"><span class="key">${letters[i]}</span><span>${esc(BY[c].n)}</span></button>`}).join("")}</div>`;
@@ -515,7 +515,7 @@ function viewQuiz(){
   ${S.confirmLeave?`<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>`:""}
   <div class="progress">${dots}</div></div>
   <div class="qmid" id="qmid">${prompt}${reverse?opts:""}${reveal}</div>
-  <div class="qdrawer${q.ans?" answered":""}${reverse&&!q.ans?" empty":""}">${reverse?"":opts}${nextBtn}</div>
+  <div class="qdrawer${q.ans?" answered":""}${reverse&&!q.ans?" empty":""}">${q.ans?"":ask}${reverse?"":opts}${nextBtn}</div>
   </div>`;
 }
 const SITE="https://maxlep.github.io/flag-game/";
