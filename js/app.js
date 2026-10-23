@@ -699,7 +699,7 @@ function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="
 const ZOOM_REST=1500;
 let ZS=null,ZS_T=null,ZBOX=null; // the dimming layer and the box that owns it
 function scrimOn(box){clearTimeout(ZS_T);ZBOX=box;
-  if(!ZS){ZS=document.createElement("div");ZS.className="zscrim";document.body.appendChild(ZS);
+  if(!ZS){ZS=document.createElement("div");ZS.className="zscrim";(app.querySelector(".qscreen")||document.body).appendChild(ZS); // inside the quiz screen so it stacks under the lifted flag
     ZS.addEventListener("click",()=>ZBOX&&ZBOX._z.drop(true));
     ZS.addEventListener("wheel",e=>{e.preventDefault();if(ZBOX)ZBOX._z.wheel(e)},{passive:false})}
   requestAnimationFrame(()=>ZS&&ZS.classList.add("on"))}
