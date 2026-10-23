@@ -323,7 +323,7 @@ function render(){
   if(S.view==="quiz"){
     const old=document.activeElement,oldForm=old&&old.id==="typeIn"&&app.contains(old)?old.closest("form.typebox"):null;
     const html=viewQuiz();
-    if(!oldForm){app.innerHTML=html;const t=$("#typeIn");if(t)t.focus({preventScroll:true});return}
+    if(!oldForm){app.innerHTML=html;const t=$("#typeIn");if(t)t.focus({preventScroll:true});wireZoom();return}
     // A focused answer box is never replaced: phones close the keyboard, or scroll, when focus moves. The box is
     // patched in place (read-only, placeholder, value) and everything around it is swapped for the new screen.
     const tmp=document.createElement("template");tmp.innerHTML=html;
@@ -338,7 +338,7 @@ function render(){
     [...app.childNodes].forEach(n=>{if(n!==oldForm)n.remove()});
     nodes.slice(0,fi).forEach(n=>app.insertBefore(n,oldForm));
     nodes.slice(fi+1).forEach(n=>app.appendChild(n));
-    return}
+    wireZoom();return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
   if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();return}
@@ -457,7 +457,7 @@ function viewQuiz(){
       ${strict||q.ans?"":'<div class="sugg" id="sugg"></div>'}
       ${q.ans?"":`<div class="row"><button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`}</form>`;
   } else {
-    prompt=`${img(q.c,"flag",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country?</p>`;
+    prompt=`${img(q.c,"flag big",q.v||0)}${vchips(q.c,q.v||0,"setQVar(%i)",!q.ans)}<p class="eyebrow">Which country?</p>`;
     opts=`<div class="opts">${q.opts.map((c,i)=>{
       let cls="opt";if(q.ans){if(c===q.c)cls+=" right";else if(c===q.ans)cls+=" wrong";else cls+=" dim"}
       return `<button class="${cls}" ${q.ans?"disabled":""} onclick="answer('${c}')"><span class="key">${letters[i]}</span><span>${esc(BY[c].n)}</span></button>`}).join("")}</div>`;
@@ -670,6 +670,38 @@ function lbApply(){if(!LB)return;LB.fl.style.width=(LB.baseW*LB.scale).toFixed(1
 function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(calc(${-100*LB.vi}% + ${LB.sx}px))`}
 function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();$("#lbVar").innerHTML=useLine(LB.c,i)+vchips(LB.c,i,"lbGo(%i)")}LB.sx=0;lbTrack(true)}
 function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="";LB=null}
+
+// In-place zoom on the question flag: pinch or scroll over it and it grows on top of the page, anchored under the
+// fingers or the pointer; drag to pan while enlarged. It eases back to normal size on its own after a short pause.
+// The element is resized rather than transform-scaled, so the SVG stays sharp.
+const ZOOM_REST=1500;
+function wireZoom(){
+  app.querySelectorAll(".flag.big").forEach(box=>{
+    if(box.dataset.zoom)return;box.dataset.zoom="1";const F=()=>box.querySelector(".fl:not([hidden])");
+    const Z={scale:1,x:0,y:0,pts:new Map(),timer:null,baseW:0};
+    const C=()=>{const r=box.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}};
+    const apply=()=>{const fl=F();if(Z.scale===1){fl.style.width=fl.style.transform="";fl.classList.remove("z");box.classList.remove("zooming");Z.baseW=0;return}
+      F().classList.add("z");box.classList.add("zooming");F().style.width=(Z.baseW*Z.scale).toFixed(1)+"px";F().style.transform=`translate(calc(-50% + ${Z.x}px),calc(-50% + ${Z.y}px))`};
+    const zoom=(f,P)=>{const ns=Math.min(6,Math.max(1,Z.scale*f));f=ns/Z.scale;if(f===1)return;if(Z.scale===1)Z.baseW=F().getBoundingClientRect().width;
+      const c=C();P=P||c;Z.x=(1-f)*(P.x-c.x)+f*Z.x;Z.y=(1-f)*(P.y-c.y)+f*Z.y;Z.scale=ns;if(ns===1){Z.x=0;Z.y=0}apply()};
+    const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>{if(Z.scale===1)return;F().classList.add("anim");Z.scale=1;Z.x=0;Z.y=0;
+      F().style.width=Z.baseW+"px";F().style.transform="translate(-50%,-50%)";
+      setTimeout(()=>{F().classList.remove("anim");apply()},260)},ZOOM_REST)};
+    const bump=()=>{clearTimeout(Z.timer);F().classList.remove("anim")};
+    box.addEventListener("wheel",e=>{e.preventDefault();bump();zoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY});rest()},{passive:false});
+    box.addEventListener("dblclick",e=>{bump();if(Z.scale>1){Z.scale=1;Z.x=0;Z.y=0;apply()}else zoom(2.5,{x:e.clientX,y:e.clientY});rest()});
+    box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&Z.scale===1)return;box.setPointerCapture(e.pointerId);Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      Z.start={scale:Z.scale,x:Z.x,y:Z.y,pts:[...Z.pts.values()]};bump()});
+    box.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...Z.pts.values()],s0=Z.start;
+      if(cur.length===1&&s0.pts.length===1&&Z.scale>1){Z.x=s0.x+cur[0].x-s0.pts[0].x;Z.y=s0.y+cur[0].y-s0.pts[0].y;apply()}
+      else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
+        const ns=Math.min(6,Math.max(1,want)),r=ns/s0.scale;if(s0.scale===1&&!Z.baseW)Z.baseW=F().getBoundingClientRect().width;
+        const m0={x:(s0.pts[0].x+s0.pts[1].x)/2,y:(s0.pts[0].y+s0.pts[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2},c=C();
+        Z.scale=ns;Z.x=m1.x-c.x-r*(m0.x-c.x-s0.x);Z.y=m1.y-c.y-r*(m0.y-c.y-s0.y);if(ns===1){Z.x=0;Z.y=0}apply()}});
+    const up=e=>{Z.pts.delete(e.pointerId);Z.start={scale:Z.scale,x:Z.x,y:Z.y,pts:[...Z.pts.values()]};if(!Z.pts.size)rest()};
+    box.addEventListener("pointerup",up);box.addEventListener("pointercancel",up);
+  });
+}
 
 // ---------- BOOT ----------
 load();loadSet();loadB();

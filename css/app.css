@@ -62,6 +62,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .flag{width:100%;max-width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
 .flag+.vchips{margin-top:-6px}
 /* Keyboard open on a phone (body.kb): the question flag shrinks to what fits above the answer box. */
+.flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.flag.big.zooming{touch-action:none;z-index:30}
+.flag.big .fl.z{position:absolute;left:50%;top:50%;max-width:none;max-height:none;z-index:30;box-shadow:0 0 0 1px var(--line),0 24px 60px rgba(10,20,40,.35)}
+.flag.big .fl.anim{transition:width .25s cubic-bezier(.2,.7,.2,1),transform .25s cubic-bezier(.2,.7,.2,1)}
+.flag.big img{-webkit-user-drag:none;pointer-events:none}
 body.kb .flag.big{max-height:calc(var(--vvh,9999px) - 240px)}
 body.kb .flag.big .fl{width:min(var(--w,100%),calc((var(--vvh,9999px) - 240px) * var(--r,1.3333)))}
 .flag .fl{width:var(--w,100%);aspect-ratio:var(--r,4/3);max-width:100%;max-height:100%;border-radius:6px;overflow:hidden;background:var(--surface);
