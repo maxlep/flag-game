@@ -366,7 +366,7 @@ function preKeyboard(){if(S.view!=="quiz"||document.body.classList.contains("kb"
 // which still comes before the keyboard. A mouse brings no keyboard, so it never arms it.
 let TOUCH_T=0;
 document.addEventListener("pointerdown",e=>{if(e.pointerType==="touch")TOUCH_T=Date.now()},{capture:true,passive:true});
-document.addEventListener("focusin",e=>{if(e.target.id!=="typeIn")return;if(Date.now()-TOUCH_T<800)preKeyboard();[100,350,700].forEach(t=>setTimeout(keyboard,t))});
+document.addEventListener("focusin",e=>{if(e.target.id!=="typeIn")return;if(Date.now()-TOUCH_T<800&&!e.target.readOnly)preKeyboard();[100,350,700].forEach(t=>setTimeout(keyboard,t))}); // a read-only box (after an answer) brings no keyboard
 // Rebuild the screen around one element that must survive (the focused answer box): walk up from it, and at each
 // level keep the old ancestor, copy the new one's attributes onto it, and swap all its other children for the new ones.
 function patchAround(oldLeaf,newLeaf){
