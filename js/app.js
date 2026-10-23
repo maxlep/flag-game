@@ -318,17 +318,21 @@ app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid"
 // The quiz screen is exactly as tall as the visible viewport (--vvh) and shifted by its offset (--vvt), so with the
 // keyboard up the whole layout fits above it and nothing scrolls behind it.
 let VVH=0;
+// The question flag may use the whole middle band less its chips row; measured, since the band's height depends on
+// the drawer and the keyboard.
+function fitFlag(){const mid=$("#qmid");if(mid)document.documentElement.style.setProperty("--midh",mid.clientHeight+"px")}
 function keyboard(){
   const vv=window.visualViewport;if(vv&&vv.scale>1.02)return; // pinch-zoomed: leave the layout alone
   const h=vv?Math.round(vv.height*vv.scale):window.innerHeight,open=!!(vv&&h<window.innerHeight-120),was=document.body.classList.contains("kb");
   if(Math.abs(h-VVH)>24){VVH=h;document.documentElement.style.setProperty("--vvh",h+"px")}
   document.documentElement.style.setProperty("--vvt",(vv?Math.round(vv.offsetTop):0)+"px");
+  fitFlag();
   document.body.classList.toggle("kb",open);
-  if(open&&!was&&S.view==="quiz")window.scrollTo(0,0);
+  if(open&&S.view==="quiz")window.scrollTo(0,0);
 }
 if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard);window.visualViewport.addEventListener("scroll",keyboard)}
 window.addEventListener("resize",keyboard);
-document.addEventListener("focusin",e=>{if(e.target.id==="typeIn")setTimeout(keyboard,350)});
+document.addEventListener("focusin",e=>{if(e.target.id==="typeIn")[100,350,700].forEach(t=>setTimeout(keyboard,t))});
 // Rebuild the screen around one element that must survive (the focused answer box): walk up from it, and at each
 // level keep the old ancestor, copy the new one's attributes onto it, and swap all its other children for the new ones.
 function patchAround(oldLeaf,newLeaf){
@@ -345,7 +349,7 @@ function patchAround(oldLeaf,newLeaf){
 function render(){
   requestAnimationFrame(shade);
   document.body.classList.toggle("quiz",S.view==="quiz");
-  if(S.view==="quiz"){window.scrollTo(0,0);keyboard()} // the screen's height must be right before it is drawn
+  if(S.view==="quiz"){window.scrollTo(0,0);keyboard();requestAnimationFrame(fitFlag)} // the screen's height must be right before it is drawn
   if(S.view==="quiz"){
     const old=document.activeElement,oldForm=old&&old.id==="typeIn"&&app.contains(old)?old.closest("form.typebox"):null;
     const html=viewQuiz();
@@ -702,12 +706,16 @@ let ZS=null,ZS_T=null,ZBOX=null; // the dimming layer and the box whose flag is 
 function scrimOn(box){clearTimeout(ZS_T);ZBOX=box;
   if(!ZS){const sc=ZS=document.createElement("div");sc.className="zscrim";(app.querySelector(".qscreen")||document.body).appendChild(sc);
     const z=()=>ZBOX&&ZBOX._z;
+    sc.addEventListener("mousedown",e=>e.preventDefault()); // a click here must not move focus
     sc.addEventListener("click",e=>{if(e.target===sc&&z()&&!z().moved())z().drop(true)});
     sc.addEventListener("dblclick",e=>{if(z())z().drop(true)});
     sc.addEventListener("wheel",e=>{e.preventDefault();if(z())z().wheel(e)},{passive:false});
     sc.addEventListener("pointerdown",e=>{if(z()){sc.setPointerCapture(e.pointerId);z().down(e)}});
     sc.addEventListener("pointermove",e=>{if(z())z().move(e)});
-    sc.addEventListener("pointerup",e=>{if(z())z().end(e)});sc.addEventListener("pointercancel",e=>{if(z())z().end(e)})}
+    sc.addEventListener("pointerup",e=>{if(!z())return;z().end(e);
+      // Two quick taps in the same place (touch devices send no dblclick) put the flag back.
+      if(e.pointerType==="touch"&&!z().moved()){const now=Date.now(),t=sc._tap;if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){sc._tap=null;z().drop(true)}else sc._tap={at:now,x:e.clientX,y:e.clientY}}});
+    sc.addEventListener("pointercancel",e=>{if(z())z().end(e)})}
   requestAnimationFrame(()=>ZS&&ZS.classList.add("on"))}
 function scrimOff(){if(!ZS)return;const sc=ZS;sc.classList.remove("on");ZS_T=setTimeout(()=>{sc.remove();if(ZS===sc){ZS=null;ZBOX=null}},260)}
 function wireZoom(){
@@ -723,8 +731,8 @@ function wireZoom(){
     const up=()=>{if(Z.fl)return;const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
       Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
       scrimOn(box);const cp=fl.cloneNode(true);cp.classList.add("z");ZS.appendChild(cp);Z.fl=cp;
-      // Fade the copy in over the original rather than popping it; a late first paint then shows as nothing, not a blank box.
-      const im=cp.querySelector("img");(im&&im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>requestAnimationFrame(()=>cp.classList.add("in")));
+      const inp=$("#typeIn");Z.refocus=inp&&document.activeElement===inp;if(Z.refocus)inp.blur(); // typing waits; the keyboard goes away
+      cp.classList.add("in"); // shown at once: the pinch or the wheel is what moves it
       Z.scale=1;Z.px=Z.py=0;apply();void cp.offsetWidth};
     const apply=()=>{const fl=F(),c=C(),k=Z.lift?Math.min(1,(Z.scale-1)/2):0,w=Z.baseW*Z.scale,h=w/Z.r;
       const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
@@ -732,13 +740,13 @@ function wireZoom(){
     const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
     const drop=anim=>{live();const fl=Z.fl;if(!fl)return;scrimOff();
       const finish=()=>{fl.remove();Z.fl=null;Z.scale=1;Z.px=Z.py=0};
+      if(Z.refocus){Z.refocus=false;const inp=$("#typeIn");if(inp)inp.focus({preventScroll:true})}
       if(!anim){finish();return}
       fl.classList.add("anim");Z.scale=1;Z.px=Z.py=0;apply();Z.finishT=setTimeout(finish,260)};
     const rest=()=>{clearTimeout(Z.timer);Z.timer=setTimeout(()=>drop(true),ZOOM_REST)};
     const zoomTo=(ns,lift)=>{ns=Math.min(6,Math.max(1,ns));if(ns===Z.scale&&Z.fl)return;live();up();Z.lift=lift;Z.scale=ns;apply()};
-    // The first scroll glides out from the flag's place; later ones follow the wheel directly.
-    const wheel=e=>{const first=!Z.fl,ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(first&&ns<=1)return;
-      if(first)up();zoomTo(ns,1);if(first){const fl=F();fl.classList.add("anim");setTimeout(()=>fl.classList.remove("anim"),260)}rest()};
+    // Every step follows the wheel directly; only the way back is animated.
+    const wheel=e=>{const ns=Z.scale*Math.exp(-e.deltaY*0.0015);if(!Z.fl&&ns<=1)return;zoomTo(ns,1);rest()};
     const down=e=>{Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});Z.start={scale:Z.scale,px:Z.px,py:Z.py,pts:[...Z.pts.values()]};Z.moved=false;live()};
     const move=e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...Z.pts.values()],s0=Z.start;
       if(cur.length===1&&s0.pts.length===1&&Z.scale>1){Z.px=s0.px+cur[0].x-s0.pts[0].x;Z.py=s0.py+cur[0].y-s0.pts[0].y;if(Math.abs(Z.px-s0.px)+Math.abs(Z.py-s0.py)>6)Z.moved=true;apply()}
