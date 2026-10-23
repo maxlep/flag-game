@@ -141,7 +141,7 @@ function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameC
 // The flag on a card: tap to open it in the viewer.
 function cardFlag(c,vi){return `<button type="button" class="flink" onclick="openFlag('${c}',+this.querySelector('.fl:not([hidden])').dataset.v)" title="View large">${img(c,"flag",vi)}</button>`}
 // A small map of the flag's region, the country filled in; opens the viewer on the map slide.
-function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openMap('${c}',false)" title="Open the map">${mapSVG({code:c,cls:"sm",fit:1.6,pad:0})}</button>`:""}
+function mapCard(c){return mapHas(c)?`<button type="button" class="mapbtn" onclick="openMap('${c}')" title="Open the map">${mapSVG({code:c,cls:"sm",fit:1.6,pad:0})}</button>`:""}
 const fmtDate=t=>new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 
 // ---------- STATE ----------
@@ -827,23 +827,24 @@ function lbCaption(){if(!LB)return;const c=LB.c,f=BY[c],onMap=LB.what==="map",v=
 function closeFlag(){if(!LB)return;const {el,refocus}=LB;el.remove();document.body.style.overflow="";LB=null;
   if(refocus){const inp=$("#typeIn");if(inp)inp.focus({preventScroll:true})}}
 
-// The question flag opens the viewer with the flag where it is: a pinch, a double tap or the wheel. The gesture's
-// pointers are captured by the flag's box, so their moves and lifts are passed on to the viewer.
+// The question flag opens the viewer with the flag where it is: a tap, a pinch, a double click or the wheel. A
+// pinch's pointers are captured by the flag's box, so their moves and lifts are passed on to the viewer.
 function wireZoom(){
   app.querySelectorAll(".flag.big").forEach(box=>{
     if(box._z)return;box._z=true;
     const c=box.dataset.c,vi=()=>+(box.querySelector(".fl:not([hidden])")||{dataset:{v:0}}).dataset.v;
     const open=()=>{if(LB)return;const q=S.qs&&S.qs[S.i];openFlag(c,vi(),{from:box.querySelector(".fl:not([hidden])").getBoundingClientRect(),quiet:!(q&&q.ans)})};
-    const pts=new Map();let lastTap=null;
+    const pts=new Map();
     box.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse")return;capture(box,e);
       if(LB){lbDown(e);return}
       pts.set(e.pointerId,e);
       if(pts.size>=2){open();for(const p of pts.values())lbDown(p);pts.clear()}});
     box.addEventListener("pointermove",e=>{if(LB)lbMove(e)});
-    const end=e=>{pts.delete(e.pointerId);if(LB){lbUp(e);return}
-      // two quick taps in the same place open the viewer zoomed in
-      if(e.pointerType==="touch"){const now=Date.now(),t=lastTap;if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){lastTap=null;open();lbToggle({x:e.clientX,y:e.clientY})}else lastTap={at:now,x:e.clientX,y:e.clientY}}};
+    const end=e=>{pts.delete(e.pointerId);if(LB)lbUp(e)};
     box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
+    // A tap opens the viewer too. The mousedown is swallowed so the tap doesn't take focus from the answer box.
+    box.addEventListener("mousedown",e=>e.preventDefault());
+    box.addEventListener("click",()=>{if(!LB)open()});
     box.addEventListener("wheel",e=>{e.preventDefault();if(e.deltaY>0&&!LB)return;open();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
     box.addEventListener("dblclick",e=>{if(e.sourceCapabilities?.firesTouchEvents)return;open();lbToggle({x:e.clientX,y:e.clientY})});
   });
