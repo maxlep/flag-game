@@ -252,7 +252,9 @@ function submitTyped(){
   const inp=$("#typeIn");if(!inp)return;
   if(S.qs[S.i].ans){next();return}
   const text=inp.value.trim();if(!text)return;
-  const k=S.diff==="master"?matchStrict(text):matchTyped(text);
+  // Expert: if what you typed still fits several names, Check takes the first suggestion, as shown in the row.
+  let k=S.diff==="master"?matchStrict(text):matchTyped(text);
+  if(!k&&S.diff!=="master"){const sg=suggest(text);if(sg.length)k=sg[0]}
   const q=S.qs[S.i];q.typed=text;
   answer(k||"__wrong__");
 }
