@@ -59,7 +59,7 @@ function suggestAll(t,fuzzy=false){
     fz.sort((a,b)=>a[0]-b[0]);fz.forEach(([d,c])=>{if(!out.includes(c))out.push(c)})}
   return out;
 }
-function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t,true).slice(0,5)}
+function suggest(text){const t=norm(text);return t.length<2?[]:suggestAll(t,true).slice(0,6)}
 
 // ---------- SETTINGS ----------
 const SKEY="flaglore.settings";
