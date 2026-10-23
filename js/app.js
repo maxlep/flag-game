@@ -850,7 +850,8 @@ function wireZoom(){
       const cx=c.x+(Z.c0.x-c.x)*(1-k)+Z.px,cy=c.y+(Z.c0.y-c.y)*(1-k)+Z.py;
       fl.style.width=w.toFixed(1)+"px";fl.style.left=(cx-w/2).toFixed(1)+"px";fl.style.top=(cy-h/2).toFixed(1)+"px"};
     const live=()=>{clearTimeout(Z.timer);clearTimeout(Z.finishT);F().classList.remove("anim")};
-    const drop=(anim,byTimer)=>{live();const fl=Z.fl;if(!fl)return;scrimOff();
+    // The gesture ends with the drop: the layer that held its pointers goes, so their lifts never arrive.
+    const drop=(anim,byTimer)=>{live();const fl=Z.fl;if(!fl)return;scrimOff();Z.pts.clear();Z.start=null;
       const finish=()=>{fl.remove();Z.fl=null;Z.scale=1;Z.px=Z.py=0};
       if(Z.refocus){Z.refocus=false;const inp=$("#typeIn");if(inp&&!byTimer)inp.focus({preventScroll:true})}
       if(!anim){finish();return}
