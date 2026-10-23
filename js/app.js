@@ -322,8 +322,10 @@ app.addEventListener("touchmove",e=>{if(S.view!=="quiz")return;const m=$("#qmid"
 let VVH=0,FULLH=0;
 // The question flag may use the whole middle band less its chips row; measured, since the band's height depends on
 // the drawer and the keyboard.
-function fitFlag(){const mid=$("#qmid");if(!mid)return;const cs=getComputedStyle(mid),chips=mid.querySelector(".flag.big + .vchips");
-  const h=mid.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-(chips?chips.offsetHeight+parseFloat(cs.rowGap||cs.gap||0):0);
+// Computed from the screen's target height, not the band's current one, which may be mid-transition.
+function fitFlag(){const mid=$("#qmid"),head=app.querySelector(".qscreen .sticky"),dr=app.querySelector(".qdrawer");if(!mid||!head||!dr)return;
+  const cs=getComputedStyle(mid),chips=mid.querySelector(".flag.big + .vchips");
+  const h=(VVH||window.innerHeight)-head.offsetHeight-dr.offsetHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-(chips?chips.offsetHeight+parseFloat(cs.rowGap||cs.gap||0):0);
   document.documentElement.style.setProperty("--flagh",Math.round(h)+"px")}
 function keyboard(){
   const vv=window.visualViewport;if(vv&&vv.scale>1.02)return; // pinch-zoomed: leave the layout alone
