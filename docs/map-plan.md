@@ -31,6 +31,10 @@ Tile maps (Leaflet with OpenStreetMap, Mapbox, Google) need a network, often a k
    - Capitals could be a later ask type: tap where the capital is, or name the capital of the highlighted country.
 4. Progress: geography is tracked separately from flags ("learned" vs "located"), with its own badges later. Flag Lord stays about flags.
 
+## Later: project on the fly
+
+Step 1 ships pre-projected paths (Equal Earth, one canvas, a Pacific-centred copy for Oceania, a per-frame correction of the vertical stretch). For the whole-world quiz the map should instead be projected in the app around the centre of the view, as a globe you spin: the build writes quantized lon/lat, the app rotates to the view centre and applies one azimuthal projection (about 40 lines). About 60,000 vertices to project per redraw, a few milliseconds; drawing is the cost, so canvas rather than SVG if it isn't smooth. The hard part is clipping shapes at the horizon; azimuthal equidistant shows the whole sphere with no clipping, orthographic needs a cheap back-face clip. The stretch correction and the Pacific set go away with it.
+
 ## Order
 
 1. Data and the map component: script, data file, drawing, highlight, framing, zoom and pan, a check page. This step has the unknowns (file size, tiny places, which shapes need 10m).
