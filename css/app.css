@@ -64,7 +64,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* The quiz is a screen, not a page: header, a middle band that scrolls, and an answer drawer pinned above the bottom
    edge (or above the keyboard). Its height follows the visible viewport, set by keyboard() in app.js. */
 body.quiz{overflow:hidden;position:fixed;inset:0;width:100%}
-.qscreen{position:fixed;left:0;right:0;top:0;height:var(--vvh,100vh);transform:translateY(0);touch-action:none;display:flex;flex-direction:column;background:var(--bg);z-index:4}
+.qscreen{position:fixed;left:0;right:0;top:0;height:var(--vvh,100vh);transform:translateY(0);touch-action:none;display:flex;flex-direction:column;background:var(--bg);z-index:4;
+  transition:height .25s cubic-bezier(.2,.7,.2,1),transform .25s cubic-bezier(.2,.7,.2,1)} /* the drawer rides the keyboard up and down */
 /* Each band carries the side gutters itself, so the middle band's scrollbar rides the edge of the screen. */
 .qscreen>*{width:100%;max-width:calc(560px + 2 * max(16px,env(safe-area-inset-left,0px)));margin-left:auto;margin-right:auto;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -91,8 +92,8 @@ body.kb .qdrawer{padding-bottom:8px} /* riding the top of the keyboard */
 :root[data-theme="dark"] .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .qdrawer.lift::before{box-shadow:0 -10px 24px -12px rgba(0,0,0,.7)}}
 /* The question flag shrinks to what the middle band can show above the drawer and the keyboard. */
-.qmid .flag.big{max-height:max(110px,var(--flagh,9999px))}
-.qmid .flag.big .fl{width:min(var(--w,100%),calc(max(110px,var(--flagh,9999px)) * var(--r,1.3333)))}
+.qmid .flag.big{max-height:max(110px,var(--flagh,9999px));transition:max-height .25s cubic-bezier(.2,.7,.2,1)}
+.qmid .flag.big .fl{width:min(var(--w,100%),calc(max(110px,var(--flagh,9999px)) * var(--r,1.3333)));transition:width .25s cubic-bezier(.2,.7,.2,1)}
 .flag.big{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .zscrim{position:fixed;inset:0;z-index:30;background:rgba(8,12,20,.85);opacity:0;transition:opacity .12s;touch-action:none;user-select:none;-webkit-user-select:none}
 .qscreen .zscrim{position:absolute}

@@ -335,7 +335,7 @@ function keyboard(){
   document.documentElement.style.setProperty("--vvt",(vv?Math.round(vv.offsetTop):0)+"px");
   document.body.classList.toggle("kb",open);
   fitFlag();requestAnimationFrame(fitFlag); // after the drawer has taken its keyboard size
-  if(open&&S.view==="quiz")window.scrollTo(0,0);
+  if(open&&S.view==="quiz"&&window.scrollY)window.scrollTo(0,0);
 }
 if(window.visualViewport){window.visualViewport.addEventListener("resize",keyboard);window.visualViewport.addEventListener("scroll",keyboard)}
 window.addEventListener("resize",keyboard);
