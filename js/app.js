@@ -398,6 +398,7 @@ function render(){
     // The middle band keeps its scroll position when the same question is drawn again (the leave prompt, a design
     // switch), so the reader doesn't jump back to the flag.
     const mid0=$("#qmid"),keep=mid0&&+mid0.dataset.i===S.i&&mid0.scrollTop>0?mid0.scrollTop:0;
+    if(ZBOX&&ZBOX._z)ZBOX._z.drop(false); // a lifted flag goes back before its screen is redrawn
     renderQuiz();
     if(keep){const m=$("#qmid");if(m)m.scrollTop=keep}
     return}
@@ -814,6 +815,7 @@ function closeFlag(){if(!LB)return;LB.el.remove();document.body.style.overflow="
 const ZOOM_REST=1000;
 let ZS=null,ZS_T=null,ZBOX=null; // the dimming layer and the box whose flag is in it
 function scrimOn(box){clearTimeout(ZS_T);ZBOX=box;
+  if(ZS&&!ZS.isConnected)ZS=null; // a screen drawn afresh left the old layer behind
   if(!ZS){const sc=ZS=document.createElement("div");sc.className="zscrim";(app.querySelector(".qscreen")||document.body).appendChild(sc);
     const z=()=>ZBOX&&ZBOX._z;
     sc.addEventListener("mousedown",e=>e.preventDefault()); // a click here must not move focus
@@ -838,7 +840,10 @@ function wireZoom(){
     // Lift: measure the flag where it sits and put a copy of it into the dimming layer at the same spot, in pixels.
     // The original stays where it is (dimmed under the layer), so nothing in the page changes or repaints; the copy is
     // shown once its image has decoded, so it doesn't blink in.
-    const up=()=>{if(Z.fl)return;const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
+    const up=()=>{
+      // A copy still easing back is simply taken up again; one that was swept away with its layer is forgotten.
+      if(Z.fl){if(Z.fl.isConnected){scrimOn(box);return}Z.fl=null}
+      const fl=box.querySelector(".fl:not([hidden])"),r=fl.getBoundingClientRect(),q=Q();
       Z.baseW=r.width;Z.r=r.width/r.height;Z.c0={x:r.left-q.left+r.width/2,y:r.top-q.top+r.height/2};
       scrimOn(box);const cp=fl.cloneNode(true);cp.classList.add("z");ZS.appendChild(cp);Z.fl=cp;
       // Typing waits: the keyboard goes away so the whole screen is free. A tap on the field brings it back afterwards
