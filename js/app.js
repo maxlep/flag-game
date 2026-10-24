@@ -421,7 +421,7 @@ function render(){
     return}
   if(S.view==="done")return app.innerHTML=viewDone();
   if(S.view==="setup")return app.innerHTML=viewSetup();
-  if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();wireMiniMaps();return}
+  if(S.view==="study"){app.innerHTML=viewStudy();wireAlpha();wireMiniMaps();stickyHeight();return}
   if(S.view==="look")return app.innerHTML=viewLook();
   if(S.view==="badges")return app.innerHTML=viewBadges();
   app.innerHTML=viewHome();checkVersion();
@@ -689,6 +689,30 @@ const scopeLabel=()=>SCOPES.find(x=>x[0]===SET.scope)[1];
 function studyEntry(f,mixed,o={}){const fl=o.flagClick||`openFlag('${f.c}',+this.closest('.entry').dataset.v,{noMap:true})`;
   return `<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="${fl}" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${o.noMap||!mapHas(f.c)?"":`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="studyMap('${f.c}')" title="See it on the map" aria-label="See ${esc(f.n)} on the map"></button>`}</div><div class="t"><span class="head"><span class="name">${nameLine(f.c,mixed)}</span>${o.pill||studyPill(f)}</span><span class="facts">${facts(f.c)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}
 const WIDE=["Whole world","Everything","All territories"];
+// ---------- SORTING THE LISTS ----------
+// A group header pins just under the page's own pinned header, whose height varies with what it holds.
+function stickyHeight(){const st=app.querySelector(".sticky");if(st)app.style.setProperty("--sth",(parseFloat(getComputedStyle(st).top)||0)+st.offsetHeight+"px")}
+addEventListener("resize",()=>{if(S.view==="study")stickyHeight()});
+// How far a group header covers the top of a list, so an entry brought into view isn't hidden under it.
+const grpCover=box=>{const g=box&&box.querySelector(".grp");return g?g.offsetHeight:0};
+// The study list and the map's list share one saved sort (SET.sort): A–Z (the default), by Region (the world lists
+// only), or by Area, the UN sub-regions in AREAS. A region's list offered Region shows Area instead. Groups come in
+// their geographic order, places A–Z within them, under a header that stays pinned while its group scrolls by.
+const AREA_OF={},AREA_IDX={};Object.keys(AREAS).forEach((a,i)=>{AREA_IDX[a]=i;AREAS[a].forEach(c=>{AREA_OF[c]=a})});
+const letterOf=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();
+const sortModes=wide=>wide?[["az","A–Z"],["region","Region"],["area","Area"]]:[["az","A–Z"],["area","Area"]];
+const sortMode=wide=>{const s=SET.sort||"az";return !wide&&s==="region"?"area":s};
+// A name-ordered list, grouped for display: [{key, label, items}].
+function groupList(list,wide){const m=sortMode(wide);
+  const key=m==="az"?letterOf:m==="region"?f=>geoOf(f):f=>AREA_OF[f.c]||"Other";
+  const rank=m==="az"?()=>0:m==="region"?f=>ALLREGIONS.indexOf(geoOf(f)):f=>AREA_IDX[AREA_OF[f.c]]??999;
+  const out=[];for(const f of list.slice().sort((a,b)=>rank(a)-rank(b)||a.n.localeCompare(b.n))){const k=key(f);
+    if(!out.length||out[out.length-1].key!==k)out.push({key:k,label:k,items:[]});out[out.length-1].items.push(f)}
+  return {mode:m,groups:out}}
+// The group headers and entries, as HTML; the letter index only for A–Z.
+const groupHead=(g,mode)=>`<p class="eyebrow letter${mode==="az"?"":" grp"}" data-l="${esc(g.key)}">${esc(g.label)}</p>`;
+const sortChips=(cls,fn,wide)=>{const cur=sortMode(wide);return `<div class="vchips ${cls}" role="group" aria-label="Sort">${sortModes(wide).map(([v,l])=>`<button type="button" class="chipbtn${cur===v?" on":""}" aria-pressed="${cur===v}" onmousedown="event.preventDefault()" onclick="${fn}('${v}')">${l}</button>`).join("")}</div>`};
+function setSort(v){if(SET.sort===v)return;setOpt("sort",v)}
 // The flags a study list shows, in name order: a region's, or the whole scope's for the wide card.
 const studyList=r=>(WIDE.includes(r)?SCOPED(true):regionFlags(r,true)).slice().sort((a,b)=>a.n.localeCompare(b.n));
 const MAPICON=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>`;
@@ -696,15 +720,13 @@ function viewStudy(){
   const r=S.region;
   const wide=WIDE.includes(r);
   const list=studyList(r);
-  const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();
-  const letters=[...new Set(list.map(letter))];
-  const index=list.length?`<div class="alpha" id="alpha">${letters.map(l=>`<span data-l="${l}">${l}</span>`).join("")}</div>`:"";
-  let lastL="";
+  const G=groupList(list,wide);
+  const index=list.length&&G.mode==="az"?`<div class="alpha" id="alpha">${G.groups.map(g=>`<span data-l="${g.key}">${g.key}</span>`).join("")}</div>`:"";
   const mixed=wide||SET.scope!=="countries";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+studyEntry(f,mixed)}).join("");
+  const body=G.groups.map(g=>groupHead(g,G.mode)+g.items.map(f=>studyEntry(f,mixed)).join("")).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const mapb=exploreOf(wide?"World":r,regionAll(r).map(f=>f.c))?`<button type="button" class="mapopen" onclick="openExplore(S.region,null,studyTop())" title="Study on the map">${MAPICON}Map</button>`:"";
-  return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:mapb,below:scopeChips("studyscope","studyScope")})}${index}
+  return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:mapb,below:`<div class="pills">${scopeChips("studyscope","studyScope")}${sortChips("studysort","setSort",wide)}</div>`})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
   ${list.length?`<button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${wide?scopeName():r}')">Quiz me on ${esc(wide?scopeName():r)}</button>`:'<p class="muted small">No flags in this region for the current scope.</p>'}`;
 }
@@ -804,7 +826,7 @@ function openViewer(c,o){
     <div class="lb-top">${ex?`<button type="button" class="lb-back" onclick="closeFlag()" title="Back to ${esc(exBackTo())}" aria-label="Back to ${esc(exBackTo())}"><i aria-hidden="true"></i></button>`:""}<div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`${scopeChips("lb-scope","exScope")}`:""}</div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button>${ex?"":`<button type="button" onclick="closeFlag()" aria-label="Close">×</button>`}</div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>
-    ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList" aria-label="Places"><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>
+    ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList" aria-label="Places"><div class="exsort" id="exSort"></div><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>
     <div class="extab" id="exTab" role="group" aria-label="The list"><button type="button" class="exup" onclick="exStep(1)" aria-controls="exList"><i aria-hidden="true"></i></button><button type="button" class="exdown" onclick="exStep(-1)" aria-controls="exList"><i aria-hidden="true"></i></button></div>`:""}`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   // The cursor only changes when the mouse moves, so the element it is over takes the viewer's cursor meanwhile.
@@ -815,7 +837,7 @@ function openViewer(c,o){
   LB={c,noMap:!!o.noMap,where:whereShown(c),chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
   if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null;exListBuild();exTabWire();exTabSync();exLayout()}
   lbShow(o.what,o.vi||0);
-  if(ex&&o.at&&!o.keep){const b=$("#exBody"),en=b&&b.querySelector(`.entry[data-c="${o.at}"]`);if(en)b.scrollTop+=en.getBoundingClientRect().top-b.getBoundingClientRect().top-8}
+  if(ex&&o.at&&!o.keep){const b=$("#exBody"),en=b&&b.querySelector(`.entry[data-c="${o.at}"]`);if(en)b.scrollTop+=en.getBoundingClientRect().top-b.getBoundingClientRect().top-8-grpCover(b)}
   if(ex&&o.keep){const k=o.keep;LB.scale=k.scale;LB.x=k.x;LB.y=k.y;lbApply();if(k.top!==undefined)$("#exBody").scrollTop=k.top;if(k.sel)exSelect(k.sel,null,k.top===undefined)}
   if(o.from&&LB.what==="flag"){const r=o.from,C=lbCenter(),s=r.width/LB.baseW;LB.from={s,x:r.left+r.width/2-C.x,y:r.top+r.height/2-C.y};LB.min=Math.min(1,s);LB.scale=s;LB.x=LB.from.x;LB.y=LB.from.y;lbApply()}
   const st=stage;
@@ -999,13 +1021,16 @@ function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel,inList=c&
 // the entry and scrolls the list to it.
 const exWide=()=>matchMedia("(min-width: 820px) and (min-height: 480px)").matches;
 const exFolded=()=>!!SET.exFold;
-function exListBuild(){const b=$("#exBody"),a=$("#exAlpha");if(!b)return;
-  const list=studyList(LB.region).filter(f=>LB.ex.on.has(f.c)),mixed=WIDE.includes(LB.region)||SET.scope!=="countries";
-  const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();let last="";
-  b.innerHTML=list.map(f=>{const l=letter(f),h=l!==last?`<p class="eyebrow letter" data-l="${last=l}">${l}</p>`:"";return h+studyEntry(f,mixed,{noMap:true,flagClick:`exFlag('${f.c}',this)`})}).join("")||'<p class="muted small">No places here in this scope.</p>';
-  a.innerHTML=[...new Set(list.map(letter))].map(l=>`<span data-l="${l}">${l}</span>`).join("");
+function exListBuild(){const b=$("#exBody"),a=$("#exAlpha");if(!b)return;const wide=WIDE.includes(LB.region);
+  const list=studyList(LB.region).filter(f=>LB.ex.on.has(f.c)),mixed=wide||SET.scope!=="countries",G=groupList(list,wide);
+  b.innerHTML=G.groups.map(g=>groupHead(g,G.mode)+g.items.map(f=>studyEntry(f,mixed,{noMap:true,flagClick:`exFlag('${f.c}',this)`})).join("")).join("")||'<p class="muted small">No places here in this scope.</p>';
+  a.innerHTML=G.mode==="az"?G.groups.map(g=>`<span data-l="${g.key}">${g.key}</span>`).join(""):"";
+  const s=$("#exSort");if(s)s.innerHTML=sortChips("exsortchips","exSort",wide);
+  if(b._wired)return;b._wired=true;
   wireAlpha(a,b);
   b.addEventListener("click",e=>{if(e.target.closest("a,button"))return;const en=e.target.closest(".entry");if(en)exPick(en.dataset.c)})}
+// The sort, changed from the map's list: the setting (the study list behind follows), the list again, at the selection.
+function exSort(v){if(!LB||LB.what!=="explore"||SET.sort===v)return;setOpt("sort",v);exListBuild();const b=$("#exBody");if(LB.sel)exMark(LB.sel,true);else if(b)b.scrollTop=0}
 // The list has three states on one control, the tab on its edge (over the map): hidden, open beside the map, and the
 // full study list, which is the same list grown to fill the screen and then handed to the study view at the same
 // place. Up (or right, on a wide screen) goes a step towards the full list; down (left) a step towards hidden. A drag
@@ -1044,7 +1069,7 @@ function exToList(){if(!LB||LB.what!=="explore")return;const r=LB.region,c=LB.se
   closeFlag();
   if(S.view==="study"){if(S.region!==r){S.region=r;render()}}else openStudy(r);
   const en=c&&app.querySelector(`.study .entry[data-c="${c}"]`);if(!en)return;
-  const head=app.querySelector(".sticky"),off=(head?head.getBoundingClientRect().height:0)+8;
+  const head=app.querySelector(".sticky"),off=(head?head.getBoundingClientRect().height:0)+8+grpCover(app.querySelector(".study"));
   window.scrollTo(0,en.getBoundingClientRect().top+window.scrollY-off)}
 // The room the list and the card take, as insets on the map: the stage stays full screen, the map's centre and its
 // panning limits move instead. --exh lifts the card above the drawer.
@@ -1060,9 +1085,9 @@ function exVis(){const r=LB.stage.getBoundingClientRect(),i=LB.ins||{l:0,t:0,b:0
 // smooth: glide (a tap on the map); otherwise jump, so opening the list or stepping by key shows no motion.
 function exMark(c,scroll,smooth){const b=$("#exBody");if(!b)return;b.querySelectorAll(".entry.sel").forEach(e=>e.classList.remove("sel"));
   const en=c&&b.querySelector(`.entry[data-c="${c}"]`);if(!en)return;en.classList.add("sel");
-  if(scroll&&!exFolded()){const bt=b.getBoundingClientRect(),et=en.getBoundingClientRect();if(et.top<bt.top||et.bottom>bt.bottom){
+  if(scroll&&!exFolded()){const bt=b.getBoundingClientRect(),et=en.getBoundingClientRect();if(et.top<bt.top+grpCover(b)||et.bottom>bt.bottom){
     // Keep the entry in view: from below it comes to the bottom edge when it fits there, else to the top.
-    const down=et.top>=bt.top&&et.height<bt.height-16,top=down?b.scrollTop+et.bottom-bt.bottom+8:b.scrollTop+et.top-bt.top-8;
+    const cov=grpCover(b),down=et.top>=bt.top+cov&&et.height<bt.height-16-cov,top=down?b.scrollTop+et.bottom-bt.bottom+8:b.scrollTop+et.top-bt.top-8-cov;
     b.scrollTo({top,behavior:smooth?"smooth":"auto"})}}}
 // The up and down keys walk the list (only while it shows): the next or previous entry is selected and brought into
 // view, on the map too. With nothing selected in the list, they start at the first entry in view.

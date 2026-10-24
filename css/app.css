@@ -478,3 +478,14 @@ h2 .where{font-size:13px}
 .lb-back i{width:10px;height:10px;border:solid currentColor;border-width:0 0 2.5px 2.5px;transform:rotate(45deg);margin-left:4px}
 .lb.exploring .lb-top .title{flex:1;padding-top:4px}
 .lb.exploring .lb-top{padding-left:calc(12px + env(safe-area-inset-left,0px))}
+/* The filter and the sort, side by side under a study list's title (wrapping on a narrow phone); the sort also heads
+   the map's list. A group header (an area or region) pins under the page's header, or the list's top, while its
+   group scrolls by. */
+.pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 4px}
+.pills .studyscope{margin:0}
+.exsort{flex:none;padding:0 12px 8px}
+.study .grp,.exbody .grp{position:sticky;z-index:3;background:var(--bg);padding-block:8px}
+.study .grp{top:var(--sth,0px);margin-block:-8px}
+.exbody .grp{top:0;margin-top:-4px}
+.exbody .letter.grp{display:flex;align-items:center;gap:10px;font-size:11px;line-height:1}
+.exbody .letter.grp::after{content:"";flex:1;height:1px;background:var(--line)}

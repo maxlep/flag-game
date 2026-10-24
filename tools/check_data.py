@@ -4,6 +4,7 @@
 - every flag has artwork, and no two flags share byte-identical artwork
 - every true-proportion file has a TRUER ratio that matches its viewBox
 - every VARIANTS entry has its file
+- every flag sits in exactly one area (AREAS), and the area belongs to the flag's region
 """
 import hashlib, json, os, re, subprocess, sys
 
@@ -13,10 +14,23 @@ os.chdir(ROOT)
 # Pull the data out of the JS files with node, so this stays in step with what the app loads.
 data = json.loads(subprocess.check_output(["node", "-e", """
 const fs=require("fs"),vm=require("vm");
-const ctx=vm.runInNewContext(fs.readFileSync("js/data/flags.js","utf8")+fs.readFileSync("js/data/names.js","utf8")+";({FLAGS,TRUER,VARIANTS,NOQUIZ:[...NOQUIZ]})");
+const ctx=vm.runInNewContext(fs.readFileSync("js/data/flags.js","utf8")+fs.readFileSync("js/data/names.js","utf8")+";({FLAGS,TRUER,VARIANTS,NOQUIZ:[...NOQUIZ],AREAS,GEO})");
 process.stdout.write(JSON.stringify(ctx))"""]))
 
 bad = []
+# Areas: one per flag, inside the flag's region (the region is the first area listed for it, by the region's name in
+# the areas' order: an area's flags must all share one region).
+area_of = {}
+for a, codes in data["AREAS"].items():
+    for c in codes:
+        if c in area_of: bad.append(f"{c}: in two areas ({area_of[c]}, {a})")
+        area_of[c] = a
+region_of_area = {}
+for f in data["FLAGS"]:
+    r = f["r"] if f.get("sov") else data["GEO"].get(f["c"])
+    a = area_of.get(f["c"])
+    if not a: bad.append(f"{f['c']}: no area in AREAS"); continue
+    if region_of_area.setdefault(a, r) != r: bad.append(f"{f['c']}: area {a} is in {region_of_area[a]}, the flag in {r}")
 def art(code):
     p = f"flags-true/{code}.svg"
     return p if os.path.exists(p) else f"flags/{code}.svg"
