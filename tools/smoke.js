@@ -8,7 +8,7 @@
 // The core package alone (playwright-core) also works, with a Chromium of its own version installed.
 //
 // It goes through: home; a study list; the explorable map (list entry, map tap, hiding and showing the list, a design
-// from the list, back); a Learn round with the viewer from the question flag and from the card's map, through to the
+// from the list, back); a Learn round with the viewer from the question flag and from the card's map (panned, zoomed), through to the
 // results; a Drill round; a typed (Expert) round answered from the suggestions; map rounds asked with the flag and with the name; rounds asked
 // with the map, answered with the name and with the flag; the badges page. On a phone-sized
 // touch screen and on a desktop-sized one.
@@ -68,7 +68,18 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
       }
       expect(await js(p,()=>!!S.qs[S.i].ans),"answered");
       if(pace==="learn"&&n===0){ // the card's map opens the viewer on the map
-        await tap(p,".card .mapbtn");
+        // A drag pans it and it returns to the place when let go; the wheel zooms it.
+        const cm=p.locator(".card .cmap");await cm.waitFor();const bb=await cm.boundingBox();
+        const vb=()=>js(p,()=>document.querySelector(".card .cmap svg").getAttribute("viewBox"));
+        const v0=await vb();
+        await p.mouse.move(bb.x+bb.width/2,bb.y+bb.height/2);await p.mouse.down();
+        await p.mouse.move(bb.x+bb.width/2-60,bb.y+bb.height/2-20,{steps:5});
+        expect(await vb()!==v0,"a drag pans the card's map");
+        await p.mouse.up();await p.waitForTimeout(400);
+        expect(await vb()===v0,"the card's map returns to the place",[v0,await vb()]);
+        await p.mouse.wheel(0,-300);await p.waitForTimeout(400);
+        const w=s=>+s.split(" ")[2];expect(w(await vb())<w(v0),"the wheel zooms the card's map");
+        await tap(p,".card .cmap");
         expect(await js(p,()=>LB&&LB.what==="map"),"the card's map opens the viewer on the map");
         await p.keyboard.press("Escape");await p.waitForTimeout(150);
       }

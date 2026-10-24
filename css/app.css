@@ -90,7 +90,6 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
    underneath loses the tap to the field. Keep the row clear of that zone. */
 .qdrawer .typebox .sugg{margin-top:6px}
 .qdrawer .opt{min-height:46px;padding:9px 14px}
-.qdrawer.empty{display:none}
 /* Drill's "Correct" strip stays visible at the foot of the middle band even when the flag fills it. */
 .qmid .card.toast{position:sticky;bottom:0;padding:10px 16px;margin-top:-6px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .qdrawer.answered .opt{min-height:40px;padding:6px 14px;font-size:15px}
@@ -517,6 +516,10 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qmid.mapq{--qmf:clamp(56px,12vh,104px)}
 .qmap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;touch-action:none;background:var(--sea,#dfe8f3);user-select:none;-webkit-user-select:none}
 .qmap svg.map{width:100%;height:100%}
+/* The answer card's map: pans and zooms like the map you answer on, a tap opens the viewer. */
+.cmap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;touch-action:none;background:var(--sea,#dfe8f3);user-select:none;-webkit-user-select:none;aspect-ratio:1.6;max-height:200px;margin-top:2px;cursor:pointer}
+.cmap svg.map{display:block;width:100%;height:100%}
+.cmap:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .qmap .ct{transition:fill .12s}
 .qmapsvg .sel path{stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round}
 .qmapsvg .ct.far{fill:var(--outland,#c9ced6);stroke:var(--outline,#b3b9c2)}
@@ -535,11 +538,12 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qmctl{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
 .qmctl button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .qmctl button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.cmap .qmctl{top:6px;right:6px;gap:4px}
+.cmap .qmctl button{width:30px;height:30px;font-size:18px}
 /* Asked with the map: the place filled in on its region's map, sized as the question flag is, and smaller over a grid
    of flags to pick from. */
 .qaskmap{display:flex;justify-content:center}
 .qaskmap .mapbtn{width:min(100%,calc(max(150px,var(--flagh,9999px)) * var(--qa,1.5)));border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0;transition:width .25s cubic-bezier(.2,.7,.2,1)}
-.qaskmap.sm .mapbtn{width:min(100%,calc(30vh * var(--qa,1.5)))}
 .qaskmap .map{border-radius:0;height:auto}
 .map.qask.noborder .land path{stroke:none}
 /* The difficulty note: the score on its own line, then what the difficulty changes. */
@@ -590,3 +594,8 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qprompt .ask .where{font-size:13px}
 .qprompt .qarea{margin:4px 0 0}
 .qprompt .qarea .where{margin-left:0}
+/* Picking the flag: after an answer the two flags left in the drawer sit small, each with its name beside it, so the card
+   above gets the room (as the name options shrink). */
+.qdrawer.answered .fopt{flex-direction:row;align-items:center;gap:10px;padding:6px 8px}
+.qdrawer.answered .fopt .flag{flex:0 0 56px;width:56px}
+.qdrawer.answered .fopt .key{min-height:0;text-align:left}

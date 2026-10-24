@@ -187,6 +187,7 @@ function renderQuiz() {
     if (t && !S.kbOff) t.focus({preventScroll: true});
     wireZoom();
     wireQuizMap();
+    wireCardMaps();
     return;
   }
   // A focused answer box is never replaced: phones close the keyboard, or scroll, when focus moves. The box is
@@ -206,6 +207,7 @@ function renderQuiz() {
   if (old.value !== ni.value) old.value = ni.value;
   patchAround(old, ni);
   wireZoom();
+  wireCardMaps();
 }
 
 // Swipe in from the left edge = back. Matters in the home-screen app, which has no browser chrome.

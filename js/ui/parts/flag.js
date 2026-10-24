@@ -1,4 +1,4 @@
-// js/ui/parts/flag.js: Drawing a flag and its facts: the image with its designs, the design chips, the name and capital lines, the card's flag and map.
+// js/ui/parts/flag.js: Drawing a flag and its facts: the image with its designs, the design chips, the name and capital lines, the card's flag.
 // Needs before it at load time: nothing.
 
 // Country name as a quiet link; capital line carries the capital and flag-article links.
@@ -19,12 +19,6 @@ function facts(c) {
 // The flag on a card: tap to open it in the viewer.
 function cardFlag(c, vi) {
   return `<button type="button" class="flink" onclick="openFlag('${c}',+this.querySelector('.fl:not([hidden])').dataset.v)" title="View large">${img(c, "flag", vi)}</button>`;
-}
-// A small map of the flag's region, the country filled in; opens the viewer on the map slide.
-function mapCard(c) {
-  return mapHas(c)
-    ? `<button type="button" class="mapbtn" onclick="openMap('${c}')" title="Open the map">${mapSVG({code: c, cls: "sm", fit: 1.6, pad: 0})}</button>`
-    : "";
 }
 // Official width:height ratios (TRUER); a variant can carry its own ratio. Flags without true-proportion artwork fall
 // back to the 4:3 set. Each flag sits in a 4:3 slot and is sized to roughly equal area, capped by the slot, so a wide

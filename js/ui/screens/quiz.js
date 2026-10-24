@@ -3,8 +3,6 @@
 
 // The map asked about is square on a tall screen and wider on a wide one.
 const QASP = () => (innerWidth / innerHeight < 0.75 ? 1 : 1.5);
-// The room Next takes, held empty before an answer.
-const NEXTSLOT = `<button class="btn" style="visibility:hidden" tabindex="-1" aria-hidden="true">Next</button>`;
 function viewQuiz() {
   const q = S.qs[S.i],
     f = BY[q.c],
@@ -27,7 +25,7 @@ function viewQuiz() {
   // A tap opens it in the viewer, unnamed until answered. Master draws no borders.
   const askMap = S.ask === "map",
     shown = askMap
-      ? `<div class="qaskmap${reverse ? " sm" : ""}" style="--qa:${QASP()}"><button type="button" class="mapbtn" onmousedown="event.preventDefault()" onclick="openMap('${q.c}',false,${!q.ans})" aria-label="The map, larger">${mapSVG({code: q.c, cap: false, aspect: QASP(), cls: "qask" + (strict ? " noborder" : "")})}</button></div>`
+      ? `<div class="qaskmap" style="--qa:${QASP()}"><button type="button" class="mapbtn" onmousedown="event.preventDefault()" onclick="openMap('${q.c}',false,${!q.ans})" aria-label="The map, larger">${mapSVG({code: q.c, cap: false, aspect: QASP(), cls: "qask" + (strict ? " noborder" : "")})}</button></div>`
       : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`;
   let prompt,
     opts,
@@ -49,10 +47,13 @@ function viewQuiz() {
         ? ""
         : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line reveal" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
   } else if (reverse) {
-    // The name (or the map) first, as the flag comes first in the other rounds; the question sits just above the flags.
-    prompt = `${askMap ? shown : `<div class="qprompt"><p class="ask">${esc(f.n)}</p></div>`}<p class="eyebrow">Which flag?</p>`;
+    // The name (or the map) in the band, as the flag is in the other rounds; the flags to pick from ride in the drawer
+    // like the other rounds' answers, and with a card on screen only the right one and the one picked stay.
+    prompt = askMap ? shown : `<div class="qprompt"><p class="ask">${esc(f.n)}</p></div>`;
+    ask = `<p class="eyebrow">Which flag?</p>`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
       .map((c, i) => {
+        if (compact && c !== q.c && c !== q.ans) return "";
         let cls = "fopt";
         if (q.ans) {
           if (c === q.c) cls += " right";
@@ -132,7 +133,7 @@ function viewQuiz() {
       ${showFlag ? cardFlag(q.c, q.v || 0) + vchips(q.c, q.v || 0, "setQVar(%i)") : ""}
       <div><h2>${nameLine(q.c, mixedRound())}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c, q.v || 0)}${showFlag ? "" : vchips(q.c, q.v || 0, "setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
-      ${mapq || askMap ? "" : mapCard(q.c)}
+      ${mapq || askMap ? "" : cardMap(q.c)}
       ${miss}
     </div>`;
   }
@@ -140,16 +141,13 @@ function viewQuiz() {
     q.ans && !typed && !steady
       ? `<button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i + 1 < n ? "Next" : "See results"}</button>`
       : "";
-  // Picking the flag in Drill: the drawer is empty until Next appears after an answer, so it keeps Next's room from the
-  // start and the flags above don't jump.
-  const held = reverse && S.pace === "drill";
   const right = S.qs.filter(x => x.ans === x.c).length;
   return `<div class="qscreen">
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${esc(S.label)} · ${right} right · ${S.i + 1} / ${n}</span></div>
   <div class="progress">${dots}</div>
   ${S.confirmLeave ? `<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>` : ""}</div>
-  <div class="qmid${mapq ? " mapq" : ""}" id="qmid" data-i="${S.i}">${prompt}${reverse ? opts : ""}${reveal}</div>
-  <div class="qdrawer${q.ans ? " answered" : ""}${reverse && !q.ans && !held ? " empty" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${reverse ? "" : opts}${nextBtn}${held && !q.ans ? NEXTSLOT : ""}</div>
+  <div class="qmid${mapq ? " mapq" : ""}" id="qmid" data-i="${S.i}">${prompt}${reveal}</div>
+  <div class="qdrawer${q.ans ? " answered" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${opts}${nextBtn}</div>
   </div>`;
 }
 

@@ -22,7 +22,7 @@ function viewHome() {
     ${card({wide: true, cls: "gold", name: "🏅 Badges", count: nb + " / " + BADGES.length + " earned ›", go: "openBadges()"})}
   </div>
   <div class="foot"><span class="small muted">Progress is saved on this device.</span><button class="link" onclick="resetAsk()">Reset progress</button></div>
-  <p class="ver" id="ver"><span class="stamp">${location.pathname.includes("/preview/") ? "preview · " : ""}${typeof VERSION === "object" ? "updated " + VERSION.at : ""}<button class="refresh" onclick="hardReload()" title="Reload the page" aria-label="Reload">↻</button></span></p>`;
+  <p class="ver" id="ver"><span class="stamp">${location.pathname.includes("/preview/") ? "preview · " : ""}${typeof VERSION === "object" ? "updated " + verLocal(VERSION.at) : ""}<button class="refresh" onclick="hardReload()" title="Reload the page" aria-label="Reload">↻</button></span></p>`;
 }
 // Compare this build with the one the site is serving; say so if that one is newer. Fails silently from a local file.
 // A hard reload fetches a fresh index.html (whose asset links carry the version), so the browser can't mix old and new.
@@ -30,6 +30,13 @@ function hardReload() {
   location.replace(location.pathname + "?r=" + Date.now());
 }
 let VER_CHECKED = null;
+// The stamp is written in UTC; it shows in the device's own time zone, which the browser knows without asking.
+function verLocal(at) {
+  const d = new Date(at.replace(" ", "T").replace(" UTC", "Z"));
+  return isNaN(d)
+    ? at
+    : d.toLocaleString(undefined, {day: "numeric", month: "short", hour: "numeric", minute: "2-digit"});
+}
 async function checkVersion() {
   if (typeof VERSION !== "object" || VER_CHECKED !== null) return;
   VER_CHECKED = false;
