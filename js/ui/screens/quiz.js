@@ -35,10 +35,11 @@ function viewQuiz() {
   const steady = mapq && !!q.ans && S.pace === "drill" && q.ans === q.c;
   if (mapq) {
     // Found on the map: the question (the flag, or the name) above, the map under it filling the band.
-    prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
-    // Easy names the part of the region it is in; only that part can be tapped.
-    const area = S.diff === "easy" && AREA_OF[q.c] ? `It's in ${esc(AREA_OF[q.c])}. ` : "";
-    ask = `<p class="eyebrow">${area}Double-tap it on the map, or tap it and Check.</p>`;
+    // Easy names the part of the region it is in, beside the name as regions are on the cards (under the flag when the
+    // question is the flag); only that part can be tapped.
+    const area = S.diff === "easy" && AREA_OF[q.c] ? `<span class="where">in ${esc(AREA_OF[q.c])}</span>` : "";
+    prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}${area}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>${area ? `<p class="qarea">${area}</p>` : ""}`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
+    ask = `<p class="eyebrow">Double-tap it on the map, or tap it and Check.</p>`;
     // In Drill a right answer moves on by itself with no card. As in the other Drill rounds, Next appears so you can move
     // on sooner; it takes the place of the Check row, under the same instruction, so the drawer and the map keep their
     // size from question to question.
