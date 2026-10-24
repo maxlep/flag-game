@@ -4,17 +4,29 @@
 
 // The view of the current question's map, kept while the question is redrawn: {i, c, vb: [x, y, w, h], shown}.
 let QMV = null;
-// The frame a question's map shows: its region on Easy and Medium, the whole world from Hard on.
-const qmFrame = c => (S.diff === "easy" || S.diff === "medium" ? mapFrameFor(c) : "World");
+// The frame a question's map shows: the round's region when all its places share one (a Europe round is always
+// Europe: starting from the whole world would only add zooming). A round that mixes regions shows the place's region
+// on Easy and Medium and the whole world from Hard, since knowing the region is then part of the question.
+const qmFrames = new WeakMap();
+function qmFrame(c) {
+  let f = qmFrames.get(S.qs);
+  if (f === undefined) {
+    const fs = new Set(S.qs.map(q => mapFrameFor(q.c)));
+    f = fs.size === 1 ? [...fs][0] : null;
+    qmFrames.set(S.qs, f);
+  }
+  return f || (S.diff === "easy" || S.diff === "medium" ? mapFrameFor(c) : "World");
+}
 // In the round's scope: the round records the scope it ran under.
 const qmInScope = f => S.scope === "all" || (S.scope === "countries" ? f.sov : !f.sov);
 // The map's markup: every place of the frame tappable, those in the round's scope above the rest (so in Countries the
-// United Kingdom is found above England). Drawn as the explorable map draws, without the hatch; Master has no borders.
+// United Kingdom is found above England). Drawn as the explorable map draws, without the hatch; Expert and Master
+// have no borders.
 function qmSVG(q) {
   const frame = qmFrame(q.c);
   const codes = (frame === "World" ? FLAGS : FLAGS.filter(f => geoOf(f) === frame)).map(f => f.c);
   const on = new Set(FLAGS.filter(qmInScope).map(f => f.c));
-  return mapExploreSVG({frame, codes, on, cls: "qmapsvg" + (S.diff === "master" ? " noborder" : "")});
+  return mapExploreSVG({frame, codes, on, cls: "qmapsvg" + (TYPED(S.diff) ? " noborder" : "")});
 }
 // The map's controls: zoom in and out, for a mouse with no wheel or a keyboard.
 const QMCTL = `<div class="qmctl"><button type="button" onmousedown="event.preventDefault()" onclick="qmZoom(1.6)" aria-label="Zoom in">+</button><button type="button" onmousedown="event.preventDefault()" onclick="qmZoom(1/1.6)" aria-label="Zoom out">−</button></div>`;
@@ -90,8 +102,9 @@ function qmSet(svg, vb) {
 // screen to tap (20px across).
 const QMNEAR = 150;
 function qmSize(svg) {
-  // Expert and Master give a small place no dot until the view is zoomed in close (under QMNEAR units across).
-  const hide = TYPED(S.diff) && QMV.vb[2] > QMNEAR,
+  // Hard and Master give a small place no dot until the view is zoomed in close: under 40% of the frame's width, and
+  // never wider than QMNEAR units.
+  const hide = (S.diff === "hard" || S.diff === "master") && QMV.vb[2] > Math.min(QMNEAR, svg._bounds[2] * 0.4),
     u = QMV.vb[2] / Math.max(1, svg._box.clientWidth),
     M = MAP.set[MAP.frame[qmFrame(S.qs[S.i].c)].set],
     sy = +svg.dataset.sy || 1;

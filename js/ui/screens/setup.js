@@ -12,9 +12,15 @@ const PAIRNOTE = {
   "map>flag": "You see a place on the map and choose its flag."
 };
 // The difficulty note for a round with a map in it; a round counted as located earns no points, so they go unsaid.
-function mapNote() {
+function mapNote(pool) {
   const d = SET.diff,
-    t = SET.dir === "map" ? MAPDIFF[d] : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
+    mixed = new Set(pool.filter(mapHas).map(mapFrameFor)).size > 1,
+    where = !mixed
+      ? "The map shows the region. "
+      : d === "easy" || d === "medium"
+        ? "The map shows each place's region. "
+        : "The map shows the whole world, since this set spans regions. ",
+    t = SET.dir === "map" ? where + MAPDIFF[d] : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
   return SET.ask === "flag" || SET.dir === "flag" ? t + " " + MAPPTS[d] : t;
 }
 function viewSetup() {
@@ -37,7 +43,7 @@ function viewSetup() {
   };
   const diffNote =
     SET.dir === "map" || SET.ask === "map"
-      ? mapNote()
+      ? mapNote(pool)
       : grp && !TYPED(SET.diff)
         ? "Options always come from the look-alike set itself (Hard); Expert and Master " +
           (SET.dir === "flag" ? "show more of them." : "ask you to type.")
