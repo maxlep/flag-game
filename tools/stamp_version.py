@@ -2,7 +2,7 @@
 """Write js/version.js with the commit time, and put the same stamp on the asset links in index.html.
 
 The page compares its own stamp with the one the site serves to spot a stale copy. The stamped links
-(css/app.css?v=..., js/app.js?v=...) mean a freshly fetched index.html always loads matching assets,
+(css/app.css?v=..., js/ui/viewer.js?v=..., and so on) mean a freshly fetched index.html always loads matching assets,
 however long a browser or CDN has cached the old ones.
 
 Run before every commit: tools/stamp_version.py && git add js/version.js index.html
