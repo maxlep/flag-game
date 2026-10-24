@@ -568,3 +568,12 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .meters .pill{display:inline-flex;align-items:center;height:11px;font-size:10px;line-height:1;padding:0 6px}
 .meters .pill .mi{width:9px;height:9px}
 .meters:empty{display:none}
+/* The score line in setup: a tick with what a right answer adds to each meter, a cross with what a miss takes. */
+.gain{display:inline-flex;align-items:center;gap:6px;margin-right:14px;font-variant-numeric:tabular-nums}
+.gain .gi{display:inline-flex;width:15px;height:15px}
+.gain .gi svg{width:100%;height:100%}
+.gain.ok .gi{color:var(--ok)}
+.gain.bad .gi{color:var(--bad)}
+.gain .gn{display:inline-flex;align-items:center;gap:2px}
+.gain .mi{margin:0}
+.gain .mi.pl{color:var(--place)}
