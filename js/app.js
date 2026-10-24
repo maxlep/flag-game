@@ -685,7 +685,8 @@ const studyPill=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':maste
 // One study entry: flag (opens the viewer), design chips, a small map (drawn later, by wireMiniMaps), name, standing,
 // capital and description. The explorable map's card is the same entry with no small map; its flag says how to open it.
 const scopeLabel=()=>SCOPES.find(x=>x[0]===SET.scope)[1];
-function studyEntry(f,mixed,o={}){const fl=o.flagClick||`openFlag('${f.c}',+this.closest('.entry').dataset.v)`;
+// An entry's flag opens its designs with no Map chip: the entry's own small map is the way to the map.
+function studyEntry(f,mixed,o={}){const fl=o.flagClick||`openFlag('${f.c}',+this.closest('.entry').dataset.v,{noMap:true})`;
   return `<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="${fl}" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${o.noMap||!mapHas(f.c)?"":`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="studyMap('${f.c}')" title="See it on the map" aria-label="See ${esc(f.n)} on the map"></button>`}</div><div class="t"><span class="head"><span class="name">${nameLine(f.c,mixed)}</span>${o.pill||studyPill(f)}</span><span class="facts">${facts(f.c)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}
 const WIDE=["Whole world","Everything","All territories"];
 // The flags a study list shows, in name order: a region's, or the whole scope's for the wide card.
@@ -789,7 +790,11 @@ function exScope(v){if(!LB||LB.what!=="explore"||SET.scope===v)return;const k={s
   if(WIDE.includes(r))r=S.region={countries:"Whole world",all:"Everything",territories:"All territories"}[v];
   setOpt("scope",v);openExplore(r,k)}
 function exFlag(c,btn){if(!LB||LB.what!=="explore")return;const en=btn&&btn.closest(".entry"),vi=en?+en.dataset.v:0,b=$("#exBody");
-  EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y,top:b?b.scrollTop:0};openFlag(c,vi,{fromEx:true})}
+  EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y,top:b?b.scrollTop:0};openFlag(c,vi,{noMap:true})}
+// Whether the region shows beside a name, by the cards' rule: in a round, when it mixes regions; in a study list, when
+// the list does (the world list, or a scope with territories); elsewhere, yes.
+function whereShown(c){if(!c)return false;if(S.view==="quiz"||S.view==="done")return S.qs?mixedRound():true;
+  if(S.view==="study")return WIDE.includes(S.region)||SET.scope!=="countries";return true}
 function openViewer(c,o){
   closeFlag(true);
   const ex=o.what==="explore";
@@ -806,7 +811,7 @@ function openViewer(c,o){
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
   const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
-  LB={c,fromEx:!!o.fromEx,chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
+  LB={c,noMap:!!o.noMap,where:whereShown(c),chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
   if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null;exListBuild();exTabWire();exTabSync();exLayout()}
   lbShow(o.what,o.vi||0);
   if(ex&&o.at&&!o.keep){const b=$("#exBody"),en=b&&b.querySelector(`.entry[data-c="${o.at}"]`);if(en)b.scrollTop+=en.getBoundingClientRect().top-b.getBoundingClientRect().top-8}
@@ -927,7 +932,7 @@ function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
 // The arrow keys walk the chips: designs, then the map.
 function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(lbMapChip()?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
 // The Map chip, except for designs opened from the explorable map: a map inside the map would only confuse.
-const lbMapChip=()=>mapHas(LB.c)&&!LB.fromEx;
+const lbMapChip=()=>mapHas(LB.c)&&!LB.noMap;
 // A chip: a design (by index) or the map.
 function lbPick(k){if(!LB)return;const v=VARS(LB.c),nd=v?v.length:1;if(k>=nd)lbShow("map");else if(LB.what==="flag")lbGo(k);else lbShow("flag",k)}
 // The map is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
@@ -939,7 +944,10 @@ function lbCaption(){if(!LB)return;if(LB.what==="explore")return exCaption();con
   const cur=onMap?names.length-1:LB.vi;
   const chips=LB.chips&&names.length>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===cur?" on":""}" onmousedown="event.preventDefault()" onclick="lbPick(${k})">${esc(t)}</button>`).join("")}</div>`:"";
   const d=v&&v[LB.vi];
-  $("#lbSub").innerHTML=onMap?`${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}`:esc(d?d.l+(d.d?" · "+d.d:""):useLabel(c));
+  // On the map the region sits beside the name, small and muted as on the cards (when the cards show it), and the line
+  // under it is the capital alone.
+  const nm=LB.el.querySelector(".lb-top .nm");if(nm)nm.innerHTML=esc(f.n)+(onMap&&LB.where?`<span class="where">${esc(whereOf(c))}</span>`:"");
+  $("#lbSub").innerHTML=onMap?`${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`}`:esc(d?d.l+(d.d?" · "+d.d:""):useLabel(c));
   $("#lbVar").innerHTML=chips}
 // replacing: another view is about to open in its place. A flag opened from the explorable map goes back to the map.
 function closeFlag(replacing){if(!LB)return;const {el,refocus,what}=LB;if(el._under)el._under.style.cursor="";el.remove();document.body.style.overflow="";LB=null;

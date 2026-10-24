@@ -476,3 +476,5 @@ h2 .where{font-size:13px}
 .lb-back:hover{text-decoration:underline}
 .lb-back:focus-visible{outline:3px solid #8fb0ff;outline-offset:3px;border-radius:4px}
 .lb-top .lb-back{width:auto;height:auto;background:none;border-radius:4px;display:inline-flex;align-items:center;justify-content:flex-start;font-size:16px;line-height:1.3;white-space:nowrap}
+/* The region beside the name in the viewer, as on the cards, in the bar's muted white. */
+.lb-top .nm .where{color:rgba(255,255,255,.62);font-size:13px}
