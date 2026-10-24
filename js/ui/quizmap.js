@@ -183,11 +183,11 @@ function qmMark(svg, q) {
   svg.querySelector(".marks").innerHTML = m;
   qmSize(svg);
 }
-// A tap selects the place under it, without naming it (naming it would let you hunt by tapping). A tap on the place
-// already selected answers with it; one that lands on another place only moves the selection, so a second tap a
-// little off target doesn't answer for the wrong place. A long press goes to the next place under the finger (the
-// United Kingdom under England, Italy around San Marino).
-function qmTap(x, y, long) {
+// A tap selects the place under it, without naming it (naming it would let you hunt by tapping); a tap on the place
+// already selected keeps it. A double tap answers with the place selected, if the second tap also lands on it, so a
+// second tap a little off target never answers for a neighbour. A long press goes to the next place under the finger
+// (the United Kingdom under England, Italy around San Marino); a tap on that same stack of places then keeps it.
+function qmTap(x, y, how) {
   const q = S.qs[S.i],
     svg = qmSvg();
   if (!svg || q.ans) return;
@@ -209,13 +209,19 @@ function qmTap(x, y, long) {
         .map(a => a[2])
     )
   ];
-  // A tap answers when the selection is the place on top here, or when it was reached by a long press on this same
-  // stack of places (the United Kingdom picked over England answers from England, while a tap on Wales picks Wales).
+  // The selection stays when it is the place on top here, or was reached by a long press on this same stack of places
+  // (the United Kingdom picked over England stays from England, while a tap on Wales picks Wales).
   const i = hits.indexOf(q.sel),
-    stack = hits.join(" ");
-  if (!long && i >= 0 && (i === 0 || stack === qmStack)) return qmCheck();
-  q.sel = !hits.length ? null : long && i >= 0 ? hits[(i + 1) % hits.length] : hits[0];
-  qmStack = long ? stack : "";
+    stack = hits.join(" "),
+    keep = i >= 0 && (i === 0 || stack === qmStack);
+  if (how === "long") {
+    q.sel = !hits.length ? null : i >= 0 ? hits[(i + 1) % hits.length] : hits[0];
+    qmStack = stack;
+  } else if (!keep) {
+    q.sel = hits[0] || null;
+    qmStack = "";
+  }
+  if (how === "double" && keep) return qmCheck();
   qmPick(svg, q);
 }
 let qmStack = "";
@@ -244,13 +250,14 @@ function qmZoom(f, P) {
     h = v[3] / f;
   qmSet(svg, [wx - (P.x - r.left) * (w / r.width), wy - (P.y - r.top) * (w / r.width), w, h]);
 }
-// Drag pans, two fingers pinch, the wheel zooms, a tap selects (or answers, on the selection), a long press goes to
-// the next place under the finger.
+// Drag pans, two fingers pinch, the wheel zooms, a tap selects, a double tap on the selection answers, a long press
+// goes to the next place under the finger.
 function qmGestures(svg, box) {
   const pts = new Map();
   let st = null,
     moved = false,
-    downT = 0;
+    downT = 0,
+    last = null;
   const begin = () => {
     st = {vb: QMV.vb.slice(), pts: [...pts.values()].map(p => ({...p}))};
   };
@@ -299,7 +306,11 @@ function qmGestures(svg, box) {
     if (pts.size) return begin();
     st = null;
     if (moved || e.type === "pointercancel") return;
-    qmTap(e.clientX, e.clientY, Date.now() - downT > 450);
+    const now = Date.now(),
+      quick = last && now - last.t < 350 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 30;
+    const how = now - downT > 450 ? "long" : quick ? "double" : "tap";
+    last = how === "tap" ? {t: now, x: e.clientX, y: e.clientY} : null;
+    qmTap(e.clientX, e.clientY, how);
   };
   box.addEventListener("pointerup", end);
   box.addEventListener("pointercancel", end);

@@ -582,3 +582,6 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .gain .mi.pl{color:var(--place)}
 /* The difficulty description keeps two lines' height, so switching levels doesn't move the rows below it. */
 .ddesc{display:block;min-height:3em}
+/* Reveal gives the answer away, so it is the smaller button beside Check, harder to hit by accident. */
+.qdrawer .row:has(.reveal){flex-wrap:nowrap}
+.qdrawer .row .reveal{flex:0 0 auto;width:auto;min-height:36px;padding:6px 14px;font-size:14px;align-self:center}

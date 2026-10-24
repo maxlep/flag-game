@@ -119,7 +119,7 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
       for(let k=0;k<4&&(await js(p,()=>S.qs[S.i].sel))!==want;k++){await p.mouse.move(pt.x,pt.y);await p.mouse.down();await p.waitForTimeout(600);await p.mouse.up();await p.waitForTimeout(150)} // a long press goes to the place under it
       expect(await js(p,c=>S.qs[S.i].sel===c,want),"a tap selects the place",want);
       expect(await js(p,()=>!S.qs[S.i].ans&&!$("#qmCheck").disabled),"selected, not yet answered");
-      if(n===1){await p.mouse.click(pt.x,pt.y);await p.waitForTimeout(200)} // a tap on the selection answers with it
+      if(n===1){await p.waitForTimeout(400);await p.mouse.click(pt.x,pt.y);await p.waitForTimeout(400);expect(await js(p,()=>!S.qs[S.i].ans),"a single tap on the selection keeps it");await p.mouse.dblclick(pt.x,pt.y);await p.waitForTimeout(200)} // a double tap answers
       else if(n%2)await tap(p,"#qmCheck");
       else{await p.evaluate(()=>document.activeElement&&document.activeElement.blur&&document.activeElement.blur());await p.keyboard.press("Enter");await p.waitForTimeout(150)}
       expect(await js(p,c=>S.qs[S.i].ans===c,want),"Check answers with the place selected",await js(p,()=>({ans:S.qs[S.i].ans,sel:S.qs[S.i].sel,act:document.activeElement&&document.activeElement.tagName})));

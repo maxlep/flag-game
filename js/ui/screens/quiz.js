@@ -35,10 +35,10 @@ function viewQuiz() {
     prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
     // Easy names the part of the region it is in; only that part can be tapped.
     const area = S.diff === "easy" && AREA_OF[q.c] ? `It's in ${esc(AREA_OF[q.c])}. ` : "";
-    ask = `<p class="eyebrow">${area}Tap it on the map, then tap it again or Check.</p>`;
+    ask = `<p class="eyebrow">${area}Double-tap it on the map, or tap it and Check.</p>`;
     opts = q.ans
       ? ""
-      : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
+      : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line reveal" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
   } else if (reverse) {
     prompt = `<p class="eyebrow">Which flag?</p>${askMap ? shown : `<p class="ask">${esc(f.n)}</p>`}`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
@@ -59,7 +59,7 @@ function viewQuiz() {
     opts = `<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" name="q" type="text" inputmode="text" enterkeyhint="${q.ans ? "next" : "go"}" ${q.ans ? "readonly" : ""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans ? "Enter for next" : strict ? "Spell it exactly" : "Your answer"}" value="${esc(q.typed || "")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict ? "" : "const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
       ${strict || compact ? "" : '<div class="sugg" id="sugg"></div>'}
-      <div class="row">${q.ans ? `<button type="button" class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i + 1 < n ? "Next" : "See results"}</button>` : `<button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button>`}</div></form>`;
+      <div class="row">${q.ans ? `<button type="button" class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i + 1 < n ? "Next" : "See results"}</button>` : `<button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line reveal" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button>`}</div></form>`;
   } else {
     prompt = shown;
     ask = `<p class="eyebrow">${askMap ? "Which place?" : "Which country?"}</p>`;
