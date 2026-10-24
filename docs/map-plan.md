@@ -73,7 +73,7 @@ Choices made for the first version, open to change:
 
 ## The map quiz
 
-Decided 2026-10-24. Part one, the map as the answer, is built; the map as the question is next.
+Decided 2026-10-24. Both parts are built. Asked with the map, the options are the place's neighbours, and the map is its region's on every difficulty (Master without borders).
 
 - Setup has two choices, Ask with (Flag · Name · Map) and Answer with (Name · Flag · Map), never the same. Settings `SET.ask` and `SET.dir` (the answer); an old saved setting without `ask` gets the one it implied (Pick the flag asked with the name).
 - Built in two parts: the map as the answer first ("find it on the map", from a flag or a name), then the map as the question ("which place is this?", answered with its name, typed or picked, or its flag).

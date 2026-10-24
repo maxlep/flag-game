@@ -9,8 +9,8 @@
 //
 // It goes through: home; a study list; the explorable map (list entry, map tap, hiding and showing the list, a design
 // from the list, back); a Learn round with the viewer from the question flag and from the card's map, through to the
-// results; a Drill round; a typed (Expert) round answered from the suggestions; map rounds asked with the flag and with the name; the badges
-// page. On a phone-sized
+// results; a Drill round; a typed (Expert) round answered from the suggestions; map rounds asked with the flag and with the name; rounds asked
+// with the map, answered with the name and with the flag; the badges page. On a phone-sized
 // touch screen and on a desktop-sized one.
 const path=require("path");
 let pw;try{pw=require("playwright")}catch(e){pw=require("playwright-core")}
@@ -130,6 +130,33 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
     expect(await js(p,a=>a==="name"?Object.keys(located).length>0:true,ask),"name to map counts as located");
   }
 
+  // A round asked with the map, answered with the name or the flag from the options: the map opens the viewer unnamed.
+  async function mapAskRound(p,dir){
+    step=`round asked with the map, answered with the ${dir}: setup`;
+    await js(p,()=>goHome());
+    await tap(p,'.tile:has-text("Europe") .tmain');
+    await tap(p,'.seg button:text-is("10")');
+    await tap(p,'.seg button:text-is("Hard")');
+    await tap(p,'#askSeg button:text-is("Map")');
+    await tap(p,`#dirSeg button:text-is("${dir==="flag"?"Flag":"Name"}")`);
+    await tap(p,"#startBtn");
+    expect(await js(p,()=>S.view==="quiz"&&S.ask==="map"&&!!document.querySelector(".qaskmap svg")),"round started with a map");
+    await tap(p,".qaskmap .mapbtn");
+    expect(await js(p,()=>LB&&LB.what==="map"&&LB.el.classList.contains("quiet")),"the map opens the viewer, unnamed");
+    await p.keyboard.press("Escape");await p.waitForTimeout(150);
+    for(let n=0;n<10;n++){
+      step=`round asked with the map, answered with the ${dir}: question ${n+1}`;
+      const q=await js(p,()=>({c:S.qs[S.i].c,opts:S.qs[S.i].opts,i:S.i}));
+      const pick=n===0?q.opts.find(c=>c!==q.c):q.c;
+      await tap(p,`${dir==="flag"?".flagopts .fopt":".opts .opt"} >> nth=${q.opts.indexOf(pick)}`);
+      expect(await js(p,c=>S.qs[S.i].ans===c,pick),"answered");
+      await tap(p,"#nextBtn");
+      if(n<9)expect(await js(p,i=>S.view==="quiz"&&S.i===i+1,q.i),"next question");
+    }
+    step=`round asked with the map, answered with the ${dir}: results`;
+    expect(await js(p,()=>S.view)==="done","results screen");
+  }
+
   async function run(name,opts){
     const p=await open(opts);
     step=`${name}: home`;
@@ -166,6 +193,8 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
     await round(p,{pace:"learn",diff:"expert",typed:true});
     await mapRound(p,"flag");
     await mapRound(p,"name");
+    await mapAskRound(p,"name");
+    await mapAskRound(p,"flag");
 
     step=`${name}: badges`;
     await js(p,()=>goHome());

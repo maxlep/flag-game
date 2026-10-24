@@ -1,6 +1,8 @@
 // js/ui/screens/quiz.js: The quiz screen, and the question flag's way into the viewer.
 // Needs before it at load time: nothing.
 
+// The map asked about is square on a tall screen and wider on a wide one.
+const QASP = () => (innerWidth / innerHeight < 0.75 ? 1 : 1.5);
 function viewQuiz() {
   const q = S.qs[S.i],
     f = BY[q.c],
@@ -19,6 +21,12 @@ function viewQuiz() {
   // When a card is shown the keyboard is closed and the drawer condenses; when it isn't (Drill, correct) the drawer keeps
   // its height so the flag doesn't resize between answers.
   const compact = !!q.ans && !(S.pace === "drill" && q.ans === q.c);
+  // Asked with the map: the place filled in on its region's map, where the flag would be (smaller over a grid of flags).
+  // A tap opens it in the viewer, unnamed until answered. Master draws no borders.
+  const askMap = S.ask === "map",
+    shown = askMap
+      ? `<div class="qaskmap${reverse ? " sm" : ""}" style="--qa:${QASP()}"><button type="button" class="mapbtn" onmousedown="event.preventDefault()" onclick="openMap('${q.c}',false,${!q.ans})" aria-label="The map, larger">${mapSVG({code: q.c, cap: false, aspect: QASP(), cls: "qask" + (strict ? " noborder" : "")})}</button></div>`
+      : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`;
   let prompt,
     opts,
     ask = "";
@@ -31,7 +39,7 @@ function viewQuiz() {
       ? ""
       : `<div class="row">${easy ? "" : `<button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button>`}<button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
   } else if (reverse) {
-    prompt = `<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
+    prompt = `<p class="eyebrow">Which flag?</p>${askMap ? shown : `<p class="ask">${esc(f.n)}</p>`}`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
       .map((c, i) => {
         let cls = "fopt";
@@ -44,16 +52,16 @@ function viewQuiz() {
       })
       .join("")}</div>`;
   } else if (typed) {
-    prompt = `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`;
-    ask = `<p class="eyebrow">Which country? Type it.</p>`;
+    prompt = shown;
+    ask = `<p class="eyebrow">${askMap ? "Which place? Type it." : "Which country? Type it."}</p>`;
     // After the answer the box stays, read-only, so the keyboard stays open; Enter in it moves on.
     opts = `<form class="typebox" onsubmit="event.preventDefault();submitTyped()">
       <input id="typeIn" name="q" type="text" inputmode="text" enterkeyhint="${q.ans ? "next" : "go"}" ${q.ans ? "readonly" : ""} autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="${q.ans ? "Enter for next" : strict ? "Spell it exactly" : "Your answer"}" value="${esc(q.typed || "")}" oninput="typeInput(this.value)" onkeydown="if(event.key==='Tab'){event.preventDefault();${strict ? "" : "const sg=suggest(this.value);if(sg.length){this.value=BY[sg[0]].n;typeInput(this.value)}"}}">
       ${strict || compact ? "" : '<div class="sugg" id="sugg"></div>'}
       <div class="row">${q.ans ? `<button type="button" class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i + 1 < n ? "Next" : "See results"}</button>` : `<button type="submit" class="btn" onmousedown="event.preventDefault()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button>`}</div></form>`;
   } else {
-    prompt = `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`;
-    ask = `<p class="eyebrow">Which country?</p>`;
+    prompt = shown;
+    ask = `<p class="eyebrow">${askMap ? "Which place?" : "Which country?"}</p>`;
     // With a card on screen only the right answer, and the wrong one picked, stay; the rest would take room from it.
     opts = `<div class="opts">${q.opts
       .map((c, i) => {
@@ -72,7 +80,7 @@ function viewQuiz() {
   if (q.ans) {
     const ok = q.ans === q.c,
       picked = BY[q.ans],
-      showFlag = reverse || (mapq && S.ask === "name");
+      showFlag = S.ask !== "flag";
     let miss = "";
     if (!ok) {
       const gi = GROUP_OF[q.c] && GROUP_OF[q.c].find(i => GROUPS[i].f.includes(q.ans));
@@ -101,7 +109,7 @@ function viewQuiz() {
       ${showFlag ? cardFlag(q.c, q.v || 0) + vchips(q.c, q.v || 0, "setQVar(%i)") : ""}
       <div><h2>${nameLine(q.c, mixedRound())}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c, q.v || 0)}${showFlag ? "" : vchips(q.c, q.v || 0, "setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
-      ${mapq ? "" : mapCard(q.c)}
+      ${mapq || askMap ? "" : mapCard(q.c)}
       ${miss}
     </div>`;
   }

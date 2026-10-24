@@ -18,8 +18,9 @@ let LB = null; // {c, scale, x, y, pts:Map, last:{...}}
 function openFlag(c, vi = 0, o) {
   openViewer(c, {what: "flag", vi, ...(o || {})});
 }
-function openMap(c, chips = true) {
-  openViewer(c, {what: "map", chips});
+// quiet: a place on the map asked about and not yet named (no name, no chips).
+function openMap(c, chips = true, quiet = false) {
+  openViewer(c, {what: "map", chips, quiet});
 }
 function openViewer(c, o) {
   closeFlag(true);

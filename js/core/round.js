@@ -35,6 +35,17 @@ function pickOrder(pool, n) {
 // Pick-the-flag grows the grid instead of removing options: 4 flags up to Hard, 9 on Expert, 16 on Master.
 const optCount = (diff, dir) =>
   dir === "flag" && diff === "master" ? 16 : dir === "flag" && diff === "expert" ? 9 : 4;
+// The places whose centres lie nearest to a place's, nearest first.
+function nearest(c, n, ok = () => true) {
+  const P = MAP.set.world.pt,
+    p = P[c];
+  if (!p) return [];
+  return QUIZ.filter(x => x.c !== c && P[x.c] && ok(x.c))
+    .map(x => [Math.hypot(P[x.c][0] - p[0], P[x.c][1] - p[1]), x.c])
+    .sort((a, b) => a[0] - b[0])
+    .slice(0, n)
+    .map(a => a[1]);
+}
 function distractors(c, diff, mode, n = 3) {
   const f = BY[c];
   const out = new Set();
@@ -46,6 +57,16 @@ function distractors(c, diff, mode, n = 3) {
   const gm = shuffle(groups.flatMap(i => GROUPS[i].f).filter(x => x !== c));
   const same = shuffle(QUIZ.filter(x => geoOf(x) === geoOf(f) && x.c !== c).map(x => x.c));
   const any = shuffle(QUIZ.map(x => x.c).filter(x => x !== c));
+  // Asked with the map, the options are its neighbours rather than its look-alikes: the question is where, not what.
+  // In the round's scope, so a country isn't offered beside its own parts (Wales beside the United Kingdom).
+  if (SET.ask === "map") {
+    const ok = x => inScope(BY[x]);
+    if (diff !== "easy" && diff !== "medium") add(shuffle(nearest(c, n + 2, ok)));
+    if (diff !== "easy") add(same.filter(ok));
+    add(any.filter(ok));
+    add(any);
+    return [...out];
+  }
   if (mode === "group" || mode === "lookmix" || diff === "hard" || TYPED(diff)) {
     add(gm);
     add(same);
@@ -56,8 +77,9 @@ function distractors(c, diff, mode, n = 3) {
   return [...out];
 }
 function startRound(mode, arg, label, flt = null) {
-  // Answered on the map, a round can only ask about places with a shape (not the organisations).
-  const pool = poolFor(mode, arg, flt).filter(c => SET.dir !== "map" || mapHas(c));
+  // With a map in it, a round can only ask about places with a shape (not the organisations).
+  const onMap = SET.dir === "map" || SET.ask === "map";
+  const pool = poolFor(mode, arg, flt).filter(c => !onMap || mapHas(c));
   if (!pool.length) return;
   const from = S.view === "quiz" || S.view === "done" || S.view === "setup" ? S.from : here();
   const diff = SET.diff;
@@ -101,7 +123,7 @@ function startRound(mode, arg, label, flt = null) {
     i: 0,
     streak: 0,
     best: 0,
-    diff: grp && !TYPED(diff) && SET.dir !== "map" ? "hard" : diff,
+    diff: grp && !TYPED(diff) && !onMap ? "hard" : diff,
     ask: SET.ask,
     dir: SET.dir,
     nOpt,
