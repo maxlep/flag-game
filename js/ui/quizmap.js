@@ -57,8 +57,8 @@ function wireQuizMap() {
   qmMark(svg, q);
   qmGestures(svg, box);
 }
-// The map fills the middle band under the question. With a card to read it gives up a third of that, and the card
-// starts under it; the band scrolls.
+// The map fills the middle band under the question. With a card to read it gives up a third of that, and the band
+// scrolls to the card under it.
 function qmFit(box) {
   const mid = $("#qmid"),
     p = mid && mid.querySelector(".qprompt");

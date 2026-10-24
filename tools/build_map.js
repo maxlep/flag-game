@@ -27,13 +27,21 @@ const byIso={};
 // Several features can carry one ISO code (Australia and its Ashmore and Cartier Islands both say AU): keep the largest.
 for(const f of load("ne_50m_admin_0_countries.geojson")){const p=f.properties;let iso=p.ISO_A2_EH&&p.ISO_A2_EH!=="-99"?p.ISO_A2_EH:p.ISO_A2;if(!iso||iso==="-99")continue;iso=iso.toLowerCase();
   if(!byIso[iso]||d3.geoArea(f)>d3.geoArea(byIso[iso]))byIso[iso]=f}
+// Features with no ISO code. Somaliland and Northern Cyprus are joined to the country they are recognised as part of
+// (left out, they were holes: a chunk of Somalia missing). The Siachen Glacier, held by India and claimed by
+// Pakistan, is drawn as plain land.
+const JOIN={SOL:"so",CYN:"cy"},joins={},plain=[];
+for(const f of load("ne_50m_admin_0_countries.geojson")){const a3=f.properties.ADM0_A3;if(JOIN[a3])(joins[JOIN[a3]]=joins[JOIN[a3]]||[]).push(f);else if(a3==="KAS")plain.push(f)}
+for(const [iso,parts] of Object.entries(joins)){const t=topo.topology({p:{type:"FeatureCollection",features:[byIso[iso],...parts]}},1e6);
+  byIso[iso]={type:"Feature",properties:byIso[iso].properties,geometry:tc.merge(t,t.objects.p.geometries)};console.error("joined to",iso+":",parts.map(f=>f.properties.NAME).join(", "))}
 const FIX={ // our code -> Natural Earth ISO when they differ
   "xk":"xk","ps":"ps","tw":"tw","eh":"eh"};
 const want=new Set(FLAGS.map(f=>f.c));
 const used=new Set();
 for(const f of FLAGS){const iso=FIX[f.c]||f.c;const ne=byIso[iso];if(ne){feats.push({c:f.c,geometry:ne.geometry,base:true,name:ne.properties.NAME});used.add(f.c)}}
-// Everything else on the base map (countries we don't quiz, e.g. Somaliland, N. Cyprus) is drawn as plain land.
+// Everything else on the base map (countries we don't quiz, the Siachen Glacier) is drawn as plain land.
 for(const [iso,ne] of Object.entries(byIso)){if(!want.has(iso))feats.push({c:null,geometry:ne.geometry,base:true,name:ne.properties.NAME})}
+for(const ne of plain)feats.push({c:null,geometry:ne.geometry,base:true,name:ne.properties.NAME});
 // UK nations, and territories folded into their sovereign at the country level, from the 50m map units
 const MU={ENG:"gb-eng",SCT:"gb-sct",WLS:"gb-wls",NIR:"gb-nir",MTQ:"mq",TKL:"tk",CXR:"cx",CCK:"cc"};
 for(const f of load("ne_50m_admin_0_map_units.geojson")){const k=MU[f.properties.SU_A3];if(k){feats.push({c:k,geometry:f.geometry,base:false,name:f.properties.NAME});used.add(k)}}

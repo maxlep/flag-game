@@ -206,8 +206,7 @@ function afterAnswer(q, ok) {
   requestAnimationFrame(() => {
     const mid = $("#qmid"),
       card = mid && mid.querySelector(".card.lore");
-    // A map round leaves the map where it is: it shrinks to make room, and the card starts under it.
-    if (!card || S.dir === "map") return;
+    if (!card) return;
     // The whole card if it fits under the flag, otherwise its top.
     card.scrollIntoView({block: card.offsetHeight < mid.clientHeight * 0.6 ? "end" : "start", behavior: "smooth"});
   });
