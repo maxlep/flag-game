@@ -359,3 +359,10 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 /* In the study column the flag hugs its artwork (no 4:3 slot), so the gaps to the chips and the map are the same. */
 .entry .fcol .flag{aspect-ratio:auto;height:auto;align-items:flex-start}
 .entry .fcol .flag .fl{width:100%} /* flag, chips and map share one width */
+/* Name, then the region small and muted beside it (it drops under the name when it doesn't fit); then the capital
+   and the flag's years, a line each. */
+.where{display:inline-block;margin-left:8px;font:500 12px/1.4 var(--mono);color:var(--muted);letter-spacing:.01em;white-space:nowrap;vertical-align:baseline}
+h2 .where{font-size:13px}
+.facts{display:flex;flex-direction:column;gap:1px}
+.facts .capital{display:block;line-height:1.5}
+.nw{white-space:nowrap}

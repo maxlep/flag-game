@@ -135,13 +135,18 @@ function links(c){
 const wl=(url,text,title="Wikipedia")=>`<a class="wl" href="${url}" target="_blank" rel="noopener" title="${title}">${text}</a>`;
 // Country name as a quiet link; capital line carries the capital and flag-article links.
 function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
-function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";
-  const where=f.sov?f.r:geoOf(f)+" · territory";
-  return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+where:""} · ${wl(L.flag,flagYears(c),"The flag on Wikipedia")}`}
+// The region, shown beside the name where the set mixes regions or territories.
+function whereOf(c){const f=BY[c];return f.sov?f.r:geoOf(f)+", territory"}
+function nameLine(c,showRegion=true){return nameLink(c)+(showRegion?`<span class="where">${esc(whereOf(c))}</span>`:"")}
+// Under the name: the capital on one line, the flag's years on the next, each its own link.
+function facts(c){const L=links(c),f=BY[c],plain=L.sameCap||f.cap==="None",cap=f.cap==="None"?"No capital":f.cap;
+  return `<span class="capital">${plain?esc(cap):wl(L.cap,esc(cap))}</span><span class="capital">${wl(L.flag,flagYears(c),"The flag on Wikipedia")}</span>`}
 // "Flag adopted 1994", or, where the same design is older (ORIGIN), both years with what each was:
 // "Flag 1889 (21 stars), 1992 (27 stars)".
 function flagYears(c){const y=typeof ADOPTED==="object"&&ADOPTED[c],o=typeof ORIGIN==="object"&&ORIGIN[c];if(!y)return "Flag";
-  if(!o)return "Flag adopted "+y;const [oy,t,n]=o;return `Flag ${oy}${t?` (${t})`:""}, ${y}${n?` (${n})`:""}`}
+  if(!o)return "Flag adopted "+y;const [oy,t,n]=o;const nw=x=>`<span class="nw">${esc(x)}</span>`;
+  // each year with its label stays on one line; the line breaks between them
+  return `Flag ${nw(oy+(t?` (${t})`:""))}, ${nw(y+(n?` (${n})`:""))}`}
 // The flag on a card: tap to open it in the viewer.
 function cardFlag(c,vi){return `<button type="button" class="flink" onclick="openFlag('${c}',+this.querySelector('.fl:not([hidden])').dataset.v)" title="View large">${img(c,"flag",vi)}</button>`}
 // A small map of the flag's region, the country filled in; opens the viewer on the map slide.
@@ -571,7 +576,7 @@ function viewQuiz(){
       reveal=ok?`<div class="card lore toast"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`
       :`<div class="card lore">
         <p class="verdict bad">Not quite ${pill}</p>
-        <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p></div>
+        <div><h2>${nameLine(q.c)}</h2><div class="facts">${facts(q.c)}</div></div>
         ${reverse?cardFlag(q.c,q.v||0):""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
       </div>
@@ -580,7 +585,7 @@ function viewQuiz(){
     reveal=`<div class="card lore">
       <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
       ${reverse?cardFlag(q.c,q.v||0)+vchips(q.c,q.v||0,"setQVar(%i)"):""}
-      <div><h2>${nameLink(q.c)}</h2><p class="capital">${capLine(q.c)}</p>${useLine(q.c,q.v||0)}${reverse?"":vchips(q.c,q.v||0,"setQVar(%i)")}</div>
+      <div><h2>${nameLine(q.c)}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c,q.v||0)}${reverse?"":vchips(q.c,q.v||0,"setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
       ${mapCard(q.c)}
       ${miss}
@@ -661,7 +666,7 @@ function viewStudy(){
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
   const status=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${mapHas(f.c)?`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`:""}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${mapHas(f.c)?`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`:""}</div><div class="t"><span class="head"><span class="name">${nameLine(f.c,mixed)}</span>${status(f)}</span><span class="facts">${facts(f.c)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
