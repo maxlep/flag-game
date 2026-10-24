@@ -444,7 +444,7 @@ function renderQuiz(){
 function shell(sub){
   const total=QUIZ.length,m=QUIZ.filter(f=>mastered(f.c)).length,lord=!!badges.lord;
   if(!sub)return `<div class="sticky"><div class="top"><div><h1 class="brand">Flags of the world</h1>${lord?`<p class="eyebrow" style="color:var(--gold)">Flag Lord · since ${fmtDate(badges.lord)}</p>`:""}</div><span class="stat">${m}/${total}</span></div></div>`;
-  return `<div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ ${esc(sub.back||"Home")}</button><span class="stat">${esc(sub.stat||"")}</span></div>${sub.extra?`<div class="top titlerow"><h2 class="subtitle">${esc(sub.title)}</h2>${sub.extra}</div>`:`<h2 class="subtitle">${esc(sub.title)}</h2>`}</div>`;
+  return `<div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ ${esc(sub.back||"Home")}</button><span class="stat">${esc(sub.stat||"")}</span></div>${sub.extra?`<div class="top titlerow"><h2 class="subtitle">${esc(sub.title)}</h2>${sub.extra}</div>`:`<h2 class="subtitle">${esc(sub.title)}</h2>`}${sub.below||""}</div>`;
 }
 // A home card: the card itself starts a round; the trailing link opens the study list.
 const BOOK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>`;
@@ -470,6 +470,10 @@ function setCards(list){
     return card({name:r,marks,count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`,map:exploreOf(r,regionAll(r).map(f=>f.c))?`openExplore('${r}')`:null})}).join("");
 }
 const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
+// The scope as a pill of three, the same on the study list and the map: all three in view, the current one filled.
+const scopeChips=(cls,fn)=>`<div class="vchips ${cls}" role="group" aria-label="Flags">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" aria-pressed="${SET.scope===v}" onmousedown="event.preventDefault()" onclick="${fn}('${v}')">${l}</button>`).join("")}</div>`;
+// From the study list: the wide list's name follows the scope.
+function studyScope(v){if(SET.scope===v)return;if(WIDE.includes(S.region))S.region={countries:"Whole world",all:"Everything",territories:"All territories"}[v];setOpt("scope",v)}
 const scopeSeg=(note,label)=>`<div class="seg">${label?'<span class="label">Flags</span>':""}<div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
 // The wide card's descriptions, for the scope it covers.
 function wideDesc(){const w={countries:"every country",all:"every flag",territories:"every territory"}[SET.scope];
@@ -698,9 +702,8 @@ function viewStudy(){
   const mixed=wide||SET.scope!=="countries";
   const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+studyEntry(f,mixed)}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
-  const sel=`<select id="scopeSel" onchange="if(WIDE.includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
   const mapb=exploreOf(wide?"World":r,regionAll(r).map(f=>f.c))?`<button type="button" class="mapopen" onclick="openExplore(S.region,null,studyTop())" title="Study on the map">${MAPICON}Map</button>`:"";
-  return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:`<div class="tr-ctl">${mapb}${sel}</div>`})}${index}
+  return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:mapb,below:scopeChips("studyscope","studyScope")})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
   ${list.length?`<button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${wide?scopeName():r}')">Quiz me on ${esc(wide?scopeName():r)}</button>`:'<p class="muted small">No flags in this region for the current scope.</p>'}`;
 }
@@ -773,6 +776,9 @@ const regionAll=r=>WIDE.includes(r)?FLAGS:FLAGS.filter(f=>geoOf(f)===r);
 function openExplore(region,keep,at,sel){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
   ex.on=new Set(studyList(region).map(f=>f.c));
   openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep,at});if(sel&&LB&&LB.what==="explore")exPick(sel,true)}
+// The map is a page, not a pop-up, so it has a back button like the others, naming where it goes: the study list it
+// was opened from, or home.
+function exBackTo(){return S.view==="study"?(WIDE.includes(S.region)?scopeName():S.region):S.view==="home"?"Home":"Back"}
 // The region picker in the map's title: every region with shapes, then the whole world (named for the scope).
 function exRegionSel(cur){const regs=[...ALLREGIONS.filter(r=>exploreOf(r,regionAll(r).map(f=>f.c))),scopeName()];
   return `<label class="lb-region"><span class="nm">${esc(WIDE.includes(cur)?scopeName():cur)}</span><select aria-label="Region" onchange="exRegion(this.value)">${regs.map(r=>`<option value="${esc(r)}"${r===cur||(WIDE.includes(cur)&&r===scopeName())?" selected":""}>${esc(r)}</option>`).join("")}</select></label>`}
@@ -789,8 +795,8 @@ function openViewer(c,o){
   const ex=o.what==="explore";
   const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
-    <div class="lb-top"><div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`<div class="vchips lb-scope">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" onmousedown="event.preventDefault()" onclick="exScope('${v}')">${l}</button>`).join("")}</div>`:""}</div><div class="ctl">
-    <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
+    <div class="lb-top"><div class="title">${ex?`<button type="button" class="back lb-back" onclick="closeFlag()">‹ ${esc(exBackTo())}</button>`+exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`${scopeChips("lb-scope","exScope")}`:""}</div><div class="ctl">
+    <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button>${ex?"":`<button type="button" onclick="closeFlag()" aria-label="Close">×</button>`}</div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>
     ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList" aria-label="Places"><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>
     <div class="extab" id="exTab" role="group" aria-label="The list"><button type="button" class="exup" onclick="exStep(1)" aria-controls="exList"><i aria-hidden="true"></i></button><button type="button" class="exdown" onclick="exStep(-1)" aria-controls="exList"><i aria-hidden="true"></i></button></div>`:""}`;
