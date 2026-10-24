@@ -650,21 +650,30 @@ function viewDone(){
   <button class="btn ghost" onclick="goBack()">Choose another set</button>`;
 }
 function studyVar(btn,i){const en=btn.closest(".entry");en.dataset.v=i;showVariant(en.dataset.c,i)}
+// Where a flag stands: learned, points so far, missed, or not quizzed at all.
+const studyPill=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
+// One study entry: flag (opens the viewer), design chips, a small map (drawn later, by wireMiniMaps), name, standing,
+// capital and description. The explorable map's card is the same entry with no small map; its flag says how to open it.
+function studyEntry(f,mixed,o={}){const fl=o.flagClick||`openFlag('${f.c}',+this.closest('.entry').dataset.v)`;
+  return `<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="${fl}" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${o.noMap||!mapHas(f.c)?"":`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${studyPill(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}
+const WIDE=["Whole world","Everything","All territories"];
+// The flags a study list shows, in name order: a region's, or the whole scope's for the wide card.
+const studyList=r=>(WIDE.includes(r)?SCOPED(true):regionFlags(r,true)).slice().sort((a,b)=>a.n.localeCompare(b.n));
+const MAPICON=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>`;
 function viewStudy(){
   const r=S.region;
-  const wide=["Whole world","Everything","All territories"].includes(r);
-  const base=wide?SCOPED(true):regionFlags(r,true);
-  const list=base.slice().sort((a,b)=>a.n.localeCompare(b.n));
+  const wide=WIDE.includes(r);
+  const list=studyList(r);
   const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();
   const letters=[...new Set(list.map(letter))];
   const index=list.length?`<div class="alpha" id="alpha">${letters.map(l=>`<span data-l="${l}">${l}</span>`).join("")}</div>`:"";
   let lastL="";
   const mixed=wide||SET.scope!=="countries";
-  const status=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
-  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+`<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="openFlag('${f.c}',+this.closest('.entry').dataset.v)" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${mapHas(f.c)?`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`:""}</div><div class="t"><span class="head"><span class="name">${nameLink(f.c)}</span>${status(f)}</span><span class="capital">${capLine(f.c,mixed)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}).join("");
+  const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+studyEntry(f,mixed)}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
-  const sel=`<select id="scopeSel" onchange="if(['Whole world','Everything','All territories'].includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
-  return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:sel})}${index}
+  const sel=`<select id="scopeSel" onchange="if(WIDE.includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
+  const mapb=exploreOf(wide?"World":r,list.map(f=>f.c))?`<button type="button" class="mapopen" onclick="openExplore(S.region)" title="Explore on a map">${MAPICON}Map</button>`:"";
+  return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:`<div class="tr-ctl">${mapb}${sel}</div>`})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
   ${list.length?`<button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${wide?scopeName():r}')">Quiz me on ${esc(wide?scopeName():r)}</button>`:'<p class="muted small">No flags in this region for the current scope.</p>'}`;
 }
@@ -724,21 +733,31 @@ let LB=null; // {c, scale, x, y, pts:Map, last:{...}}
 // the chips, for a flag that hasn't been named yet.
 function openFlag(c,vi=0,o){openViewer(c,{what:"flag",vi,...(o||{})})}
 function openMap(c,chips=true){openViewer(c,{what:"map",chips})}
+// The explorable map: a study list's flags laid out on the map of its region. A tap selects a shape; the card at the
+// bottom is its study entry. The card's flag opens the designs, and closing those comes back here as it was (EXRET).
+let EXRET=null;
+function openExplore(region,keep){const wide=WIDE.includes(region),list=studyList(region),ex=exploreOf(wide?"World":region,list.map(f=>f.c));if(!ex)return;
+  openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep})}
+function exFlag(c){if(!LB||LB.what!=="explore")return;const vi=+(LB.el.querySelector(".excard .entry")||{dataset:{v:0}}).dataset.v;
+  EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y};openFlag(c,vi)}
 function openViewer(c,o){
-  closeFlag();
-  const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"");el.id="lb";
+  closeFlag(true);
+  const ex=o.what==="explore";
+  const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
-    <div class="lb-top"><div class="title"><span class="nm">${esc(BY[c].n)}</span><span class="sub" id="lbSub"></span></div><div class="ctl">
+    <div class="lb-top"><div class="title"><span class="nm">${esc(ex?o.title:BY[c].n)}</span><span class="sub" id="lbSub"></span></div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-foot"><div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>`;
+    <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   // The cursor only changes when the mouse moves, so the element it is over takes the viewer's cursor meanwhile.
   const under=[...document.querySelectorAll(":hover")].pop();if(under&&!el.contains(under)){under.style.cursor="grab";el._under=under}
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
   const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
-  LB={c,chips:o.chips!==false&&!o.quiet,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
+  LB={c,chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
+  if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null}
   lbShow(o.what,o.vi||0);
+  if(ex&&o.keep){const k=o.keep;LB.scale=k.scale;LB.x=k.x;LB.y=k.y;lbApply();if(k.sel)exSelect(k.sel)}
   if(o.from&&LB.what==="flag"){const r=o.from,C=lbCenter(),s=r.width/LB.baseW;LB.from={s,x:r.left+r.width/2-C.x,y:r.top+r.height/2-C.y};LB.min=Math.min(1,s);LB.scale=s;LB.x=LB.from.x;LB.y=LB.from.y;lbApply()}
   const st=stage;
   st.addEventListener("pointerdown",e=>{capture(st,e);lbDown(e)});
@@ -747,7 +766,7 @@ function openViewer(c,o){
   st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
   st.addEventListener("dblclick",e=>{if(e.pointerType==="touch"||e.sourceCapabilities?.firesTouchEvents)return;lbToggle({x:e.clientX,y:e.clientY})});
   el.addEventListener("mousedown",e=>e.preventDefault()); // a click here must not move focus
-  el.addEventListener("click",e=>{if((e.target===st||e.target.classList.contains("lb-slide"))&&!LB.moved)closeFlag()});
+  el.addEventListener("click",e=>{if(LB&&LB.what!=="explore"&&(e.target===st||e.target.classList.contains("lb-slide"))&&!LB.moved)closeFlag()});
 }
 const capture=(el,e)=>{try{el.setPointerCapture(e.pointerId)}catch(x){}};
 // The pointer handlers, shared with the question flag, which hands its own pointers over once the viewer is open.
@@ -755,7 +774,8 @@ function lbDown(e){if(!LB)return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY
 function lbMove(e){if(!LB||!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const cur=[...LB.pts.values()],s0=LB.start,st=LB.stage;
   if(cur.length===1&&s0.pts.length===1){
     const dx=cur[0].x-s0.pts[0].x,dy=cur[0].y-s0.pts[0].y;
-    if(LB.scale>LB.min||LB.from){LB.x=s0.x+dx;LB.y=s0.y+dy;if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;lbApply()}
+    if(Math.abs(dx)+Math.abs(dy)>6)LB.moved=true;
+    if(LB.scale>LB.min||LB.from){LB.x=s0.x+dx;LB.y=s0.y+dy;lbApply()}
   }
   else if(cur.length>=2&&s0.pts.length>=2){const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const want=s0.scale*d(cur[0],cur[1])/Math.max(1,d(s0.pts[0],s0.pts[1]));
     if(LB.from&&want<=LB.min){closeFlag();return} // pinched back down to its own size
@@ -768,12 +788,20 @@ function lbMove(e){if(!LB||!LB.pts.has(e.pointerId))return;LB.pts.set(e.pointerI
 function lbUp(e){if(!LB)return;LB.pts.delete(e.pointerId);const st=LB.stage;
   if(!LB.pts.size){st.classList.remove("drag");lbSettle(true)}
   LB.start={scale:LB.scale,x:LB.x,y:LB.y,pts:[...LB.pts.values()],at:Date.now()};
+  // On the explorable map a tap selects; the second tap of a double tap zooms instead (a mouse's goes to dblclick).
+  if(LB.what==="explore"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap,dbl=t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30;
+    if(!dbl){exTap(e.clientX,e.clientY);LB.lastTap={at:now,x:e.clientX,y:e.clientY}}
+    else{LB.lastTap=null;if(e.pointerType==="touch")lbToggle({x:e.clientX,y:e.clientY})}
+    return}
   if(e.pointerType==="touch"&&!LB.moved&&!LB.pts.size){const now=Date.now(),t=LB.lastTap;
     if(t&&now-t.at<320&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){LB.lastTap=null;lbToggle({x:e.clientX,y:e.clientY})}else LB.lastTap={at:now,x:e.clientX,y:e.clientY}}}
 // The flag is centred in the stage and transformed as translate(x,y) scale(s) about its own centre C, so a local
 // offset q shows at C+t+s·q. Zooming by f about a screen point P keeps the point under P fixed: t' = (1-f)(P-C) + f·t.
 // A double tap goes between 2.5x and the size it opened at (its place on the page, when it came from there).
-function lbToggle(P){if(!LB)return;if(LB.scale>LB.min+0.01){LB.scale=LB.min;LB.x=LB.from?LB.from.x:0;LB.y=LB.from?LB.from.y:0;lbApply()}else lbZoom(2.5/LB.min,P)}
+function lbToggle(P){if(!LB)return;
+  // The explorable map goes between where it opened and 2.5 times closer.
+  if(LB.what==="explore"){if(Math.abs(LB.scale-LB.home)<0.01)lbZoom(2.5,P);else lbExHome();return}
+  if(LB.scale>LB.min+0.01){LB.scale=LB.min;LB.x=LB.from?LB.from.x:0;LB.y=LB.from?LB.from.y:0;lbApply()}else lbZoom(2.5/LB.min,P)}
 // The stage's content box (its padding leaves room for the bar at the top): where the flag is centred.
 function lbBox(){const st=LB.stage,cs=getComputedStyle(st),pt=parseFloat(cs.paddingTop),pb=parseFloat(cs.paddingBottom),pl=parseFloat(cs.paddingLeft),pr=parseFloat(cs.paddingRight),r=st.getBoundingClientRect();
   return {left:r.left+pl,top:r.top+pt,w:r.width-pl-pr,h:r.height-pt-pb}}
@@ -808,16 +836,24 @@ function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
   const f=(fl.dataset.fit||"").split(" ").map(Number);if(f.length!==4)return;
   const v=LB.vb0,u=v.w/LB.baseW,s=Math.min(lbMax(),Math.max(1,Math.min(v.w/f[2],v.h/f[3])));
   LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
+// The explorable map opens with its region filling the stage: the region's frame (data-fit) covers it, so a wide
+// region on a tall phone fills the height and pans sideways. No more than twice the size that shows all of it.
+function lbExHome(){if(!LB)return;const fl=LB.fl,v=LB.vb0,f=(fl.dataset.fit||"").split(" ").map(Number);if(f.length!==4)return;
+  const u=v.w/LB.baseW,contain=Math.min(v.w/f[2],v.h/f[3]),cover=Math.max(v.w/f[2],v.h/f[3]),s=Math.max(1,Math.min(lbMax(),cover,contain*2));
+  LB.home=s;LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
 // The strip of designs: slide vi is in view. The chips move it (animated); there is no swiping, so a drag is always a pan.
 function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(${-100*LB.vi}%)`}
 function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}lbTrack(true)}
 // Fill the stage with the designs (slide vi in view) or the map, from rest.
 function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
   LB.what=what;LB.scale=1;LB.x=0;LB.y=0;LB.vb0=null;LB.from=null;LB.min=1;
-  if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:lbBox().w/lbBox().h,pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
+  if(what==="explore"){LB.track.innerHTML=`<div class="lb-slide">${mapExploreSVG({...LB.ex,cls:"lbmap",aspect:lbBox().w/lbBox().h})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
+  else if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:lbBox().w/lbBox().h,pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
   else{LB.track.innerHTML=Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("");LB.n=nd;LB.vi=Math.min(nd-1,vi);LB.fls=[...LB.track.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]}
   LB.fl=LB.fls[LB.vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbTrack(false);lbCaption();if(what==="map")lbMapHome();
-  $("#lbHint").textContent="Pinch or scroll to zoom · drag to pan · double-tap to reset"}
+  // The explorable map's dots are a fixed size on screen (radius 4px, the tap ring 14px), whatever the frame.
+  if(what==="explore"){const u=LB.vb0.w/LB.baseW;LB.fl.querySelectorAll(".dot.ex").forEach(k=>k.dataset.r=(4*u).toFixed(3));LB.fl.querySelectorAll(".hit").forEach(k=>k.dataset.r=(14*u).toFixed(3));lbExHome()}
+  $("#lbHint").textContent=what==="explore"?"Tap a place to see its flag · pinch to zoom":"Pinch or scroll to zoom · drag to pan · double-tap to reset"}
 // The arrow keys walk the chips: designs, then the map.
 function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(mapHas(LB.c)?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
 // A chip: a design (by index) or the map.
@@ -826,15 +862,49 @@ function lbPick(k){if(!LB)return;const v=VARS(LB.c),nd=v?v.length:1;if(k>=nd)lbS
 function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;const vb=m.viewBox.baseVal,b=lbBox();m.style.width=Math.min(b.w,b.h*vb.width/vb.height).toFixed(1)+"px"}
 // Under the stage: a line naming what's shown (the design, or the capital and region on the map) and one row of
 // chips: the designs by name, then Map. Neither before the flag has been named in a round.
-function lbCaption(){if(!LB)return;const c=LB.c,f=BY[c],onMap=LB.what==="map",v=VARS(c);
+function lbCaption(){if(!LB)return;if(LB.what==="explore")return exCaption();const c=LB.c,f=BY[c],onMap=LB.what==="map",v=VARS(c);
   const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(mapHas(c))names.push("Map");
   const cur=onMap?names.length-1:LB.vi;
   const chips=LB.chips&&names.length>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===cur?" on":""}" onmousedown="event.preventDefault()" onclick="lbPick(${k})">${esc(t)}</button>`).join("")}</div>`:"";
   const d=v&&v[LB.vi];
   $("#lbSub").innerHTML=onMap?`${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`} · ${esc(f.sov?f.r:geoOf(f))}`:esc(d?d.l+(d.d?" · "+d.d:""):useLabel(c));
   $("#lbVar").innerHTML=chips}
-function closeFlag(){if(!LB)return;const {el,refocus}=LB;if(el._under)el._under.style.cursor="";el.remove();document.body.style.overflow="";LB=null;
+// replacing: another view is about to open in its place. A flag opened from the explorable map goes back to the map.
+function closeFlag(replacing){if(!LB)return;const {el,refocus,what}=LB;if(el._under)el._under.style.cursor="";el.remove();document.body.style.overflow="";LB=null;
+  if(replacing)return;
+  if(what==="explore")EXRET=null;
+  else if(EXRET){const k=EXRET;EXRET=null;openExplore(k.region,k);return}
   if(refocus){const inp=$("#typeIn");if(inp)inp.focus({preventScroll:true})}}
+
+// ---------- EXPLORABLE MAP ----------
+// Which shape a tap landed on. Every shape and dot under the point counts, smallest first (they are drawn on top). A
+// second tap on the same spot goes to the next one under it, so a country covered by its parts can still be reached.
+function exTap(x,y){if(!LB||LB.what!=="explore")return;
+  const hits=[...new Set(document.elementsFromPoint(x,y).filter(n=>LB.fl.contains(n)).map(n=>n.dataset.c).filter(Boolean))];
+  if(!hits.length){exSelect(null);return}
+  const i=hits.indexOf(LB.sel);exSelect(i>=0?hits[(i+1)%hits.length]:hits[0],hits)}
+// Select a flag: fill its shape, mark its capital, show its card. Null clears the selection.
+function exSelect(c,hits){if(!LB)return;const m=LB.fl,sel=m.querySelector(".sel"),marks=m.querySelector(".marks");
+  LB.sel=c;LB.hits=c&&hits&&hits.length>1?hits:null;
+  m.querySelectorAll(".dot.ex.on").forEach(d=>d.classList.remove("on"));
+  sel.innerHTML="";marks.innerHTML="";
+  if(c){const S=MAP.set[MAP.frame[LB.ex.frame].set],sy=+m.dataset.sy;
+    sel.innerHTML=`<path class="hi" d="${S.shape[c]}"/>`;
+    const d=m.querySelector(`.dot.ex[data-c="${c}"]`);if(d)d.classList.add("on");
+    if(S.cap[c]){const [cx,cy]=S.cap[c],r=3.5*LB.vb0.w/LB.baseW;
+      marks.innerHTML=`<circle class="cap" data-r="${r.toFixed(2)}" cx="${cx}" cy="${(cy*sy).toFixed(1)}" r="${(r/LB.scale).toFixed(2)}"/>`}}
+  exCaption();exCard()}
+function exCaption(){if(!LB)return;const n=LB.ex.codes.length,c=LB.sel;
+  let t=n+(n===1?" place":" places");
+  if(c&&LB.hits){const i=LB.hits.indexOf(c),nx=LB.hits[(i+1)%LB.hits.length];t=`Tap again for ${BY[nx].n}`}
+  $("#lbSub").textContent=t;$("#lbVar").innerHTML=""}
+// The card: the flag's study entry. Its flag opens the designs in the viewer; closing them comes back to the map.
+function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel;
+  LB.el.classList.toggle("picked",!!c);
+  if(!c){box.innerHTML="";return}
+  const mixed=WIDE.includes(LB.region)||SET.scope!=="countries";
+  box.innerHTML=`<button type="button" class="exclose" onclick="exSelect(null)" aria-label="Close the card">×</button>`+studyEntry(BY[c],mixed,{noMap:true,flagClick:`exFlag('${c}')`});
+  box.scrollTop=0}
 
 // The question flag opens the viewer with the flag where it is: a tap, a pinch, a double click or the wheel. A
 // pinch's pointers are captured by the flag's box, so their moves and lifts are passed on to the viewer.

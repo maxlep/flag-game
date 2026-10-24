@@ -359,3 +359,27 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 /* In the study column the flag hugs its artwork (no 4:3 slot), so the gaps to the chips and the map are the same. */
 .entry .fcol .flag{aspect-ratio:auto;height:auto;align-items:flex-start}
 .entry .fcol .flag .fl{width:100%} /* flag, chips and map share one width */
+/* The explorable map. Land outside the list is faded, so the places you can tap stand out; borders come from each
+   place's own outline. Small places get a dot, with an invisible wider ring that takes the tap. The card at the
+   bottom is the study entry of the place selected. */
+.tr-ctl{display:flex;gap:8px;align-items:center;flex:none;min-width:0;max-width:70%}
+.tr-ctl select{max-width:none;min-width:0}
+.mapopen{display:inline-flex;align-items:center;gap:6px;flex:none;padding:6px 10px;font-size:14px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--accent);font-weight:600}
+.mapopen svg{width:16px;height:16px}
+.mapopen:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.map.explore{border-radius:0}
+.map.explore .land path{opacity:.5}
+.map .ct{fill:var(--landfill,#f7f3ea);stroke:var(--landline,#b9b2a4);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round;cursor:pointer}
+@media (hover:hover){.map .ct:hover{fill:var(--tint)}}
+.map .sel,.map .marks{pointer-events:none}
+.map .dot.ex{fill:var(--muted);stroke:var(--landfill,#f7f3ea);stroke-width:1;vector-effect:non-scaling-stroke;cursor:pointer}
+.map .dot.ex.on{fill:var(--accent)}
+.map .hit{fill:transparent;cursor:pointer}
+.lb.exploring .lb-var{display:none}
+.lb.picked .lb-hint{display:none}
+.excard{position:relative;width:min(560px,100%);pointer-events:auto;text-align:left;color:var(--ink)}
+.excard:empty{display:none}
+.excard .entry{max-height:min(42vh,320px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.exclose{position:absolute;top:-12px;right:-6px;z-index:1;width:32px;height:32px;border-radius:50%;background:var(--surface);color:var(--ink);border:1px solid var(--line);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.excard .flag{width:auto}
+.excard .flag .fl{box-shadow:none;max-width:100%;will-change:auto}
