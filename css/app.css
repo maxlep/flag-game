@@ -507,7 +507,9 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 /* The map quiz: the question small at the top of the middle band and the map under it, filling the rest (its height is
    set in wireQuizMap). The place selected is outlined in the accent colour; after the answer the right place is green
    and a wrong pick red. Small places keep their dots, with a ring for the mark. Master draws no borders. */
-.qmid.mapq{gap:10px;padding-top:10px}
+.qmid.mapq{gap:10px;padding-top:2px;padding-bottom:4px}
+.qscreen:has(.qmid.mapq) .qdrawer{padding-top:8px}
+.qmid.mapq .qprompt .eyebrow{margin:0 0 4px}
 .qmid.mapq .qprompt{text-align:center}
 .qmid.mapq .qprompt .ask{font-size:24px}
 .qmid.mapq .flag.big{max-height:var(--qmf)}
