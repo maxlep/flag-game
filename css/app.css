@@ -145,9 +145,6 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .tile .tmain{flex:1;display:flex;flex-direction:column;gap:8px;padding:14px 14px 10px;text-align:left;width:100%;transition:background .1s}
 .tile:not(.wide) .tmain .count{margin-top:auto}
 .tile .tmain:active{background:var(--tint)}
-.tile .tstudy{align-self:flex-end;display:inline-flex;align-items:center;gap:5px;padding:4px 14px 10px;font-size:13px;font-weight:500;color:var(--muted);transition:color .1s}
-.tile .tstudy svg{width:15px;height:15px;flex:none}
-.tile .tstudy:hover,.tile .tstudy:focus-visible{color:var(--accent)}
 .tile.dim{opacity:.5}
 .opt:active,.fopt:active{transform:scale(.985)}
 .tile .name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.15}
@@ -158,7 +155,6 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .tile.wide{grid-column:1/-1;flex-direction:row;align-items:stretch}
 .tile.wide .tmain{flex-direction:row;align-items:center;justify-content:space-between;padding:14px}
-.tile.wide .tstudy{align-self:center;padding:14px;border-left:1px solid var(--line)}
 .tile.wide .name{font-size:17px;white-space:nowrap}
 .tile.gold{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
 .tile.gold .count{color:var(--ink)}
@@ -404,19 +400,20 @@ h2 .where{font-size:13px}
 .excard .entry.outside .flink .fl{opacity:.4;filter:grayscale(.7)}
 .pill.outside{background:var(--ink);color:var(--surface);font-weight:600}
 .excard .entry .t .head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:4px}
-/* A region card's links: Map and Study, side by side at the bottom (on the wide card, at the end of the row). */
-.tile .tlinks{display:flex;justify-content:flex-end;align-self:stretch}
-.tile .tlinks .tstudy{align-self:auto}
-.tile:not(.wide) .tlinks .tstudy{padding-left:8px;padding-right:12px}
-.tile.wide .tlinks{align-items:stretch}
-.tile.wide .tlinks .tstudy{align-self:stretch}
 /* The map's title is the region picker: the name with a chevron, and the native select laid over it, invisible. */
 .lb-region{position:relative;display:inline-flex;align-items:center;gap:6px;align-self:flex-start;max-width:100%;cursor:pointer;pointer-events:auto}
 .lb-region .nm::after{content:"";display:inline-block;width:8px;height:8px;margin:0 0 4px 9px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);opacity:.75}
 .lb-region select{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;font-size:16px}
 .lb-region select option{color:#111}
 .lb-region:focus-within{outline:3px solid #8fb0ff;outline-offset:3px;border-radius:6px}
-.tile.wide .tlinks .tstudy{padding:14px 10px;gap:4px}
 .tile.wide .tmain{min-width:0}
-/* A wide card with both links puts its count under the name, so the row fits a narrow phone. */
-.tile.wide.two .tmain{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}
+/* A card's study buttons: the book (the list) and the map, joined in one bordered control at the bottom right (at the
+   end of the row on a wide card). */
+.tile .tlinks{display:flex;justify-content:flex-end;padding:0 10px 10px}
+.tile.wide .tlinks{align-items:center;padding:0 12px 0 0}
+.tseg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.tico{width:44px;height:38px;display:flex;align-items:center;justify-content:center;color:var(--accent);transition:background .1s}
+.tico+.tico{border-left:1.5px solid var(--line)}
+.tico svg{width:19px;height:19px}
+.tico:hover,.tico:active{background:var(--tint)}
+.tico:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
