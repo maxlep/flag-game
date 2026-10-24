@@ -104,7 +104,7 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
         await p.mouse.move(box.x,box.y);await p.mouse.down();await p.mouse.move(box.x+40,box.y+20,{steps:4});await p.mouse.up();
         expect(await js(p,v=>document.querySelector(".qmap svg").getAttribute("viewBox")!==v,vb0),"zoom and pan move the map");
         expect(await js(p,()=>!S.qs[S.i].sel),"a drag selects nothing");
-        await p.mouse.dblclick(box.x,box.y);await p.waitForTimeout(150);
+        await tap(p,'.qmctl button[aria-label="Zoom out"]');
       }
       // A wrong place on the first question: the first place in the round that isn't the answer.
       const want=n===0?await js(p,c=>S.qs.map(x=>x.c).find(x=>x!==c),q.c):q.c;
@@ -118,7 +118,8 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
       for(let k=0;k<4&&(await js(p,()=>S.qs[S.i].sel))!==want;k++){await p.mouse.click(pt.x,pt.y);await p.waitForTimeout(380)} // overlapping places cycle
       expect(await js(p,c=>S.qs[S.i].sel===c,want),"a tap selects the place",want);
       expect(await js(p,()=>!S.qs[S.i].ans&&!$("#qmCheck").disabled),"selected, not yet answered");
-      if(n%2)await tap(p,"#qmCheck");
+      if(n===1){await p.mouse.dblclick(pt.x,pt.y);await p.waitForTimeout(200)} // a double tap answers with the place selected
+      else if(n%2)await tap(p,"#qmCheck");
       else{await p.evaluate(()=>document.activeElement&&document.activeElement.blur&&document.activeElement.blur());await p.keyboard.press("Enter");await p.waitForTimeout(150)}
       expect(await js(p,c=>S.qs[S.i].ans===c,want),"Check answers with the place selected",await js(p,()=>({ans:S.qs[S.i].ans,sel:S.qs[S.i].sel,act:document.activeElement&&document.activeElement.tagName})));
       expect(await js(p,()=>!!document.querySelector(".qmap .sel .right")),"the right place is marked");

@@ -202,7 +202,15 @@ function qmTap(x, y) {
     )
   ];
   const i = hits.indexOf(q.sel);
+  // Kept for a double tap: when this tap only moved on from a place already selected under it, the double tap means
+  // that place (the United Kingdom picked by tapping again over England is the one answered).
+  qmPrev = i >= 0 ? q.sel : null;
   q.sel = !hits.length ? null : i >= 0 ? hits[(i + 1) % hits.length] : hits[0];
+  qmPick(svg, q);
+}
+let qmPrev = null;
+// A selection changed: saved with the round, marked on the map, named on Easy, Check enabled.
+function qmPick(svg, q) {
   saveRound();
   qmMark(svg, q);
   // Easy names the place picked, so a wrong tap teaches something before Check.
@@ -214,6 +222,16 @@ function qmTap(x, y) {
 function qmCheck() {
   const q = S.qs[S.i];
   if (q.sel && !q.ans) answer(q.sel);
+}
+// A double tap answers with the place its first tap picked, so Check needn't be reached for at the bottom.
+function qmDouble() {
+  const q = S.qs[S.i];
+  if (q.ans) return;
+  if (qmPrev) {
+    q.sel = qmPrev;
+    qmPrev = null;
+  }
+  qmCheck();
 }
 // Zoom about a point on screen (the middle when none is given).
 function qmZoom(f, P) {
@@ -229,7 +247,7 @@ function qmZoom(f, P) {
     h = v[3] / f;
   qmSet(svg, [wx - (P.x - r.left) * (w / r.width), wy - (P.y - r.top) * (w / r.width), w, h]);
 }
-// Drag pans, two fingers pinch, the wheel zooms, a tap selects, a double tap goes back to the whole frame.
+// Drag pans, two fingers pinch, the wheel zooms, a tap selects, a double tap answers.
 function qmGestures(svg, box) {
   const pts = new Map();
   let st = null,
@@ -283,12 +301,25 @@ function qmGestures(svg, box) {
     const now = Date.now();
     if (last && now - last.t < 320 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 30) {
       last = null;
-      qmSet(svg, svg._home);
-      return;
+      return qmDouble();
     }
     last = {t: now, x: e.clientX, y: e.clientY};
     qmTap(e.clientX, e.clientY);
   };
+  // The page itself must not zoom on a double tap (iOS does, whatever touch-action says): the second quick touch's
+  // default is cancelled. The pointer events above still arrive; the zoom buttons keep their clicks.
+  let lastTouch = 0;
+  box.addEventListener(
+    "touchend",
+    e => {
+      if (e.target.closest("button")) return;
+      const now = Date.now();
+      if (now - lastTouch < 350) e.preventDefault();
+      lastTouch = now;
+    },
+    {passive: false}
+  );
+  box.addEventListener("dblclick", e => e.preventDefault());
   box.addEventListener("pointerup", end);
   box.addEventListener("pointercancel", end);
   box.addEventListener("lostpointercapture", e => end({type: "pointercancel", pointerId: e.pointerId}));
