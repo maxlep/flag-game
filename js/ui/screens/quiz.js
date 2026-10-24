@@ -38,7 +38,7 @@ function viewQuiz() {
     // Easy names the part of the region it is in, beside the name as regions are on the cards (under the flag when the
     // question is the flag); only that part can be tapped.
     const area = S.diff === "easy" && AREA_OF[q.c] ? `<span class="where">in ${esc(AREA_OF[q.c])}</span>` : "";
-    prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}${area}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>${area ? `<p class="qarea">${area}</p>` : ""}`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
+    prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="ask">${esc(f.n)}${area}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>${area ? `<p class="qarea">${area}</p>` : ""}`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
     ask = `<p class="eyebrow">Select it on the map.</p>`;
     // In Drill a right answer moves on by itself with no card. As in the other Drill rounds, Next appears so you can move
     // on sooner; it takes the place of the Check row, under the same instruction, so the drawer and the map keep their
