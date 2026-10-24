@@ -413,7 +413,7 @@ h2 .where{font-size:13px}
 /* A card's study buttons: the book (the list) and the map, joined in one bordered control at the bottom right (at the
    end of the row on a wide card). */
 .tile .tlinks{display:flex;justify-content:flex-end;padding:0 10px 10px}
-.tile.wide .tlinks{align-items:center;padding:0 12px 0 0}
+.tile.wide .tlinks{align-items:center;padding:12px} /* the same gap above, below and to the right */
 .tseg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
 .tico{width:44px;height:38px;display:flex;align-items:center;justify-content:center;color:var(--accent);transition:background .1s}
 .tico+.tico{border-left:1.5px solid var(--line)}
@@ -449,3 +449,4 @@ h2 .where{font-size:13px}
 .tico.tq svg{width:16px;height:16px}
 /* On a narrow phone a wide card with its buttons puts the count under the name, so neither wraps. */
 @media (max-width:440px){.tile.wide:has(.tseg) .tmain{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}}
+.lb-top .lb-list svg{width:19px;height:19px}

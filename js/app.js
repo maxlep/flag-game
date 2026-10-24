@@ -694,7 +694,7 @@ function viewStudy(){
   const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+studyEntry(f,mixed)}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(WIDE.includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
-  const mapb=exploreOf(wide?"World":r,regionAll(r).map(f=>f.c))?`<button type="button" class="mapopen" onclick="openExplore(S.region)" title="Explore on a map">${MAPICON}Map</button>`:"";
+  const mapb=exploreOf(wide?"World":r,regionAll(r).map(f=>f.c))?`<button type="button" class="mapopen" onclick="openExplore(S.region,null,studyTop())" title="Study on the map">${MAPICON}Map</button>`:"";
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:`<div class="tr-ctl">${mapb}${sel}</div>`})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
   ${list.length?`<button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${wide?scopeName():r}')">Quiz me on ${esc(wide?scopeName():r)}</button>`:'<p class="muted small">No flags in this region for the current scope.</p>'}`;
@@ -763,9 +763,10 @@ let EXRET=null;
 // Every flag of the region is drawn and can be tapped, whatever the scope; the scope (set from the bar at the top)
 // only decides which are drawn plainly and which hatched. So the frame doesn't change with it.
 const regionAll=r=>WIDE.includes(r)?FLAGS:FLAGS.filter(f=>geoOf(f)===r);
-function openExplore(region,keep){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
+// at: a flag code whose entry the list opens at (the one at the top of the study list it came from).
+function openExplore(region,keep,at){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
   ex.on=new Set(studyList(region).map(f=>f.c));
-  openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep})}
+  openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep,at})}
 // The region picker in the map's title: every region with shapes, then the whole world (named for the scope).
 function exRegionSel(cur){const regs=[...ALLREGIONS.filter(r=>exploreOf(r,regionAll(r).map(f=>f.c))),scopeName()];
   return `<label class="lb-region"><span class="nm">${esc(WIDE.includes(cur)?scopeName():cur)}</span><select aria-label="Region" onchange="exRegion(this.value)">${regs.map(r=>`<option value="${esc(r)}"${r===cur||(WIDE.includes(cur)&&r===scopeName())?" selected":""}>${esc(r)}</option>`).join("")}</select></label>`}
@@ -776,14 +777,14 @@ function exScope(v){if(!LB||LB.what!=="explore"||SET.scope===v)return;const k={s
   if(WIDE.includes(r))r=S.region={countries:"Whole world",all:"Everything",territories:"All territories"}[v];
   setOpt("scope",v);openExplore(r,k)}
 function exFlag(c,btn){if(!LB||LB.what!=="explore")return;const en=btn&&btn.closest(".entry"),vi=en?+en.dataset.v:0,b=$("#exBody");
-  EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y,top:b?b.scrollTop:0};openFlag(c,vi)}
+  EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y,top:b?b.scrollTop:0};openFlag(c,vi,{fromEx:true})}
 function openViewer(c,o){
   closeFlag(true);
   const ex=o.what==="explore";
   const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
     <div class="lb-top"><div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`<div class="vchips lb-scope">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" onmousedown="event.preventDefault()" onclick="exScope('${v}')">${l}</button>`).join("")}</div>`:""}</div><div class="ctl">
-    <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
+    ${ex?`<button type="button" class="lb-list" onclick="exToList()" title="Study as a list" aria-label="Study as a list" aria-describedby="exListD">${BOOK}</button><span hidden id="exListD">The same places as a page you scroll, opened at the place selected or at the one at the top of the list here.</span>`:""}<button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>
     ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList"><button type="button" class="exhandle" onclick="exFold()" aria-expanded="${!SET.exFold}"><span id="exCount"></span><i aria-hidden="true"></i></button><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>`:""}`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
@@ -792,9 +793,10 @@ function openViewer(c,o){
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
   const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
-  LB={c,chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
+  LB={c,fromEx:!!o.fromEx,chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
   if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null;exListBuild();exLayout()}
   lbShow(o.what,o.vi||0);
+  if(ex&&o.at&&!o.keep){const b=$("#exBody"),en=b&&b.querySelector(`.entry[data-c="${o.at}"]`);if(en)b.scrollTop+=en.getBoundingClientRect().top-b.getBoundingClientRect().top-8}
   if(ex&&o.keep){const k=o.keep;LB.scale=k.scale;LB.x=k.x;LB.y=k.y;lbApply();if(k.top!==undefined)$("#exBody").scrollTop=k.top;if(k.sel)exSelect(k.sel,null,k.top===undefined)}
   if(o.from&&LB.what==="flag"){const r=o.from,C=lbCenter(),s=r.width/LB.baseW;LB.from={s,x:r.left+r.width/2-C.x,y:r.top+r.height/2-C.y};LB.min=Math.min(1,s);LB.scale=s;LB.x=LB.from.x;LB.y=LB.from.y;lbApply()}
   const st=stage;
@@ -910,7 +912,9 @@ function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
   if(what==="explore"){const u=LB.vb0.w/LB.baseW;LB.fl.querySelectorAll(".dot.ex").forEach(k=>k.dataset.r=((k.classList.contains("out")?3:5)*u).toFixed(3));LB.fl.querySelectorAll(".hit").forEach(k=>k.dataset.r=(14*u).toFixed(3));lbExHome()}
   $("#lbHint").textContent=what==="explore"?"Tap a place to see its flag · pinch to zoom":"Pinch or scroll to zoom · drag to pan · double-tap to reset"}
 // The arrow keys walk the chips: designs, then the map.
-function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(mapHas(LB.c)?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
+function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(lbMapChip()?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
+// The Map chip, except for designs opened from the explorable map: a map inside the map would only confuse.
+const lbMapChip=()=>mapHas(LB.c)&&!LB.fromEx;
 // A chip: a design (by index) or the map.
 function lbPick(k){if(!LB)return;const v=VARS(LB.c),nd=v?v.length:1;if(k>=nd)lbShow("map");else if(LB.what==="flag")lbGo(k);else lbShow("flag",k)}
 // The map is sized to fit the stage at scale 1 (an SVG with a viewBox takes its height from its width).
@@ -918,7 +922,7 @@ function lbFit(){const m=LB.el.querySelector(".lb-slide .map");if(!m)return;cons
 // Under the stage: a line naming what's shown (the design, or the capital and region on the map) and one row of
 // chips: the designs by name, then Map. Neither before the flag has been named in a round.
 function lbCaption(){if(!LB)return;if(LB.what==="explore")return exCaption();const c=LB.c,f=BY[c],onMap=LB.what==="map",v=VARS(c);
-  const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(mapHas(c))names.push("Map");
+  const names=v?v.map(x=>x.k[0].toUpperCase()+x.k.slice(1)):["Flag"];if(lbMapChip())names.push("Map");
   const cur=onMap?names.length-1:LB.vi;
   const chips=LB.chips&&names.length>1?`<div class="vchips">${names.map((t,k)=>`<button type="button" class="chipbtn${k===cur?" on":""}" onmousedown="event.preventDefault()" onclick="lbPick(${k})">${esc(t)}</button>`).join("")}</div>`:"";
   const d=v&&v[LB.vi];
@@ -981,6 +985,19 @@ function exListBuild(){const b=$("#exBody"),a=$("#exAlpha");if(!b)return;
 function exFold(){SET.exFold=!SET.exFold;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}
   const L=$("#exList");L.classList.toggle("folded",!!SET.exFold);L.querySelector(".exhandle").setAttribute("aria-expanded",String(!SET.exFold));
   exCard();exLayout();if(!SET.exFold&&LB.sel)exMark(LB.sel,true)}
+// The list and the map are two views of one list, and keep their place between them. From the map: the study list of
+// the region, at the selected place, or else at the entry at the top of the drawer. From the study list: the map,
+// its drawer at the entry at the top of the page (studyTop).
+function exTop(){const b=$("#exBody");if(!b||exFolded())return null;const t=b.getBoundingClientRect().top;
+  const en=[...b.querySelectorAll(".entry")].find(e=>e.getBoundingClientRect().bottom>t+20);return en?en.dataset.c:null}
+function studyTop(){const head=app.querySelector(".sticky"),t=head?head.getBoundingClientRect().bottom:0;
+  const en=[...app.querySelectorAll(".study .entry")].find(e=>e.getBoundingClientRect().bottom>t+20);return en?en.dataset.c:null}
+function exToList(){if(!LB||LB.what!=="explore")return;const r=LB.region,c=LB.sel&&LB.ex.on.has(LB.sel)?LB.sel:exTop();
+  closeFlag();
+  if(S.view==="study"){if(S.region!==r){S.region=r;render()}}else openStudy(r);
+  const en=c&&app.querySelector(`.study .entry[data-c="${c}"]`);if(!en)return;
+  const head=app.querySelector(".sticky"),off=(head?head.getBoundingClientRect().height:0)+8;
+  window.scrollTo(0,en.getBoundingClientRect().top+window.scrollY-off)}
 // The room the list and the card take, as insets on the map: the stage stays full screen, the map's centre and its
 // panning limits move instead. --exh lifts the card above the drawer.
 function exLayout(){if(!LB||!LB.ex)return;const L=$("#exList"),wide=exWide(),top=LB.el.querySelector(".lb-top .title");
