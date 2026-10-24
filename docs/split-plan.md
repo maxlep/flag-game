@@ -1,10 +1,10 @@
 # Plan: splitting js/app.js
 
-Written 2026-10-23 on `preview-coder-1`, branched from `preview` at 1b50f0c. Plan only; nothing is moved yet.
+Written 2026-10-23 on `preview-coder-1`, branched from `preview` at 1b50f0c; updated the same day after merging `preview` at c5786d7 (sorting and grouped lists, the map list's drawer and tab, one scope control). Plan only; nothing is moved yet.
 
 ## Why
 
-`js/app.js` is 1,072 lines and 97 KB: about 190 top-level names, long dense lines, eight sections in one file. Finding things, reviewing diffs and working in two sessions at once all suffer. The split is about reading and changing the code, not about behaviour.
+`js/app.js` is 1,168 lines and 107 KB: about 210 top-level names, long dense lines, nine sections in one file. It grew 10 KB in the evening between two versions of this plan, which is part of the case. Finding things, reviewing diffs and working in two sessions at once all suffer. The split is about reading and changing the code, not about behaviour.
 
 ## What it is not
 
@@ -34,27 +34,31 @@ Decided: two folders, `core/` (no DOM) and `ui/` (draws and listens), organised 
 | `js/core/round.js` | the round: `S`, `poolFor`, `pickOrder`, `optCount`, `distractors`, `startRound`, `submitTyped`, `typeInput`, `pickSugg`, `answer`, `next`, `showLore`, `wake`, `setQVar`, `mixedRound` |
 | `js/core/badges.js` | `BADGES`, `TITLE`, `BADGE`, `checkBadges` |
 | `js/core/share.js` | `SITE`, `flagEmoji`, `shareGrid`, `shareMissed`, `shareText` |
+| `js/core/sort.js` | sorting and grouping a list (A–Z, Region, Area): `AREA_OF`, `AREA_IDX`, `letterOf`, `sortModes`, `sortMode`, `groupList`, `setSort` |
 | `js/ui/dom.js` | `$`, `app`, `capture`, `wl` |
 | `js/ui/parts/flag.js` | drawing a flag and its facts: `img`, `showVariant`, `useLine`, `vchips`, `nameLink`, `nameLine`, `facts`, `cardFlag`, `mapCard` |
 | `js/ui/parts/card.js` | home and region cards: `BOOK`, `CARDN`, `PLAYICON`, `MAPICON`, `card`, `setCards`, `scopeSeg`, `wideDesc`, `shell` |
-| `js/ui/parts/entry.js` | a study entry, shared by the list and the map: `studyVar`, `studyPill`, `scopeLabel`, `studyEntry` |
+| `js/ui/parts/entry.js` | a study entry, shared by the list and the map: `studyVar`, `studyPill`, `scopeLabel`, `studyEntry`, `whereShown` |
+| `js/ui/parts/list.js` | the pieces both lists share: `scopeChips`, `sortChips`, `groupHead`, `groupIndex`, `grpCover`, `stickyHeight`, and `wireAlpha` (the letter index, also used with a box on the map) |
 | `js/ui/router.js` | which screen is showing: `here`, `goBack`, `stayInRound`, `HOME_Y`, `goHome`, `leaveHome`, `openSetup`, `openStudy`, `openLook`, `openBadges`, `render`, `renderQuiz`, `patchAround`, the key handler, the edge swipe |
 | `js/ui/screens/home.js` | `viewHome`, `hardReload`, `VER_CHECKED`, `resetAsk` |
 | `js/ui/screens/setup.js` | `viewSetup` |
 | `js/ui/screens/quiz.js` | `viewQuiz`, `wireZoom` |
 | `js/ui/screens/done.js` | `CLIP`, `viewDone` |
-| `js/ui/screens/study.js` | `WIDE`, `studyList`, `viewStudy`, `wireMiniMaps`, `wireAlpha` |
+| `js/ui/screens/study.js` | `WIDE`, `studyList`, `viewStudy`, `studyScope`, `studyMap`, `wireMiniMaps` |
 | `js/ui/screens/look.js` | `viewLook` |
 | `js/ui/screens/badges.js` | `viewBadges` |
 | `js/ui/viewport.js` | the phone keyboard and the pinned quiz layout: `shade`, `VVH`, `keyboard`, `fitFlag`, `PRE_T`, `preKeyboard`, `TOUCH_T`, the touch, scroll and resize listeners, `SUG` and the suggestion-row listeners |
 | `js/ui/viewer.js` | the viewer: `LB`, `openFlag`, `openMap`, `openViewer`, the `lb*` gesture, zoom, settle, slide and caption functions, `closeFlag`, `lbAnimate` |
-| `js/ui/explore.js` | the explorable map: `EXRET`, `openExplore`, `exRegionSel`, `exRegion`, `exScope`, `exFlag`, `lbHatch`, `lbExHome`, and the `ex*` functions |
+| `js/ui/explore/open.js` | opening and framing the explorable map: `EXRET`, `openExplore`, `exRegionSel`, `exRegion`, `exScope`, `exSort`, `exBackTo`, `exFlag`, `lbExHome`, the insets and opening view (`exLayout`, `exVis`) |
+| `js/ui/explore/select.js` | picking a place on the map: `exTap`, `exSelect`, `exCaption`, `exCard`, `exMark`, `exPick`, `lbHatch` |
+| `js/ui/explore/list.js` | the list beside the map and its drawer: `exWide`, `exFolded`, `exListBuild`, `exFoldTo`, `exFull`, `exTabSync`, `exTabWire`, `exTop`, `studyTop`, `exToList`, `exArrow`, `exStep` |
 | `js/ui/map.js` | today's `js/map.js` (drawing maps), moved |
 | `js/boot.js` | `start()` and the artifact's hot-reload hook |
 
 Some names sit on the line between files (for example `wl` builds a link, so it is UI, while `links` only computes URLs, so it is core). The split script's table is where each one is decided, and a misplaced one is a one-line move later.
 
-Load order in `index.html`: the data files and `js/version.js` as now, then `core/` in the order of the table (util, settings, store, match, scope, flag, badges, share, round), then `ui/dom`, `ui/map`, `ui/parts/*`, `ui/viewport`, `ui/router`, `ui/screens/*`, `ui/viewer`, `ui/explore`, and `boot` last.
+Load order in `index.html`: the data files and `js/version.js` as now, then `core/` in the order util, settings, store, match, scope, flag, sort, badges, share, round, then `ui/dom`, `ui/map`, `ui/parts/*` (flag, card, entry, list), `ui/viewport`, `ui/router`, `ui/screens/*`, `ui/viewer`, `ui/explore/*` (open, select, list), and `boot` last.
 
 ## Doing it so it can be redone
 
@@ -63,7 +67,7 @@ Another session is working on `preview`, so `app.js` will keep changing while th
 - `tools/split_app.py` reads `js/app.js`, cuts it into top-level statements (each function, `const`/`let`, listener or IIFE with the comment lines above it), looks each one up in a table of name → file, and writes the files in their original order within each file.
 - Any statement not in the table stops the script with its name, so nothing new on `preview` is silently dropped or misplaced.
 - A check confirms nothing was lost: the statements of all the new files, sorted, equal the statements of the old file, sorted.
-- When it's time to merge, the branch is rebuilt from the latest `preview` by running the script again, instead of resolving conflicts in a 97 KB file.
+- When it's time to merge, the branch is rebuilt from the latest `preview` by running the script again, instead of resolving conflicts in a 107 KB file. This merge already showed why: 23 new top-level names and one removed (`exFold`), all of which the table now places; the script would have stopped on each one.
 
 Once merged, `app.js` is gone and the script with it.
 
