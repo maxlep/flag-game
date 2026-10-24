@@ -442,12 +442,13 @@ function shell(sub){
   return `<div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ ${esc(sub.back||"Home")}</button><span class="stat">${esc(sub.stat||"")}</span></div>${sub.extra?`<div class="top titlerow"><h2 class="subtitle">${esc(sub.title)}</h2>${sub.extra}</div>`:`<h2 class="subtitle">${esc(sub.title)}</h2>`}</div>`;
 }
 // A home card: the card itself starts a round; the trailing link opens the study list.
-const BOOK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>`;
+const LISTICON=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>`;
 function card(o){
   const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
-  const study=o.study?`<button class="tstudy" onclick="${o.study}" aria-label="Study ${esc(o.name)}">${BOOK}Study</button>`:"";
-  const map=o.map?`<button class="tstudy" onclick="${o.map}" aria-label="${esc(o.name)} on the map">${MAPICON}Map</button>`:"";
-  return `<div class="tile${o.wide?" wide":""}${map&&study?" two":""}${o.cls?" "+o.cls:""}">${main}${map||study?`<div class="tlinks">${map}${study}</div>`:""}</div>`;
+  // Both links are ways to study the set: as a list, or on the map.
+  const study=o.study?`<button class="tstudy" onclick="${o.study}" aria-label="Study ${esc(o.name)} as a list">${LISTICON}List</button>`:"";
+  const map=o.map?`<button class="tstudy" onclick="${o.map}" aria-label="Study ${esc(o.name)} on the map">${MAPICON}Map</button>`:"";
+  return `<div class="tile${o.wide?" wide":""}${map&&study?" two":""}${o.cls?" "+o.cls:""}">${main}${map||study?`<div class="tlinks">${study}${map}</div>`:""}</div>`;
 }
 function setCards(list){
   return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
@@ -460,7 +461,7 @@ function viewHome(){
   const weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
   const learned=l=>l.filter(f=>mastered(f.c)).length;
   return `${shell()}
-  <p class="muted small">Name the flag, then read what it stands for. Tap a set to play it, Study to read through it, or Map to find its places on a map. Flags you miss come back sooner.</p>
+  <p class="muted small">Name the flag, then read what it stands for. Tap a set to play it, or study it as a list or on a map. Flags you miss come back sooner.</p>
   <div class="kbd"><span class="eyebrow">Keyboard</span><span><kbd>A</kbd>–<kbd>D</kbd> or <kbd>1</kbd>–<kbd>4</kbd> answer</span><span><kbd>Enter</kbd> starts and continues</span><span><kbd>Esc</kbd> goes back</span></div>
   ${scopeSeg()}
   <p class="eyebrow">Regions</p>
