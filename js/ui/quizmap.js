@@ -88,16 +88,21 @@ function qmSet(svg, vb) {
 }
 // Dots, tap rings and marks keep their size on screen at any zoom. A place's dot goes once it is large enough on
 // screen to tap (20px across).
+const QMNEAR = 150;
 function qmSize(svg) {
-  const u = QMV.vb[2] / Math.max(1, svg._box.clientWidth),
+  // Expert and Master give a small place no dot until the view is zoomed in close (under QMNEAR units across).
+  const hide = TYPED(S.diff) && QMV.vb[2] > QMNEAR,
+    u = QMV.vb[2] / Math.max(1, svg._box.clientWidth),
     M = MAP.set[MAP.frame[qmFrame(S.qs[S.i].c)].set],
     sy = +svg.dataset.sy || 1;
   svg.querySelectorAll("circle").forEach(k => {
     const c = k.dataset.c,
       b = c && M.box[c];
-    if (b) k.style.display = Math.hypot(b[2] - b[0], (b[3] - b[1]) * sy) / u > 20 ? "none" : "";
-    const l = k.classList,
-      px = l.contains("hit") ? 12 : l.contains("ring") ? 11 : l.contains("cap") ? 3.5 : l.contains("out") ? 3 : 4.5;
+    const l = k.classList;
+    if (b)
+      k.style.display =
+        Math.hypot(b[2] - b[0], (b[3] - b[1]) * sy) / u > 20 || (hide && !l.contains("ring")) ? "none" : "";
+    const px = l.contains("hit") ? 12 : l.contains("ring") ? 11 : l.contains("cap") ? 3.5 : l.contains("out") ? 3 : 4.5;
     k.setAttribute("r", (px * u).toFixed(3));
   });
 }
@@ -160,7 +165,7 @@ function qmMark(svg, q) {
   qmSize(svg);
 }
 // A tap: every place under it counts; a second tap on the same spot goes to the next one
-// under it. It selects without naming the place, which would let you hunt by tapping. On Easy the tap answers.
+// under it. It selects without naming the place, which would let you hunt by tapping; Easy names it.
 function qmTap(x, y) {
   const q = S.qs[S.i],
     svg = qmSvg();
@@ -185,9 +190,11 @@ function qmTap(x, y) {
   ];
   const i = hits.indexOf(q.sel);
   q.sel = !hits.length ? null : i >= 0 ? hits[(i + 1) % hits.length] : hits[0];
-  if (S.diff === "easy" && q.sel) return answer(q.sel);
   saveRound();
   qmMark(svg, q);
+  // Easy names the place picked, so a wrong tap teaches something before Check.
+  const nm = $("#qmPick");
+  if (nm) nm.textContent = q.sel ? BY[q.sel].n : "";
   const b = $("#qmCheck");
   if (b) b.disabled = !q.sel;
 }

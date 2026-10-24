@@ -530,3 +530,5 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qaskmap.sm .mapbtn{width:min(100%,calc(30vh * var(--qa,1.5)))}
 .qaskmap .map{border-radius:0;height:auto}
 .map.qask.noborder .land path{stroke:none}
+.qmpick{min-height:1.4em;margin:0;font-family:var(--display);font-weight:700;font-size:18px;text-align:center}
+.qmpick:empty::before{content:"\00a0"}

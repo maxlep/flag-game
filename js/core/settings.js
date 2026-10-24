@@ -33,11 +33,11 @@ function setOpt(k, v) {
 // The difficulty notes for rounds with a map in them, without the points, which a round counted as located doesn't
 // earn (MAPPTS adds them for the others).
 const MAPDIFF = {
-  easy: "The map shows the place's region, and a tap answers.",
-  medium: "The map shows the place's region. Tap a place, then Check.",
-  hard: "The map shows the whole world. Tap a place, then Check.",
-  expert: "The map shows the whole world, as on Hard.",
-  master: "The whole world with no borders drawn."
+  easy: "The map shows the place's region. A tap names the place you picked, and Check answers.",
+  medium: "The map shows the place's region. Nothing is named until you Check.",
+  hard: "The map shows the whole world.",
+  expert: "The whole world, and small places have no dot until you zoom in close.",
+  master: "As Expert, with no borders drawn."
 };
 const ASKMAP = {
   easy: "Options come from anywhere in the world.",

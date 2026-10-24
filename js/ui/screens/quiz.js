@@ -34,10 +34,10 @@ function viewQuiz() {
     // Found on the map: the question (the flag, or the name) above, the map under it filling the band.
     const easy = S.diff === "easy";
     prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
-    ask = `<p class="eyebrow">${easy ? "Tap it on the map." : "Tap it on the map, then Check."}</p>`;
+    ask = `<p class="eyebrow">Tap it on the map, then Check.</p>`;
     opts = q.ans
       ? ""
-      : `<div class="row">${easy ? "" : `<button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button>`}<button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
+      : `${easy ? `<p class="qmpick" id="qmPick" aria-live="polite">${q.sel ? esc(BY[q.sel].n) : ""}</p>` : ""}<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
   } else if (reverse) {
     prompt = `<p class="eyebrow">Which flag?</p>${askMap ? shown : `<p class="ask">${esc(f.n)}</p>`}`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
