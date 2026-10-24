@@ -148,7 +148,7 @@ function facts(c){const L=links(c),f=BY[c],plain=L.sameCap||f.cap==="None",cap=f
 function flagYears(c){const y=typeof ADOPTED==="object"&&ADOPTED[c],o=typeof ORIGIN==="object"&&ORIGIN[c];if(!y)return "Flag";
   if(!o)return "Flag adopted "+y;const [oy,t,n]=o;const nw=x=>`<span class="nw">${esc(x)}</span>`;
   // each year with its label stays on one line; the line breaks between them
-  return `Flag ${nw(oy+(t?` (${t})`:""))}, ${nw(y+(n?` (${n})`:""))}`}
+  return `Flag ${nw(oy+(t?` (${t})`:"")+",")} ${nw(y+(n?` (${n})`:""))}`} // the comma stays with its year when the line breaks
 // The flag on a card: tap to open it in the viewer.
 function cardFlag(c,vi){return `<button type="button" class="flink" onclick="openFlag('${c}',+this.querySelector('.fl:not([hidden])').dataset.v)" title="View large">${img(c,"flag",vi)}</button>`}
 // A small map of the flag's region, the country filled in; opens the viewer on the map slide.
@@ -682,7 +682,7 @@ const studyPill=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':maste
 // capital and description. The explorable map's card is the same entry with no small map; its flag says how to open it.
 const scopeLabel=()=>SCOPES.find(x=>x[0]===SET.scope)[1];
 function studyEntry(f,mixed,o={}){const fl=o.flagClick||`openFlag('${f.c}',+this.closest('.entry').dataset.v)`;
-  return `<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="${fl}" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${o.noMap||!mapHas(f.c)?"":`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`}</div><div class="t"><span class="head"><span class="name">${nameLine(f.c,mixed)}</span>${o.pill||studyPill(f)}</span><span class="facts">${facts(f.c)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}
+  return `<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="${fl}" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${o.noMap||!mapHas(f.c)?"":`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="studyMap('${f.c}')" title="See it on the map" aria-label="See ${esc(f.n)} on the map"></button>`}</div><div class="t"><span class="head"><span class="name">${nameLine(f.c,mixed)}</span>${o.pill||studyPill(f)}</span><span class="facts">${facts(f.c)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}
 const WIDE=["Whole world","Everything","All territories"];
 // The flags a study list shows, in name order: a region's, or the whole scope's for the wide card.
 const studyList=r=>(WIDE.includes(r)?SCOPED(true):regionFlags(r,true)).slice().sort((a,b)=>a.n.localeCompare(b.n));
@@ -768,10 +768,11 @@ let EXRET=null;
 // Every flag of the region is drawn and can be tapped, whatever the scope; the scope (set from the bar at the top)
 // only decides which are drawn plainly and which hatched. So the frame doesn't change with it.
 const regionAll=r=>WIDE.includes(r)?FLAGS:FLAGS.filter(f=>geoOf(f)===r);
-// at: a flag code whose entry the list opens at (the one at the top of the study list it came from).
-function openExplore(region,keep,at){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
+// at: a flag code whose entry the list opens at (the one at the top of the study list it came from); sel: a place to
+// select and show, without motion.
+function openExplore(region,keep,at,sel){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
   ex.on=new Set(studyList(region).map(f=>f.c));
-  openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep,at})}
+  openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep,at});if(sel&&LB&&LB.what==="explore")exPick(sel,true)}
 // The region picker in the map's title: every region with shapes, then the whole world (named for the scope).
 function exRegionSel(cur){const regs=[...ALLREGIONS.filter(r=>exploreOf(r,regionAll(r).map(f=>f.c))),scopeName()];
   return `<label class="lb-region"><span class="nm">${esc(WIDE.includes(cur)?scopeName():cur)}</span><select aria-label="Region" onchange="exRegion(this.value)">${regs.map(r=>`<option value="${esc(r)}"${r===cur||(WIDE.includes(cur)&&r===scopeName())?" selected":""}>${esc(r)}</option>`).join("")}</select></label>`}
@@ -1018,6 +1019,8 @@ function exTabWire(){const t=$("#exTab");if(!t)return;let moved=false;
 // its drawer at the entry at the top of the page (studyTop).
 function exTop(){const b=$("#exBody");if(!b||exFolded())return null;const t=b.getBoundingClientRect().top;
   const en=[...b.querySelectorAll(".entry")].find(e=>e.getBoundingClientRect().bottom>t+20);return en?en.dataset.c:null}
+// A study entry's small map opens the region's map, the same one the Map button opens, with that place selected.
+function studyMap(c){openExplore(S.view==="study"?S.region:geoOf(BY[c]),null,c,c)}
 function studyTop(){const head=app.querySelector(".sticky"),t=head?head.getBoundingClientRect().bottom:0;
   const en=[...app.querySelectorAll(".study .entry")].find(e=>e.getBoundingClientRect().bottom>t+20);return en?en.dataset.c:null}
 function exToList(){if(!LB||LB.what!=="explore")return;const r=LB.region,c=LB.sel&&LB.ex.on.has(LB.sel)?LB.sel:exTop();
@@ -1048,12 +1051,12 @@ function exMark(c,scroll,smooth){const b=$("#exBody");if(!b)return;b.querySelect
 // view, on the map too. With nothing selected in the list, they start at the first entry in view.
 function exArrow(d){if(!LB||exFolded())return;const b=$("#exBody");if(!b)return;const ens=[...b.querySelectorAll(".entry")];if(!ens.length)return;
   const i=ens.findIndex(e=>e.dataset.c===LB.sel);let n;
-  if(i<0){const c=exTop();n=Math.max(0,ens.findIndex(e=>e.dataset.c===c))}else n=Math.min(ens.length-1,Math.max(0,i+d));
-  if(i>=0&&n===i)return;exPick(ens[n].dataset.c)}
+  if(i<0){const c=exTop();n=Math.max(0,ens.findIndex(e=>e.dataset.c===c))}else n=(i+d+ens.length)%ens.length; // past an end, round to the other
+  if(n===i)return;exPick(ens[n].dataset.c)}
 // From the list: select, and bring the place into view in the part of the map that shows. The zoom changes only when
 // it must: out, if the place doesn't fit; in, if it is under 24px on screen, but never so far that less than 60
 // units (about 2,300 km) of map show across, so an island keeps some land around it.
-function exPick(c){if(!LB)return;exSelect(c,null,true);const S=MAP.set[MAP.frame[LB.ex.frame].set],b=S.box[c];if(!b)return;
+function exPick(c,instant){if(!LB)return;exSelect(c,null,true);const S=MAP.set[MAP.frame[LB.ex.frame].set],b=S.box[c];if(!b)return;
   const fl=LB.fl,sy=+fl.dataset.sy||1,v=LB.vb0,u=v.w/LB.baseW,C=lbCenter(),V=exVis(),vw=V.right-V.left,vh=V.bottom-V.top;
   const bw=(b[2]-b[0])/u,bh=(b[3]-b[1])*sy/u; // the place at scale 1, in px
   const fitS=Math.min(vw*0.8/Math.max(bw,1e-6),vh*0.8/Math.max(bh,1e-6)),size=Math.max(bw,bh),ctxS=vw*u/60;
@@ -1062,7 +1065,7 @@ function exPick(c){if(!LB)return;exSelect(c,null,true);const S=MAP.set[MAP.frame
   s=Math.max(1,Math.min(lbMax(),s));
   const cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2*sy,P={x:(V.left+V.right)/2,y:(V.top+V.bottom)/2};
   const tx=(P.x-C.x)-s*(cx-(v.x+v.w/2))/u,ty=(P.y-C.y)-s*(cy-(v.y+v.h/2))/u;
-  lbAnimate(s,tx,ty)}
+  if(instant){LB.scale=s;LB.x=tx;LB.y=ty;lbApply()}else lbAnimate(s,tx,ty)}
 // Ease the map to a scale and offset over a quarter of a second.
 function lbAnimate(s1,x1,y1){const s0=LB.scale,x0=LB.x,y0=LB.y,t0=performance.now(),me=LB;
   const step=t=>{if(LB!==me)return;const k=Math.min(1,(t-t0)/250),e=1-Math.pow(1-k,3);

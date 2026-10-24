@@ -397,7 +397,9 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 h2 .where{font-size:13px}
 .facts{display:flex;flex-direction:column;gap:1px}
 .facts .capital{display:block;line-height:1.5}
-.nw{white-space:nowrap}
+/* A year with its label: moves to the next line whole, and breaks inside only when longer than a line, so it never
+   runs past a narrow column. */
+.nw{display:inline-block;max-width:100%;vertical-align:top}
 /* The card of a place outside the scope: the flag dimmed and the pill set in solid ink, so it's plain at a glance; the
    text stays at full strength for reading. */
 .excard .entry.outside .flink .fl{opacity:.4;filter:grayscale(.7)}
@@ -430,7 +432,7 @@ h2 .where{font-size:13px}
 .exlist.folded{transform:translateY(calc(100% + 30px));pointer-events:none}
 .exlist.full{height:100%;border-radius:0}
 .exwrap{position:relative;flex:1;min-height:0;display:flex}
-.exbody{flex:1;min-width:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding:0 30px 14px 12px}
+.exbody{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding:0 30px 14px 12px}
 .exbody .entry{cursor:pointer}
 .exbody .entry.sel{border-color:var(--accent);box-shadow:0 0 0 1.5px var(--accent)}
 .exbody .letter{padding-top:4px}
@@ -466,3 +468,6 @@ h2 .where{font-size:13px}
 /* On a narrow phone a wide card with its buttons puts the count under the name, so neither wraps. */
 @media (max-width:440px){.tile.wide:has(.tseg) .tmain{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}}
 .lb.exploring:not(.exwide):has(.exlist.folded) .lb-foot{padding-bottom:44px}
+/* The region beside a name moves under it whole when there's no room, and breaks only when longer than a line. */
+.where{white-space:normal;max-width:100%}
+.facts .capital{overflow-wrap:anywhere}
