@@ -369,9 +369,8 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 .mapopen:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .map.explore{border-radius:0}
 .map.explore .land path{fill:var(--outland,#c9ced6);stroke:var(--outline,#b3b9c2)}
-.map .ct.out{fill:url(#exHatch)}
-.map .hb{fill:var(--landfill,#f7f3ea)}
-.map .hl{stroke:var(--landline,#b9b2a4);stroke-width:1.5}
+.map .hatch{pointer-events:none}
+.map .hatch .hl{fill:none;stroke:var(--landline,#b9b2a4);stroke-width:1.2;vector-effect:non-scaling-stroke}
 .map .dot.ex.out{fill:var(--landfill,#f7f3ea);stroke:var(--muted);stroke-width:1.5}
 .lb-scope{align-self:flex-start;margin-top:6px;background:rgba(255,255,255,.15);pointer-events:auto}
 .lb-scope .chipbtn{width:auto;height:auto;border-radius:999px;font-size:12px;line-height:1.3;padding:4px 10px;background:transparent;color:#fff}

@@ -61,11 +61,17 @@ function mapExploreSVG(o){
   const isOn=c=>!o.on||o.on.has(c);
   const order=codes.slice().sort((a,b)=>isOn(a)-isOn(b)||S.area[b]-S.area[a]);
   const out=c=>o.on&&!o.on.has(c)?" out":"";
-  const shapes=order.map(c=>`<path class="ct${out(c)}" data-c="${c}" d="${S.shape[c]}"/>`).join("");
+  const shape=c=>`<path class="ct${out(c)}" data-c="${c}" d="${S.shape[c]}"/>`;
+  const offs=order.filter(c=>!isOn(c)),ons=order.filter(isOn);
+  // The hatch over the places outside the scope: real lines, clipped to those shapes, drawn by the viewer for the part
+  // in view (lbHatch). A pattern fill was tried first; its tiles meet at fractional pixels and some stripes came out
+  // thicker. It sits between them and the places in the scope, which may cover them.
+  const hatch=offs.length?`<clipPath id="exOut">${offs.map(c=>`<path d="${S.shape[c]}"/>`).join("")}</clipPath><g class="hatch" clip-path="url(#exOut)"><path class="hl"/></g>`:"";
+  const shapes=offs.map(shape).join("")+hatch+ons.map(shape).join("");
   const tiny=order.filter(c=>{const b=S.box[c];return Math.hypot(b[2]-b[0],(b[3]-b[1])*sy)<w*0.012});
   const dots=tiny.map(c=>{const [px,py]=S.pt[c];return `<circle class="dot ex${out(c)}" data-c="${c}" cx="${px}" cy="${Y(py)}" r="${dot.toFixed(2)}"/>`}).join("")
     +tiny.map(c=>{const [px,py]=S.pt[c];return `<circle class="hit" data-c="${c}" cx="${px}" cy="${Y(py)}" r="${(dot*3).toFixed(2)}"/>`}).join("");
-  return `<svg class="map explore${o.cls?" "+o.cls:""}" data-fit="${fit}" data-sy="${sy.toFixed(4)}" viewBox="${x0.toFixed(1)} ${Y(y0)} ${w.toFixed(1)} ${Y(h)}" preserveAspectRatio="xMidYMid meet"><defs><pattern id="exHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect class="hb" width="6" height="6"/><line class="hl" x1="0" y1="0" x2="0" y2="6"/></pattern></defs><rect class="sea" x="${x0.toFixed(1)}" y="${Y(y0)}" width="${w.toFixed(1)}" height="${Y(h)}"/><g transform="scale(1,${sy.toFixed(4)})"><g class="land">${land}</g><g class="cts">${shapes}</g><g class="sel"></g></g><g class="dots">${dots}</g><g class="marks"></g></svg>`;
+  return `<svg class="map explore${o.cls?" "+o.cls:""}" data-fit="${fit}" data-sy="${sy.toFixed(4)}" viewBox="${x0.toFixed(1)} ${Y(y0)} ${w.toFixed(1)} ${Y(h)}" preserveAspectRatio="xMidYMid meet"><rect class="sea" x="${x0.toFixed(1)}" y="${Y(y0)}" width="${w.toFixed(1)}" height="${Y(h)}"/><g transform="scale(1,${sy.toFixed(4)})"><g class="land">${land}</g><g class="cts">${shapes}</g><g class="sel"></g></g><g class="dots">${dots}</g><g class="marks"></g></svg>`;
 }
 // The flags an explorable map can show, and the frame to show them in: a region's own, the world for the wide lists.
 // Null when none of them has a shape (the organisations).

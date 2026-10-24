@@ -845,8 +845,16 @@ function lbApply(){if(!LB)return;const fl=LB.fl;
   const mx=(s-1)*W/2,my=(s-1)*H/2;LB.x=Math.max(-mx,Math.min(mx,LB.x));LB.y=Math.max(-my,Math.min(my,LB.y));
   fl.setAttribute("viewBox",`${(v.x+v.w/2-(W/2+LB.x)*u/s).toFixed(2)} ${(v.y+v.h/2-(H/2+LB.y)*u/s).toFixed(2)} ${(v.w/s).toFixed(2)} ${(v.h/s).toFixed(2)}`);
   fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/s).toFixed(2))});
-  // The explorable map's hatch keeps 6px stripes on screen at any zoom, and square despite the vertical correction.
-  const hp=fl.querySelector("#exHatch");if(hp){const k=u/s,sy=+fl.dataset.sy||1;hp.setAttribute("patternTransform",`scale(${k.toFixed(5)},${(k/sy).toFixed(5)}) rotate(45)`)}}
+  lbHatch()}
+// The explorable map's hatch: diagonal lines 6px apart on screen, drawn only across the part in view, at 45 degrees as
+// drawn (the lines sit inside the vertical correction, so their y is divided by it). They lie on a fixed grid, so a
+// pan doesn't make them crawl; the stroke doesn't scale, so they are 1px at any zoom.
+function lbHatch(){const fl=LB&&LB.fl,hl=fl&&fl.querySelector(".hatch .hl");if(!hl)return;
+  const vb=fl.viewBox.baseVal,sy=+fl.dataset.sy||1,per=vb.width/fl.getBoundingClientRect().width,d=6*per*Math.SQRT2;
+  // Lines x+y=c, rising to the right; each runs from above the view to below it.
+  const y0=vb.y-vb.width,y1=vb.y+vb.height+vb.width,c0=Math.floor((vb.x+vb.y)/d)*d,c1=vb.x+vb.width+vb.y+vb.height;
+  let p="";for(let c=c0;c<=c1;c+=d)p+=`M${(c-y0).toFixed(2)} ${(y0/sy).toFixed(2)}L${(c-y1).toFixed(2)} ${(y1/sy).toFixed(2)}`;
+  hl.setAttribute("d",p)}
 // Entering the map: remember its full frame and open zoomed to the country's close frame (data-fit), so zooming
 // out reaches the region and a double tap resets to it.
 function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
