@@ -49,7 +49,8 @@ function viewQuiz() {
         ? ""
         : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line reveal" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
   } else if (reverse) {
-    prompt = `<p class="eyebrow">Which flag?</p>${askMap ? shown : `<p class="ask">${esc(f.n)}</p>`}`;
+    // The name (or the map) first, as the flag comes first in the other rounds; the question sits just above the flags.
+    prompt = `${askMap ? shown : `<p class="ask">${esc(f.n)}</p>`}<p class="eyebrow">Which flag?</p>`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
       .map((c, i) => {
         let cls = "fopt";
