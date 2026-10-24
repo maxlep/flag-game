@@ -17,10 +17,11 @@
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark }
 
 *{box-sizing:border-box}
-/* Nothing is wider than the screen, but iOS still lets a sideways drag stretch the page and spring back; the
-   sideways overscroll is turned off. */
+/* Nothing is wider than the screen, but iOS still lets a sideways drag stretch the page and spring back. Sideways
+   overscroll is turned off, and a drag on the page itself only scrolls up and down (pinch zoom still works); the
+   maps, the viewer and the suggestion row handle their own sideways drags. */
 html{scrollbar-gutter:stable;overflow-x:clip;overscroll-behavior-x:none}
-body{overscroll-behavior-x:none}
+body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 24px}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
