@@ -96,7 +96,7 @@ function viewQuiz() {
       q.pts === null || q.pts === undefined || (ok && !q.pts)
         ? ""
         : q.nowMastered
-          ? `<span class="pill ok">${q.place ? "located" : "learned"}</span>`
+          ? doneTag(q.place)
           : q.s1 !== undefined
             ? meter(q.s1, q.s0, q.place ? "place" : "")
             : `<span class="pill ${ok ? "ok" : "bad"}">${q.pts > 0 ? "+" + q.pts : q.pts}</span>`;

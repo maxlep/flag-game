@@ -6,9 +6,16 @@ function studyVar(btn, i) {
   en.dataset.v = i;
   showVariant(en.dataset.c, i);
 }
-// A meter: MASTER segments, one per point. A flag's is bars, full when the flag is learned; a place's (cls "place",
-// filled by rounds with no flag on screen) is dots, full when the place is located. s is where it stands now; from, where
-// it stood before an answer, marks the segments that answer filled (new) or emptied (lost). The meter shows 0 to
+// A meter: MASTER segments, one per point, after an icon that says which: a flag's (a flag, blue), full when the flag is
+// learned, or a place's (a pin, gold; cls "place", filled by rounds with no flag on screen), full when it is located.
+// The same icons go before "learned" and "located" (doneTag).
+const MICON = {
+  flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4m0 0c4-2.5 7 2.5 14 0v10c-7 2.5-10-2.5-14 0"/></svg>`,
+  place: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`
+};
+const doneTag = place =>
+  `<span class="pill ok${place ? " place" : ""}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${place ? "located" : "learned"}</span>`;
+// s is where a meter stands now; from, where it stood before an answer, marks the segments that answer filled (new) or emptied (lost). The meter shows 0 to
 // MASTER; the reserve kept beyond full, and the debt below empty, aren't drawn.
 function meter(s, from, cls = "") {
   const at = x => Math.max(0, Math.min(MASTER, x || 0)),
@@ -17,27 +24,22 @@ function meter(s, from, cls = "") {
   let segs = "";
   for (let i = 0; i < MASTER; i++)
     segs += `<i class="${i < a ? (i >= b ? "on new" : "on") : i < b ? "lost" : ""}"></i>`;
-  const what = /\bplace\b/.test(cls) ? "located" : "learned";
-  return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${a} of ${MASTER} toward ${what}">${segs}</span>`;
+  const place = /\bplace\b/.test(cls);
+  return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${a} of ${MASTER} toward ${place ? "located" : "learned"}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${segs}</span>`;
 }
 // Where a flag stands: learned, its meter, missed, or not quizzed at all.
 const studyPill = f =>
   NOQUIZ.has(f.c)
     ? '<span class="pill">not quizzed</span>'
     : mastered(f.c)
-      ? '<span class="pill ok">learned</span>'
+      ? doneTag(false)
       : rec(f.c).s > 0
         ? meter(rec(f.c).s)
         : rec(f.c).w > 0
           ? '<span class="pill bad">missed ' + rec(f.c).w + "</span>"
           : "";
 // Where a place stands, under its small map: located, its meter, or nothing before it has been asked.
-const placePill = f =>
-  isLocated(f.c)
-    ? '<span class="pill ok place">located</span>'
-    : loc(f.c).s > 0
-      ? meter(loc(f.c).s, undefined, "place")
-      : "";
+const placePill = f => (isLocated(f.c) ? doneTag(true) : loc(f.c).s > 0 ? meter(loc(f.c).s, undefined, "place") : "");
 // One study entry: flag (opens the viewer), design chips, a small map (drawn later, by wireMiniMaps), name, standing,
 // capital and description. The explorable map's card is the same entry with no small map; its flag says how to open it.
 const scopeLabel = () => SCOPES.find(x => x[0] === SET.scope)[1];
