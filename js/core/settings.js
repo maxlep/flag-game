@@ -35,11 +35,11 @@ function setOpt(k, v) {
 // MAPDIFF, ASKMAP, ASKMAPF, none of which mention it).
 // Each option list is described the same way: how many, and where they come from.
 const MAPDIFF = {
-  easy: "Only its area can be tapped.",
+  easy: "You can only tap places in the same area.",
   medium: "",
-  hard: "Small places have no dot until you zoom in close.",
+  hard: "Small places have no dot until you zoom in.",
   expert: "No borders are drawn. Small places keep their dots.",
-  master: "No borders, and small places have no dot until you zoom in close."
+  master: "No borders, and no dots until you zoom in."
 };
 // Asked with the map, answered with the name.
 const ASKMAP = {

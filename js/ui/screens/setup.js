@@ -18,7 +18,7 @@ function mapNote(pool) {
       ? "The map shows the region. "
       : d === "easy" || d === "medium"
         ? "The map shows each place's region. "
-        : "The map shows the whole world, since this set spans regions. ",
+        : "The map shows the whole world. ",
     t = SET.dir === "map" ? (where + MAPDIFF[d]).trim() : SET.dir === "flag" ? ASKMAPF[d] : ASKMAP[d];
   return t;
 }
@@ -101,7 +101,7 @@ function viewSetup() {
       <span class="note">${PAIRNOTE[SET.ask + ">" + SET.dir] || ""}</span></div>
     <div class="seg"><span class="label">Difficulty</span><div class="btns">
       ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" && SET.dir !== "map" && SET.ask !== "map" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
-      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir), roundMeters(SET.ask, SET.dir))}</span>${diffNote}</span></div>
+      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir), roundMeters(SET.ask, SET.dir))}</span><span class="ddesc">${diffNote}</span></span></div>
     <div class="seg"><span class="label">Pace</span><div class="btns">
       <button class="${SET.pace === "learn" ? "on" : ""}" onclick="setOpt('pace','learn')">Learn</button>
       <button class="${SET.pace === "drill" ? "on" : ""}" onclick="setOpt('pace','drill')">Drill</button></div>

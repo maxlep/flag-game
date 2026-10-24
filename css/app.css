@@ -580,3 +580,5 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .gain .gn{display:inline-flex;align-items:center;gap:2px}
 .gain .mi{margin:0}
 .gain .mi.pl{color:var(--place)}
+/* The difficulty description keeps two lines' height, so switching levels doesn't move the rows below it. */
+.ddesc{display:block;min-height:3em}
