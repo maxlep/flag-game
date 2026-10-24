@@ -19,10 +19,17 @@ function shareGrid() {
 function shareMissed() {
   const seen = new Set(),
     m = S.qs.filter(q => q.ans !== q.c && !seen.has(q.c) && seen.add(q.c)).map(q => q.c);
-  if (!m.length) return (S.earned || []).includes("lord") ? "Perfect round 👑" : "Perfect round";
+  if (!m.length) return "Perfect round";
   const show = m.slice(0, 6).map(c => flagEmoji(c) || BY[c].n),
     more = m.length > 6 ? ` +${m.length - 6} more` : "";
   return "Missed " + show.join(" ") + more;
+}
+// What the round earned, titles first; First Steps is left out, since every first round earns it.
+function shareEarned() {
+  const ids = (S.earned || []).filter(id => id !== "first" && BADGE[id]),
+    rank = id => (BADGE[id].big ? 0 : BADGE[id].title ? 1 : 2);
+  ids.sort((a, b) => rank(a) - rank(b));
+  return ids.length ? "New: " + ids.map(id => BADGE[id].e + " " + BADGE[id].n).join(", ") : "";
 }
 function shareText() {
   const n = S.qs.length,
@@ -46,5 +53,5 @@ function shareText() {
         : "";
   const variant = S.variant && S.variant !== "national" ? ` · ${S.variant} designs` : "";
   const grid = shareGrid();
-  return `Flags of the World · ${S.label}${scope}\n${right}/${n} · ${diff} · ${mode}${variant}${S.best >= 5 ? ` · streak ${S.best}` : ""}${grid ? "\n" + grid : ""}\n${shareMissed()}\n${SITE}`;
+  return `Flags of the World · ${S.label}${scope}\n${right}/${n} · ${diff} · ${mode}${variant}${S.best >= 5 ? ` · streak ${S.best}` : ""}${grid ? "\n" + grid : ""}\n${shareMissed()}${shareEarned() ? "\n" + shareEarned() : ""}\n${SITE}`;
 }

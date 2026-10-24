@@ -603,7 +603,9 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
    with the room (--flagh) up to a size that still leaves space round it. */
 .qprompt.big{margin-block:auto}
 .qprompt.big .ask{font-size:clamp(28px,calc(var(--flagh,300px) * .14),46px);line-height:1.15;text-wrap:balance}
-/* Picking the flag in Drill, answered right: the drawer keeps its height (set from the page) and the right flag sits
-   alone in the middle of the room above Next. */
-.qdrawer.held .flagopts{flex:1;min-height:0;display:flex;justify-content:center;align-items:center}
-.qdrawer.held .fopt{width:calc(50% - 5px);max-height:100%}
+/* Picking the flag in Drill, answered right: the drawer keeps its height (set from the page) and every flag stays where
+   it was; the buttons lose their second line of name and some padding, which is the room Next takes. */
+.qdrawer.held .flagopts{gap:8px}
+.qdrawer.held .fopt{padding-top:3px;padding-bottom:3px}
+.qdrawer.held .fopt .key{min-height:1.25em;-webkit-line-clamp:1}
+.qdrawer.held #nextBtn{margin-top:auto}

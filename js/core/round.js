@@ -77,6 +77,7 @@ function distractors(c, diff, mode, n = 3) {
   return [...out];
 }
 function startRound(mode, arg, label, flt = null) {
+  clearTimeout(S.timer); // a Drill round's move to the next question must not reach the new round
   // With a map in it, a round can only ask about places with a shape (not the organisations).
   const onMap = SET.dir === "map" || SET.ask === "map";
   const pool = poolFor(mode, arg, flt).filter(c => !onMap || mapHas(c));
