@@ -23,11 +23,11 @@ function mapNote(pool) {
   return t;
 }
 // The first line of the difficulty note: what a right answer adds to each meter the round fills, and what a miss
-// takes away, as icons and numbers: ✓ +2 [flag] +2 [pin]   ✗ −2 [flag] −2 [pin]. Easy, which changes nothing, says so.
+// takes away, as icons and numbers: ✓ +2 [flag] +2 [pin]   ✗ −2 [flag] −2 [pin]. Easy says Practice; the others showing what they add is what tells it apart.
 const OKICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
 const MISSICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>`;
 function gainLine(g, m) {
-  if (!g) return `<span class="gain">Practice: nothing gained or lost</span>`;
+  if (!g) return `<span class="gain">Practice</span>`;
   const icon = k => `<span class="mi${k === "place" ? " pl" : ""}" aria-hidden="true">${MICON[k]}</span>`;
   const kinds = [m.flag && "flag", m.place && "place"].filter(Boolean),
     each = (n, sign) => kinds.map(k => `<span class="gn">${sign}${n}${icon(k)}</span>`).join("");
