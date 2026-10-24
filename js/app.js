@@ -446,12 +446,13 @@ const BOOK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wi
 function card(o){
   const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
   const study=o.study?`<button class="tstudy" onclick="${o.study}" aria-label="Study ${esc(o.name)}">${BOOK}Study</button>`:"";
-  return `<div class="tile${o.wide?" wide":""}${o.cls?" "+o.cls:""}">${main}${study}</div>`;
+  const map=o.map?`<button class="tstudy" onclick="${o.map}" aria-label="${esc(o.name)} on the map">${MAPICON}Map</button>`:"";
+  return `<div class="tile${o.wide?" wide":""}${map&&study?" two":""}${o.cls?" "+o.cls:""}">${main}${map||study?`<div class="tlinks">${map}${study}</div>`:""}</div>`;
 }
 function setCards(list){
   return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
     const held=["lord","warden","emperor"].filter(k=>badges[k+"-"+r]),marks=held.map(k=>({e:BADGE[k+"-"+r].e,n:BADGE[k+"-"+r].n}));
-    return card({name:r,marks,count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`})}).join("");
+    return card({name:r,marks,count:m+" / "+all.length+" learned",bar:Math.round(100*m/all.length),go:`openSetup('region','${r}','${r}')`,study:`openStudy('${r}')`,map:exploreOf(r,regionAll(r).map(f=>f.c))?`openExplore('${r}')`:null})}).join("");
 }
 const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
 const scopeSeg=(note,label)=>`<div class="seg">${label?'<span class="label">Flags</span>':""}<div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
@@ -459,12 +460,12 @@ function viewHome(){
   const weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
   const learned=l=>l.filter(f=>mastered(f.c)).length;
   return `${shell()}
-  <p class="muted small">Name the flag, then read what it stands for. Tap a set to play it, or Study to read through it. Flags you miss come back sooner.</p>
+  <p class="muted small">Name the flag, then read what it stands for. Tap a set to play it, Study to read through it, or Map to find its places on a map. Flags you miss come back sooner.</p>
   <div class="kbd"><span class="eyebrow">Keyboard</span><span><kbd>A</kbd>–<kbd>D</kbd> or <kbd>1</kbd>–<kbd>4</kbd> answer</span><span><kbd>Enter</kbd> starts and continues</span><span><kbd>Esc</kbd> goes back</span></div>
   ${scopeSeg()}
   <p class="eyebrow">Regions</p>
   <div class="tiles">${setCards(ALLREGIONS)}
-    ${card({wide:true,name:scopeName(),marks:["lord","warden","emperor"].filter(k=>badges[k]).map(k=>({e:BADGE[k].e,n:BADGE[k].n})),count:learned(SCOPED())+" / "+SCOPED().length,go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`})}
+    ${card({wide:true,name:scopeName(),marks:["lord","warden","emperor"].filter(k=>badges[k]).map(k=>({e:BADGE[k].e,n:BADGE[k].n})),count:learned(SCOPED())+" / "+SCOPED().length,go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`,map:`openExplore('${scopeName()}')`})}
   </div>
   <p class="eyebrow" style="padding-top:4px">Practice</p>
   <div class="tiles">
@@ -750,6 +751,11 @@ const regionAll=r=>WIDE.includes(r)?FLAGS:FLAGS.filter(f=>geoOf(f)===r);
 function openExplore(region,keep){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
   ex.on=new Set(studyList(region).map(f=>f.c));
   openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep})}
+// The region picker in the map's title: every region with shapes, then the whole world (named for the scope).
+function exRegionSel(cur){const regs=[...ALLREGIONS.filter(r=>exploreOf(r,regionAll(r).map(f=>f.c))),scopeName()];
+  return `<label class="lb-region"><span class="nm">${esc(WIDE.includes(cur)?scopeName():cur)}</span><select aria-label="Region" onchange="exRegion(this.value)">${regs.map(r=>`<option value="${esc(r)}"${r===cur||(WIDE.includes(cur)&&r===scopeName())?" selected":""}>${esc(r)}</option>`).join("")}</select></label>`}
+// A new region, from the map: opened afresh, and the study list behind (if that's where it came from) follows it.
+function exRegion(r){if(!LB||LB.what!=="explore")return;if(S.view==="study"){S.region=r;render()}openExplore(r)}
 // The scope, changed from the map: the setting itself (the study list behind follows), then the map again as it was.
 function exScope(v){if(!LB||LB.what!=="explore"||SET.scope===v)return;const k={sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y};let r=LB.region;
   if(WIDE.includes(r))r=S.region={countries:"Whole world",all:"Everything",territories:"All territories"}[v];
@@ -761,7 +767,7 @@ function openViewer(c,o){
   const ex=o.what==="explore";
   const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
-    <div class="lb-top"><div class="title"><span class="nm">${esc(ex?o.title:BY[c].n)}</span><span class="sub" id="lbSub"></span>${ex?`<div class="vchips lb-scope">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" onmousedown="event.preventDefault()" onclick="exScope('${v}')">${l}</button>`).join("")}</div>`:""}</div><div class="ctl">
+    <div class="lb-top"><div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`<div class="vchips lb-scope">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" onmousedown="event.preventDefault()" onclick="exScope('${v}')">${l}</button>`).join("")}</div>`:""}</div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
@@ -781,7 +787,7 @@ function openViewer(c,o){
   st.addEventListener("pointerup",lbUp);st.addEventListener("pointercancel",lbUp);
   st.addEventListener("wheel",e=>{e.preventDefault();lbZoom(Math.exp(-e.deltaY*0.0015),{x:e.clientX,y:e.clientY})},{passive:false});
   st.addEventListener("dblclick",e=>{if(e.pointerType==="touch"||e.sourceCapabilities?.firesTouchEvents)return;lbToggle({x:e.clientX,y:e.clientY})});
-  el.addEventListener("mousedown",e=>e.preventDefault()); // a click here must not move focus
+  el.addEventListener("mousedown",e=>{if(!e.target.closest("select"))e.preventDefault()}); // a click here must not move focus (the region picker needs it)
   el.addEventListener("click",e=>{if(LB&&LB.what!=="explore"&&(e.target===st||e.target.classList.contains("lb-slide"))&&!LB.moved)closeFlag()});
 }
 const capture=(el,e)=>{try{el.setPointerCapture(e.pointerId)}catch(x){}};
@@ -921,8 +927,8 @@ function exSelect(c,hits){if(!LB)return;const m=LB.fl,sel=m.querySelector(".sel"
     if(S.cap[c]){const [cx,cy]=S.cap[c],r=3.5*LB.vb0.w/LB.baseW;
       marks.innerHTML=`<circle class="cap" data-r="${r.toFixed(2)}" cx="${cx}" cy="${(cy*sy).toFixed(1)}" r="${(r/LB.scale).toFixed(2)}"/>`}}
   exCaption();exCard()}
-function exCaption(){if(!LB)return;const c=LB.sel,S=MAP.set[MAP.frame[LB.ex.frame].set],drawn=LB.ex.codes.filter(x=>S.shape[x]),n=drawn.filter(x=>LB.ex.on.has(x)).length,out=drawn.length-n;
-  let t=n+(n===1?" place":" places")+(out?`. Hatched places aren't in ${scopeLabel()}.`:"");
+function exCaption(){if(!LB)return;const c=LB.sel,S=MAP.set[MAP.frame[LB.ex.frame].set],n=LB.ex.codes.filter(x=>S.shape[x]&&LB.ex.on.has(x)).length;
+  let t=n+(n===1?" place":" places");
   if(c&&LB.hits){const i=LB.hits.indexOf(c),nx=LB.hits[(i+1)%LB.hits.length];t=`Tap again for ${BY[nx].n}`}
   $("#lbSub").textContent=t;$("#lbVar").innerHTML=""}
 // The card: the flag's study entry. Its flag opens the designs in the viewer; closing them comes back to the map.

@@ -55,14 +55,13 @@ Starting with part 2 would skip a version that gets replaced, at the cost of put
 Choices made for the first version, open to change:
 
 - A card pinned at the bottom rather than a popup tied to the spot. A popup has to follow pans and zooms, covers the neighbours you tap next, and has nowhere to sit near a phone's edge. The spot is still marked on the map.
-- Entered from the study list (a Map button beside the scope), so it follows the list's region and scope.
+- Entered from a region card (a Map link beside Study) or the study list (a Map button beside the scope). The region is picked from the map's title, and the scope from its top bar. The top line gives only the count: the hatch and dots should explain themselves.
 - Built as a mode of the viewer, so the viewer stays the only zoom. The card's flag opens the designs, and closing them comes back to the map where it was.
 - Where shapes overlap (the United Kingdom and England, a country and its territory), the smaller is on top and a second tap on the same spot goes to the next one under it.
 - Every place in the region can be tapped whatever the scope. The scope is shown and set in the map's top bar; places outside it are hatched and their card says so, and they sit under the places in it. Land outside the region is grey. (From feedback on the first version: an area you can't tap, with no visible reason, is confusing.)
 
 ### Open questions
 
-- Where explore is entered: from a region's study list, from its home card next to Study, or as one map with a region picker.
 - Whether the map is bounded by region or is one world map you can scroll. Bounding is cheap now; the whole world wants projection on the fly.
 - What a tap on sea, or on land outside the region, does: clear the selection (as now), or nothing.
 - Whether exploring counts toward "located" progress. Probably not, as browsing the study list doesn't count as learned.

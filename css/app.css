@@ -404,3 +404,19 @@ h2 .where{font-size:13px}
 .excard .entry.outside .flink .fl{opacity:.4;filter:grayscale(.7)}
 .pill.outside{background:var(--ink);color:var(--surface);font-weight:600}
 .excard .entry .t .head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:4px}
+/* A region card's links: Map and Study, side by side at the bottom (on the wide card, at the end of the row). */
+.tile .tlinks{display:flex;justify-content:flex-end;align-self:stretch}
+.tile .tlinks .tstudy{align-self:auto}
+.tile:not(.wide) .tlinks .tstudy{padding-left:8px;padding-right:12px}
+.tile.wide .tlinks{align-items:stretch}
+.tile.wide .tlinks .tstudy{align-self:stretch}
+/* The map's title is the region picker: the name with a chevron, and the native select laid over it, invisible. */
+.lb-region{position:relative;display:inline-flex;align-items:center;gap:6px;align-self:flex-start;max-width:100%;cursor:pointer;pointer-events:auto}
+.lb-region .nm::after{content:"";display:inline-block;width:8px;height:8px;margin:0 0 4px 9px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);opacity:.75}
+.lb-region select{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;font-size:16px}
+.lb-region select option{color:#111}
+.lb-region:focus-within{outline:3px solid #8fb0ff;outline-offset:3px;border-radius:6px}
+.tile.wide .tlinks .tstudy{padding:14px 10px;gap:4px}
+.tile.wide .tmain{min-width:0}
+/* A wide card with both links puts its count under the name, so the row fits a narrow phone. */
+.tile.wide.two .tmain{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}
