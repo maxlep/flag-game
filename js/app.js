@@ -929,7 +929,9 @@ function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
   // The explorable map's dots are a fixed size on screen, whatever the frame: radius 5px in the scope, 3px outside it,
   // and a tap ring of 14px for both.
   if(what==="explore"){const u=LB.vb0.w/LB.baseW;LB.fl.querySelectorAll(".dot.ex").forEach(k=>k.dataset.r=((k.classList.contains("out")?3:5)*u).toFixed(3));LB.fl.querySelectorAll(".hit").forEach(k=>k.dataset.r=(14*u).toFixed(3));lbExHome()}
-  $("#lbHint").textContent=what==="explore"?"Tap a place to see its flag · pinch to zoom":"Pinch or scroll to zoom · drag to pan · double-tap to reset"}
+  // The words follow the device: a mouse clicks and scrolls, a finger taps and pinches.
+  const mouse=matchMedia("(hover: hover) and (pointer: fine)").matches;
+  $("#lbHint").textContent=what==="explore"?(mouse?"Click a place to see its flag · scroll to zoom":"Tap a place to see its flag · pinch to zoom"):(mouse?"Scroll to zoom · drag to pan · double-click to reset":"Pinch to zoom · drag to pan · double-tap to reset")}
 // The arrow keys walk the chips: designs, then the map.
 function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(lbMapChip()?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
 // The Map chip, except for designs opened from the explorable map: a map inside the map would only confuse.
