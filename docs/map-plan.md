@@ -33,6 +33,8 @@ Tile maps (Leaflet with OpenStreetMap, Mapbox, Google) need a network, often a k
 
 ## Later: a sharper map for the viewer
 
+(Since this was measured, the 50m file has grown from 394 KB to 508 KB: the build now keeps the small islands that simplification used to shrink to points. The 10m comparison below is against the old size.)
+
 The thumbnails and the learn card keep the 50m file. The viewer should load a second file, `js/data/map10.js`, built by the same script from `ne_10m_admin_0_countries` at the same 8% simplification, the first time it opens, and use it for every map it draws. Measured: 1.6 MB, 480 KB gzipped (3.5x the 50m file), 131k vertices; first paint of a region map about 80 ms in desktop Chrome, so about 0.2 s on a phone; zoom frames stay under budget. Keeping 25% of the points (4 MB, 1 MB gzipped, 220 ms) is too much. What it buys: small islands and microstates get their real coastlines, since the build keeps small shapes unsimplified and 10m has many more of them; large countries look much as now. The hybrid of 10m outlines only for small flags over 50m land was considered and set aside: cheaper, but a 10m island on a 50m neighbour shows slivers where they touch.
 
 ## Later: project on the fly

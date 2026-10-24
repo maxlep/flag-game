@@ -43,10 +43,14 @@ for(const f of load("ne_10m_admin_0_map_units.geojson")){if(f.properties.SU_A3==
 const SU={SHS:"sh-hl",BAC:"sh-ac",SHT:"sh-ta"};
 for(const f of load("ne_10m_admin_0_map_subunits.geojson")){const k=SU[f.properties.SU_A3];if(k){feats.push({c:k,geometry:f.geometry,base:false,name:f.properties.NAME});used.add(k)}}
 // Spain's regions and the Canary Islands from the 10m admin-1 layer (the Canaries are two provinces)
-const A1={"Cataluña":"es-ct","Galicia":"es-ga","País Vasco":"es-pv"};const canary=[];
+// A region is all its provinces merged into one outline (keeping only the first province gave Catalonia as Lleida
+// alone, with Barcelona outside it).
+const A1={"Cataluña":"es-ct","Galicia":"es-ga","País Vasco":"es-pv"};const canary=[],regionParts={};
 for(const f of load("ne_10m_admin_1_states_provinces.geojson")){const p=f.properties;if(p.adm0_a3!=="ESP")continue;
   if(p.region==="Canarias"||["Las Palmas","Santa Cruz de Tenerife"].includes(p.name))canary.push(f.geometry);
-  const k=A1[p.region]||A1[p.name];if(k&&p.type_en!=="Province"||k&&!feats.some(x=>x.c===k)){if(!feats.some(x=>x.c===k)){feats.push({c:k,geometry:f.geometry,base:false,name:p.name});used.add(k)}}}
+  const k=A1[p.region]||A1[p.name];if(k)(regionParts[k]=regionParts[k]||[]).push(f)}
+for(const [k,parts] of Object.entries(regionParts)){const t=topo.topology({p:{type:"FeatureCollection",features:parts}},1e6);
+  feats.push({c:k,geometry:tc.merge(t,t.objects.p.geometries),base:false,name:k});used.add(k)}
 if(canary.length){feats.push({c:"ic",geometry:{type:"MultiPolygon",coordinates:canary.flatMap(g=>g.type==="Polygon"?[g.coordinates]:g.coordinates)},base:false,name:"Canary Islands"});used.add("ic")}
 const missing=FLAGS.filter(f=>!used.has(f.c)).map(f=>f.c);
 console.error("shapes:",feats.length,"flags without a shape:",missing.join(" ")||"none");
@@ -61,6 +65,27 @@ let simplified=tc.feature(topology,topology.objects.shapes).features;
 // Simplification eats small islands whole, so the small places keep their original outline (few points anyway).
 const SMALL=2e-5; // steradians, about 800 km²
 simplified=simplified.map((f,i)=>d3.geoArea(fc.features[i])<SMALL?fc.features[i]:f);
+// Larger places lose their small islands the same way (Sao Tome, Bioko, Cabo Verde, the Comoros, Mauritius were left as
+// single points, and the place's centre fell on whichever island came first). Any polygon under about 20,000 km² that
+// simplification shrank by more than half, or turned inside out, gets its original ring back. Islands share no
+// borders, so this can't open gaps between neighbours.
+// A restored island is simplified on its own (Douglas-Peucker, 0.03° ≈ 3 km), enough to stay recognisable, without
+// the full detail that would double the file.
+const dp=(pts,eps)=>{if(pts.length<3)return pts;const [a,b]=[pts[0],pts[pts.length-1]];let k=0,dm=0;
+  for(let i=1;i<pts.length-1;i++){const p=pts[i],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1e-12,d=Math.abs(dy*p[0]-dx*p[1]+b[0]*a[1]-b[1]*a[0])/L;if(d>dm){dm=d;k=i}}
+  return dm>eps?[...dp(pts.slice(0,k+1),eps).slice(0,-1),...dp(pts.slice(k),eps)]:[a,b]};
+const thin=ring=>{const h=Math.floor(ring.length/2);let r=[...dp(ring.slice(0,h+1),0.03).slice(0,-1),...dp(ring.slice(h),0.03)];return r.length>=4?r:ring};
+const ISLE=5e-4,polys=g=>!g?[]:g.type==="Polygon"?[g.coordinates]:g.type==="MultiPolygon"?g.coordinates:[];
+let restored=[];
+simplified=simplified.map((f,i)=>{const o=polys(fc.features[i].geometry),sp=polys(f.geometry);if(o.length<2&&d3.geoArea(fc.features[i])<SMALL)return f;
+  if(!sp.length||o.length!==sp.length)return f;let n=0;
+  const out=sp.map((co,j)=>{const ao=d3.geoArea({type:"Polygon",coordinates:o[j]});if(ao>=ISLE)return co;const as=d3.geoArea({type:"Polygon",coordinates:co});
+    // Thinning a tiny ring can turn it inside out, which on a sphere means everything but the island (Kiribati covered
+    // the ocean): the thinned ring is kept only when its area still agrees with the original's.
+    if(as<ao*0.5||as>ao*2){n++;const t=o[j].map(thin),at=d3.geoArea({type:"Polygon",coordinates:t});return at>ao*0.5&&at<ao*1.5?t:o[j]}return co});
+  if(!n)return f;restored.push((feats[i].c||feats[i].name)+"×"+n);
+  return {...f,geometry:out.length===1?{type:"Polygon",coordinates:out[0]}:{type:"MultiPolygon",coordinates:out}}});
+console.error("islands kept whole:",restored.join(" ")||"none");
 const W=1000;
 const r1=n=>Math.round(n*10)/10;
 const fmt=d=>d.replace(/(\d+\.\d{2,})/g,m=>String(r1(+m)));
@@ -98,17 +123,40 @@ const a3ByCode={};for(const f of load("ne_50m_admin_0_countries.geojson")){const
 const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\bsaint\b/g,"st").replace(/[^a-z0-9]+/g," ").trim();
 const nocap=[],approx=[];
 const world=out.set.world,wp=world._projection;
+// A place matches when its whole name is among the words of our capital field: a substring match let "Pô" (Burkina
+// Faso) stand in for Porto-Novo. Of the matches near the flag, one inside its own outline wins, then the nearest.
+// Places the file lacks are given here: Tifariti, the provisional capital of Western Sahara, the only one of its two
+// capitals inside Natural Earth's de-facto outline (Laayoune falls outside it).
+const CAPLL={eh:[-10.567,26.158]};
+const featOf={};feats.forEach(x=>{if(x.c&&!featOf[x.c])featOf[x.c]=x});
+const word=(w,n)=>!!n&&(" "+w+" ").includes(" "+n+" ");
 for(const f of FLAGS){if(!f.cap||f.cap==="None"||!world.pt[f.c])continue;const want=norm(f.cap);const c0=world.pt[f.c];
   const dist=pl=>{const p=wp(pl.ll);return p?Math.hypot(p[0]-c0[0],p[1]-c0[1]):1e9};
-  let cands=places.filter(pl=>want.includes(norm(pl.name))||(pl.alt&&want.includes(norm(pl.alt))));
+  const inside=pl=>featOf[f.c]&&d3.geoContains({type:"Feature",geometry:featOf[f.c].geometry},pl.ll)?0:1;
+  let cands=CAPLL[f.c]?[{name:f.cap,ll:CAPLL[f.c]}]:places.filter(pl=>word(want,norm(pl.name))||word(want,norm(pl.alt)));
   const bx=world.box[f.c],reach=Math.max(40,Math.hypot(bx[2]-bx[0],bx[3]-bx[1]));
-  cands=cands.filter(pl=>dist(pl)<reach).sort((a,b)=>dist(a)-dist(b));
+  cands=cands.filter(pl=>dist(pl)<reach).sort((a,b)=>inside(a)-inside(b)||dist(a)-dist(b));
   let pick=cands[0];
   if(!pick){const own=places.filter(pl=>pl.a3===a3ByCode[f.c]&&pl.cla==="Admin-0 capital");pick=own[0]}
   if(!pick){approx.push(f.c);continue}
   for(const [name,S] of Object.entries(out.set)){if(!S.shape[f.c])continue;const xy=S._projection(pick.ll);if(xy)S.cap[f.c]=[r1(xy[0]),r1(xy[1])]}}
 console.error("capitals: approximated (no place found, centre used):",approx.join(" ")||"none");
 for(const c of approx)for(const S of Object.values(out.set))if(S.pt[c])S.cap[c]=S.pt[c];
+// A coastal capital can fall just off a simplified coast (Dakar sits on a peninsula the simplification drops). One
+// outside its own drawn outline is moved to just inside the nearest edge, by the least it takes; the build says which.
+{const firstOf={};simplified.forEach((f,i)=>{const c=feats[i].c;if(c&&firstOf[c]===undefined)firstOf[c]=i});
+  const snapped=[];
+  for(const [name,S] of Object.entries(out.set)){const P=S._projection;
+    for(const [c,cp] of Object.entries(S.cap)){const i=firstOf[c];if(i===undefined)continue;
+      const rings=polys(simplified[i].geometry).flat().map(r=>r.map(ll=>P(ll)).filter(Boolean));
+      let inside=false;for(const r of rings)for(let a=0,b=r.length-1;a<r.length;b=a++){const [xa,ya]=r[a],[xb,yb]=r[b];
+        if((ya>cp[1])!==(yb>cp[1])&&cp[0]<(xb-xa)*(cp[1]-ya)/(yb-ya)+xa)inside=!inside}
+      if(inside)continue;
+      let best=null,bd=1e9;for(const r of rings)for(let a=0;a<r.length-1;a++){const [x1,y1]=r[a],[x2,y2]=r[a+1],dx=x2-x1,dy=y2-y1,L=dx*dx+dy*dy||1e-12;
+        const t=Math.max(0,Math.min(1,((cp[0]-x1)*dx+(cp[1]-y1)*dy)/L)),q=[x1+t*dx,y1+t*dy],d=Math.hypot(q[0]-cp[0],q[1]-cp[1]);if(d<bd){bd=d;best=q}}
+      if(!best||bd>3)continue; // far off means a wrong match, not a coast: leave it to be seen
+      const k=(bd+0.15)/Math.max(bd,1e-6);S.cap[c]=[r1(cp[0]+(best[0]-cp[0])*k),r1(cp[1]+(best[1]-cp[1])*k)];if(name==="world")snapped.push(c+" "+bd.toFixed(2))}}
+  console.error("capitals moved onto their coast (units off):",snapped.join(", ")||"none")}
 // Equal Earth stretches shapes taller near the equator and flatter near the poles (a pseudocylindrical projection, so it
 // depends on y alone). ky[i] is that stretch at y = 10·i: the app divides a frame's height by it so a region looks as it
 // does on a globe.
@@ -118,6 +166,10 @@ for(const c of approx)for(const S of Object.values(out.set))if(S.pt[c])S.cap[c]=
 for(const S of Object.values(out.set))delete S._projection;
 console.error("sizes:",Object.entries(out.set).map(([n,S])=>n+" land "+S.land.length+" shapes "+Object.keys(S.shape).length).join("; "));
 
+// A last check: no piece of any outline may span most of the canvas (an inside-out ring draws the whole world).
+for(const [n,S] of Object.entries(out.set))for(const [c,d] of Object.entries(S.shape))for(const sub of d.match(/M[^M]*/g)||[]){
+  const v=sub.match(/-?\d+(\.\d+)?/g).map(Number),xs=v.filter((_,i)=>i%2===0);if(Math.max(...xs)-Math.min(...xs)>W*0.9&&!["aq","ru","ki","fj","us"].includes(c)||Math.max(...xs)-Math.min(...xs)>W*0.99){
+    console.error("an outline of",c,"in",n,"spans the whole map: a ring is inside out");process.exit(1)}}
 const js=`// Built by tools/build_map.js from Natural Earth (public domain). Equal Earth projection on a ${W}x${out.h} canvas.
 // set.world is centred on 10°E, set.pac on 160°E for the Pacific. In each set: land = every country outline;
 // shape = the outline per flag code; pt = a centre point; box = bounds; area = projected area; cap = the capital.
