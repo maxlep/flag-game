@@ -49,7 +49,7 @@ function viewQuiz() {
   } else if (reverse) {
     // The name (or the map) in the band, as the flag is in the other rounds; the flags to pick from ride in the drawer
     // like the other rounds' answers, and with a card on screen only the right one and the one picked stay.
-    prompt = askMap ? shown : `<div class="qprompt"><p class="ask">${esc(f.n)}</p></div>`;
+    prompt = askMap ? shown : `<div class="qprompt big"><p class="ask">${esc(f.n)}</p></div>`;
     ask = `<p class="eyebrow">Which flag?</p>`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
       .map((c, i) => {

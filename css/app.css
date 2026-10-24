@@ -599,3 +599,7 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qdrawer.answered .fopt{flex-direction:row;align-items:center;gap:10px;padding:6px 8px}
 .qdrawer.answered .fopt .flag{flex:0 0 56px;width:56px}
 .qdrawer.answered .fopt .key{min-height:0;text-align:left}
+/* Picking the flag by its name: the name has the band to itself, so it is larger and sits in the middle of it, growing
+   with the room (--flagh) up to a size that still leaves space round it. */
+.qprompt.big{margin-block:auto}
+.qprompt.big .ask{font-size:clamp(28px,calc(var(--flagh,300px) * .14),46px);line-height:1.15;text-wrap:balance}
