@@ -398,6 +398,9 @@ h2 .where{font-size:13px}
 /* A year with its label: moves to the next line whole, and breaks inside only when longer than a line, so it never
    runs past a narrow column. */
 .nw{display:inline-block;max-width:100%;vertical-align:top}
+/* An inline block doesn't take its link's underline, so a year in a link draws its own: otherwise only the spaces
+   between the years were underlined. */
+.wl .nw{text-decoration:inherit}
 /* The card of a place outside the scope: the flag dimmed and the pill set in solid ink, so it's plain at a glance; the
    text stays at full strength for reading. */
 .excard .entry.outside .flink .fl{opacity:.4;filter:grayscale(.7)}
