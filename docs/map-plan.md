@@ -80,7 +80,7 @@ Decided 2026-10-24. Both parts are built. Asked with the map, the options are th
 - Answering on the map: the map fills the middle of the quiz screen under the question, framed to the place's region on Easy and Medium and the whole world from Hard. It pans and zooms in place. A tap selects a place without naming it (naming it would let you hunt by tapping), and Check answers; on Easy the tap answers at once. Overlapping places cycle on a second tap, places in the set sit above those outside it, small places have their dots. After the answer the right place is filled and a wrong pick marked, and the map moves to show them if they are out of view.
 - Master hides the borders (one idea to try; others may follow).
 - Progress: a round with a flag on screen (flag to map, map to flag) counts toward the flag's learning as now. One without (name to map, map to name) tests geography only: it is kept apart, as "located" (`flaglore.located`), for the separate progress planned below.
-- Titles and badges stay about flags: map rounds earn none for now (only the first-round badge).
+- Titles and badges: built. Admiral (a full All round on Master, flag to map, no misses) per region and for the world; Pathfinder for a perfect name-to-map round of 25 or more on Master; Clean Sheet, Sharp Eye and the streaks count map rounds too. Badges about flags stay flag-only.
 
 ## Order
 

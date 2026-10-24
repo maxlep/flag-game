@@ -11,7 +11,7 @@ function viewHome() {
   ${scopeSeg()}
   <p class="eyebrow">Regions</p>
   <div class="tiles">${setCards(ALLREGIONS)}
-    ${card({wide: true, name: scopeName(), marks: ["lord", "warden", "emperor"].filter(k => badges[k]).map(k => ({e: BADGE[k].e, n: BADGE[k].n})), count: learned(SCOPED()) + " / " + SCOPED().length, go: `openSetup('all',null,'${scopeName()}')`, study: `openStudy('${scopeName()}')`, map: `openExplore('${scopeName()}')`, ...wideDesc()})}
+    ${card({wide: true, name: scopeName(), marks: TITLES.filter(k => badges[k]).map(k => ({e: BADGE[k].e, n: BADGE[k].n})), count: learned(SCOPED()) + " / " + SCOPED().length, go: `openSetup('all',null,'${scopeName()}')`, study: `openStudy('${scopeName()}')`, map: `openExplore('${scopeName()}')`, ...wideDesc()})}
   </div>
   <p class="eyebrow" style="padding-top:4px">Practice</p>
   <div class="tiles">

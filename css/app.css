@@ -200,8 +200,8 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .badge.on .bh{color:var(--ink)}
 .badge.big{grid-column:1/-1;grid-template-columns:56px 1fr}
 .titles{display:flex;flex-direction:column;gap:6px}
-.trow{display:grid;grid-template-columns:1fr repeat(3,72px);align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 12px}
-.trow .tr{font-family:var(--display);font-weight:700;font-size:15px}
+.trow{display:grid;grid-template-columns:76px repeat(4,minmax(0,1fr));align-items:center;gap:2px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px}
+.trow .tr{font-family:var(--display);font-weight:700;font-size:14px}
 .tcell{display:flex;flex-direction:column;align-items:center;gap:1px;opacity:.35}
 .tcell .be{font-size:20px;line-height:1.2;filter:grayscale(1)}
 .tcell .tn{font-size:11px;color:var(--muted)}

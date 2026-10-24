@@ -12,15 +12,13 @@ function viewBadges() {
     )
     .join("")}</div>
   <p class="eyebrow" style="padding-top:6px">Titles</p>
-  <p class="small muted">One for each region and scope: Lord for Countries, Warden for Territories, Emperor for All. A full round on Master, typed, with no misses.</p>
+  <p class="small muted">Lord, Warden and Emperor are one for each region and scope (Countries, Territories, All): a full round on Master, typed, with no misses. Admiral is a full All round on Master, asked with the flag and answered on the map, with no misses.</p>
   <div class="titles">${REGIONS.map(
     r =>
-      `<div class="trow"><span class="tr">${esc(r)}</span>${["lord", "warden", "emperor"]
-        .map(k => {
-          const b = BADGE[k + "-" + r],
-            on = badges[b.id];
-          return `<span class="tcell${on ? " on" : ""}" title="${esc(b.n)}${on ? " · " + fmtDate(on) : ""}"><span class="be">${b.e}</span><span class="tn">${k[0].toUpperCase() + k.slice(1)}</span></span>`;
-        })
-        .join("")}</div>`
+      `<div class="trow"><span class="tr">${esc(r)}</span>${TITLES.map(k => {
+        const b = BADGE[k + "-" + r],
+          on = badges[b.id];
+        return `<span class="tcell${on ? " on" : ""}" title="${esc(b.n)}${on ? " · " + fmtDate(on) : ""}"><span class="be">${b.e}</span><span class="tn">${k[0].toUpperCase() + k.slice(1)}</span></span>`;
+      }).join("")}</div>`
   ).join("")}</div>`;
 }

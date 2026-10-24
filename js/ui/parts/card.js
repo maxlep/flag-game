@@ -44,7 +44,7 @@ function setCards(list) {
       const all = regionFlags(r);
       if (!all.length) return "";
       const m = all.filter(f => mastered(f.c)).length;
-      const held = ["lord", "warden", "emperor"].filter(k => badges[k + "-" + r]),
+      const held = TITLES.filter(k => badges[k + "-" + r]),
         marks = held.map(k => ({e: BADGE[k + "-" + r].e, n: BADGE[k + "-" + r].n}));
       return card({
         name: r,

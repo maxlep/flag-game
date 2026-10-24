@@ -22,6 +22,12 @@ const BADGES = [
     n: "Hawkeye",
     h: "A perfect Pick-the-flag round of 25 or more on Master: the right flag among sixteen."
   },
+  {
+    id: "pathfinder",
+    e: "📍",
+    n: "Pathfinder",
+    h: "A perfect round of 25 or more on Master, finding each place on the map from its name."
+  },
   {id: "carto", e: "🗺️", n: "Cartographer", h: "Every territory, region and organisation flag learned."},
   {id: "streak100", e: "💯", n: "Centurion", h: "100 correct in a row."},
   {id: "m197", e: "🏆", n: "Completionist", h: "Every country's flag learned."},
@@ -47,6 +53,13 @@ const BADGES = [
       e: "⚜️",
       h: "A full " + r + " round (All) on Master, typed, with no misses.",
       title: 1
+    },
+    {
+      id: "admiral-" + r,
+      n: "Admiral of " + r,
+      e: "⚓",
+      h: "A full " + r + " round (All) on Master, asked with the flag and answered on the map, with no misses.",
+      title: 1
     }
   ]),
   {
@@ -69,17 +82,29 @@ const BADGES = [
     n: "Flag Emperor",
     h: "A full Everything round on Master, typed, with no misses. Every flag, names exact, no mistakes.",
     big: 1
+  },
+  {
+    id: "admiral",
+    e: "⚓",
+    n: "Flag Admiral",
+    h: "A full Everything round on Master, asked with the flag and answered on the map, with no misses.",
+    big: 1
   }
 ];
+// The titles in the order the table and the cards show them.
+const TITLES = ["lord", "warden", "emperor", "admiral"];
 const TITLE = {countries: {k: "lord"}, territories: {k: "warden"}, all: {k: "emperor"}};
 const BADGE = Object.fromEntries(BADGES.map(b => [b.id, b]));
 function checkBadges() {
   const n = S.qs.length,
     right = S.qs.filter(q => q.ans === q.c).length,
     perfect = right === n;
-  const D = {easy: 0, medium: 1, hard: 2, expert: 3, master: 4}[S.diff] || 0,
-    typed = TYPED(S.diff) && S.dir === "name",
-    strict = S.diff === "master" && S.dir === "name";
+  // Badges about flags count only rounds without the map; badges about answering well count every round.
+  const flags = S.ask !== "map" && S.dir !== "map",
+    D = {easy: 0, medium: 1, hard: 2, expert: 3, master: 4}[S.diff] || 0,
+    typed = TYPED(S.diff) && S.dir === "name" && flags,
+    strict = S.diff === "master" && S.dir === "name" && flags,
+    admiral = S.diff === "master" && S.ask === "flag" && S.dir === "map" && S.scope === "all";
   const mc = COUNTRIES.filter(f => mastered(f.c)).length,
     earned = [];
   const award = id => {
@@ -89,20 +114,16 @@ function checkBadges() {
     }
   };
   award("first");
-  // Titles and badges are about flags; map rounds earn none for now (docs/map-plan.md).
-  if (S.ask === "map" || S.dir === "map") {
-    saveB();
-    return earned;
-  }
   if (perfect && n >= 10 && D >= 1) award("clean10");
   if (perfect && n >= 25 && D >= 2) award("sharp25");
   if (perfect && n >= 25 && typed) award("typed25");
-  if (perfect && n >= 25 && S.diff === "master" && S.dir === "name") award("purist");
-  if (perfect && n >= 25 && S.dir === "flag" && D >= 2) award("mirror");
-  if (perfect && n >= 25 && S.dir === "flag" && S.diff === "master") award("hawk");
-  if (S.mode === "all" && S.full && S.scope === "countries") award("tour");
-  if (S.mode === "all" && S.full && S.scope === "territories") award("explorer");
-  if (S.mode === "group" && perfect) {
+  if (perfect && n >= 25 && strict) award("purist");
+  if (perfect && n >= 25 && flags && S.dir === "flag" && D >= 2) award("mirror");
+  if (perfect && n >= 25 && flags && S.dir === "flag" && S.diff === "master") award("hawk");
+  if (perfect && n >= 25 && S.diff === "master" && S.ask === "name" && S.dir === "map") award("pathfinder");
+  if (flags && S.mode === "all" && S.full && S.scope === "countries") award("tour");
+  if (flags && S.mode === "all" && S.full && S.scope === "territories") award("explorer");
+  if (flags && S.mode === "group" && perfect) {
     const t = (badges._twins = badges._twins || []);
     if (!t.includes(S.arg)) t.push(S.arg);
     if (t.length >= 10) award("twins");
@@ -117,6 +138,9 @@ function checkBadges() {
   if (S.mode === "region" && S.full && perfect && strict && REGIONS.includes(S.arg) && TITLE[S.scope])
     award(TITLE[S.scope].k + "-" + S.arg);
   if (S.mode === "all" && S.full && perfect && strict && TITLE[S.scope]) award(TITLE[S.scope].k);
+  // Admiral: the map's title, one per region whatever the scope it is shown under, earned in All.
+  if (S.mode === "region" && S.full && perfect && admiral && REGIONS.includes(S.arg)) award("admiral-" + S.arg);
+  if (S.mode === "all" && S.full && perfect && admiral) award("admiral");
   saveB();
   return earned;
 }
