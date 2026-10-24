@@ -151,7 +151,7 @@ function mapExploreSVG(o) {
   const shapes = offs.map(shape).join("") + hatch + ons.map(shape).join("");
   const tiny = order.filter(c => {
     const b = S.box[c];
-    return Math.hypot(b[2] - b[0], (b[3] - b[1]) * sy) < w * 0.012;
+    return Math.hypot(b[2] - b[0], (b[3] - b[1]) * sy) < w * 0.02;
   });
   const dots =
     tiny
