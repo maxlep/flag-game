@@ -777,9 +777,10 @@ const regionAll=r=>WIDE.includes(r)?FLAGS:FLAGS.filter(f=>geoOf(f)===r);
 function openExplore(region,keep,at,sel){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
   ex.on=new Set(studyList(region).map(f=>f.c));
   openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep,at});if(sel&&LB&&LB.what==="explore")exPick(sel,true)}
-// The map is a page, not a pop-up, so it has a back button like the others, naming where it goes: the study list it
-// was opened from, or home.
-function exBackTo(){return S.view==="study"?(WIDE.includes(S.region)?scopeName():S.region):S.view==="home"?"Home":"Back"}
+// The map is a page, not a pop-up, so it has a back button, not a ×: a square one left of the title, matching the zoom
+// buttons on the right, so the bar looks the same wherever the map was opened from. Where it goes (the study list it
+// came from, or home) is in its tooltip and label rather than its face, which would repeat the region's name.
+function exBackTo(){return S.view==="study"?`the ${WIDE.includes(S.region)?scopeName():S.region} list`:S.view==="home"?"Home":"the last page"}
 // The region picker in the map's title: every region with shapes, then the whole world (named for the scope).
 function exRegionSel(cur){const regs=[...ALLREGIONS.filter(r=>exploreOf(r,regionAll(r).map(f=>f.c))),scopeName()];
   return `<label class="lb-region"><span class="nm">${esc(WIDE.includes(cur)?scopeName():cur)}</span><select aria-label="Region" onchange="exRegion(this.value)">${regs.map(r=>`<option value="${esc(r)}"${r===cur||(WIDE.includes(cur)&&r===scopeName())?" selected":""}>${esc(r)}</option>`).join("")}</select></label>`}
@@ -800,7 +801,7 @@ function openViewer(c,o){
   const ex=o.what==="explore";
   const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
-    <div class="lb-top"><div class="title">${ex?`<button type="button" class="back lb-back" onclick="closeFlag()">‹ ${esc(exBackTo())}</button>`+exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`${scopeChips("lb-scope","exScope")}`:""}</div><div class="ctl">
+    <div class="lb-top">${ex?`<button type="button" class="lb-back" onclick="closeFlag()" title="Back to ${esc(exBackTo())}" aria-label="Back to ${esc(exBackTo())}"><i aria-hidden="true"></i></button>`:""}<div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`${scopeChips("lb-scope","exScope")}`:""}</div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button>${ex?"":`<button type="button" onclick="closeFlag()" aria-label="Close">×</button>`}</div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>
     ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList" aria-label="Places"><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>

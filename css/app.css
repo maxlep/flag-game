@@ -471,10 +471,10 @@ h2 .where{font-size:13px}
 .facts .capital{overflow-wrap:anywhere}
 /* The scope pill under a study list's title, as on the map. */
 .studyscope{align-self:flex-start;margin:2px 0 4px}
-/* The map's back button, top left as on every page, over the dark bar. */
-.lb-back{color:#cfdcff;font-weight:600;font-size:16px;padding:2px 0 4px;align-self:flex-start;pointer-events:auto}
-.lb-back:hover{text-decoration:underline}
-.lb-back:focus-visible{outline:3px solid #8fb0ff;outline-offset:3px;border-radius:4px}
-.lb-top .lb-back{width:auto;height:auto;background:none;border-radius:4px;display:inline-flex;align-items:center;justify-content:flex-start;font-size:16px;line-height:1.3;white-space:nowrap}
 /* The region beside the name in the viewer, as on the cards, in the bar's muted white. */
 .lb-top .nm .where{color:rgba(255,255,255,.62);font-size:13px}
+/* The map's back button: square, left of the title, like the zoom buttons on the right; a chevron drawn in CSS. */
+.lb-top .lb-back{flex:none;pointer-events:auto}
+.lb-back i{width:10px;height:10px;border:solid currentColor;border-width:0 0 2.5px 2.5px;transform:rotate(45deg);margin-left:4px}
+.lb.exploring .lb-top .title{flex:1;padding-top:4px}
+.lb.exploring .lb-top{padding-left:calc(12px + env(safe-area-inset-left,0px))}
