@@ -3,6 +3,8 @@
 
 // The map asked about is square on a tall screen and wider on a wide one.
 const QASP = () => (innerWidth / innerHeight < 0.75 ? 1 : 1.5);
+// The room Next takes, held empty before an answer.
+const NEXTSLOT = `<button class="btn" style="visibility:hidden" tabindex="-1" aria-hidden="true">Next</button>`;
 function viewQuiz() {
   const q = S.qs[S.i],
     f = BY[q.c],
@@ -37,13 +39,14 @@ function viewQuiz() {
     // Easy names the part of the region it is in; only that part can be tapped.
     const area = S.diff === "easy" && AREA_OF[q.c] ? `It's in ${esc(AREA_OF[q.c])}. ` : "";
     ask = `<p class="eyebrow">${area}Double-tap it on the map, or tap it and Check.</p>`;
-    // In Drill a right answer moves on by itself with no card: the drawer stays as it was (its buttons idle), so the map
-    // keeps its size from question to question.
-    const off = q.ans ? "disabled" : "";
-    opts =
-      q.ans && !steady
+    // In Drill a right answer moves on by itself with no card. As in the other Drill rounds, Next appears so you can move
+    // on sooner; it takes the place of the Check row, under the same instruction, so the drawer and the map keep their
+    // size from question to question.
+    opts = steady
+      ? `<div class="row"><button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i + 1 < n ? "Next" : "See results"}</button></div>`
+      : q.ans
         ? ""
-        : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel && !q.ans ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line reveal" ${off} onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
+        : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line reveal" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
   } else if (reverse) {
     prompt = `<p class="eyebrow">Which flag?</p>${askMap ? shown : `<p class="ask">${esc(f.n)}</p>`}`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
@@ -135,13 +138,16 @@ function viewQuiz() {
     q.ans && !typed && !steady
       ? `<button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i + 1 < n ? "Next" : "See results"}</button>`
       : "";
+  // Picking the flag in Drill: the drawer is empty until Next appears after an answer, so it keeps Next's room from the
+  // start and the flags above don't jump.
+  const held = reverse && S.pace === "drill";
   const right = S.qs.filter(x => x.ans === x.c).length;
   return `<div class="qscreen">
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${esc(S.label)} · ${right} right · ${S.i + 1} / ${n}</span></div>
   <div class="progress">${dots}</div>
   ${S.confirmLeave ? `<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>` : ""}</div>
   <div class="qmid${mapq ? " mapq" : ""}" id="qmid" data-i="${S.i}">${prompt}${reverse ? opts : ""}${reveal}</div>
-  <div class="qdrawer${q.ans ? " answered" : ""}${reverse && !q.ans ? " empty" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${reverse ? "" : opts}${nextBtn}</div>
+  <div class="qdrawer${q.ans ? " answered" : ""}${reverse && !q.ans && !held ? " empty" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${reverse ? "" : opts}${nextBtn}${held && !q.ans ? NEXTSLOT : ""}</div>
   </div>`;
 }
 
