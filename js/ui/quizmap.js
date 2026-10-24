@@ -301,20 +301,6 @@ function qmGestures(svg, box) {
     if (moved || e.type === "pointercancel") return;
     qmTap(e.clientX, e.clientY, Date.now() - downT > 450);
   };
-  // The page itself must not zoom on a double tap (iOS does, whatever touch-action says): the second quick touch's
-  // default is cancelled. The pointer events above still arrive; the zoom buttons keep their clicks.
-  let lastTouch = 0;
-  box.addEventListener(
-    "touchend",
-    e => {
-      if (e.target.closest("button")) return;
-      const now = Date.now();
-      if (now - lastTouch < 350) e.preventDefault();
-      lastTouch = now;
-    },
-    {passive: false}
-  );
-  box.addEventListener("dblclick", e => e.preventDefault());
   box.addEventListener("pointerup", end);
   box.addEventListener("pointercancel", end);
   box.addEventListener("lostpointercapture", e => end({type: "pointercancel", pointerId: e.pointerId}));
@@ -330,4 +316,23 @@ function qmGestures(svg, box) {
 // A new window size needs the map sized again; the view is kept.
 addEventListener("resize", () => {
   if (S.view === "quiz" && S.dir === "map" && !LB) render();
+});
+// The page itself must not zoom on a double tap during a round (iOS does, whatever touch-action says). The second quick
+// touch's default is cancelled anywhere on the quiz screen except on controls, which need their clicks. It listens on
+// the document, once, so it survives the redraw a tap can cause: the tap that answers redraws the map, and a guard on
+// the old map's box missed the touch that followed.
+let qmLastTouch = 0;
+document.addEventListener(
+  "touchend",
+  e => {
+    if (S.view !== "quiz" || LB) return;
+    const now = Date.now(),
+      quick = now - qmLastTouch < 400;
+    qmLastTouch = now;
+    if (quick && !e.target.closest("button, input, a, select, label")) e.preventDefault();
+  },
+  {passive: false}
+);
+document.addEventListener("dblclick", e => {
+  if (S.view === "quiz" && !LB) e.preventDefault();
 });
