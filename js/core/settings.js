@@ -63,9 +63,9 @@ const PICK = {
   expert: "Find the flag among nine, drawn from its look-alikes and region.",
   master: "Find the flag among sixteen look-alikes and neighbours."
 };
-// What a right answer adds to a flag's meter at difficulty d, as answer() scores it; null for a round with no flag on
-// screen, which counts toward places located instead.
+// What a right answer adds to the meter at difficulty d, as answer() scores it: the flag's meter, or the place's for a
+// round with no flag on screen.
 function scoreGain(d, ask, dir) {
-  if (ask !== "flag" && dir !== "flag") return null;
   return d === "master" && dir !== "name" ? 3 : PTS[d] || 0;
 }
+const placeRound = (ask, dir) => ask !== "flag" && dir !== "flag";

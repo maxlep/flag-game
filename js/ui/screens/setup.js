@@ -22,14 +22,13 @@ function mapNote(pool) {
     t = SET.dir === "map" ? where + MAPDIFF[d] : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
   return t;
 }
-// The first line of the difficulty note: a meter lit as far as one right answer fills it.
-function gainLine(g) {
-  if (g === null) return "Counts toward places located.";
+// The first line of the difficulty note: the meter this round fills, lit as far as one right answer fills it.
+function gainLine(g, place) {
   if (!g) return "Practice: a right answer doesn't fill the meter.";
-  return `${meter(g, 0)} ${g >= MASTER ? "A right answer learns the flag." : "per right answer"}`;
+  return `${meter(g, undefined, place ? "place" : "")} ${g >= MASTER ? (place ? "A right answer locates the place." : "A right answer learns the flag.") : "per right answer"}`;
 }
 // The rules behind the meter, in full, folded under More.
-const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, and a full meter means learned. A right answer fills 1 on Medium, 2 on Hard, 3 on Expert, and on Master 3 when picking or ${MASTER} when typing; Easy fills none. A miss empties 2. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Rounds with no flag on screen count toward places located instead.</span></div>`;
+const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, drawn as bars, and a full meter means learned. A right answer fills 1 on Medium, 2 on Hard, 3 on Expert, and on Master 3 when picking or ${MASTER} when typing; Easy fills none. A miss empties 2. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Rounds with no flag on screen (name to map, map to name) fill the place's meter instead, drawn as dots, by the same rules; a full one means located.</span></div>`;
 function viewSetup() {
   const p = S.pick,
     pool = poolFor(p.mode, p.arg, p.flt),
@@ -94,7 +93,7 @@ function viewSetup() {
         .join("")}</div></div>
     <div class="seg"><span class="label">Difficulty</span><div class="btns">
       ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" && SET.dir !== "map" && SET.ask !== "map" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
-      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir))}</span>${diffNote}</span></div>
+      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir), placeRound(SET.ask, SET.dir))}</span>${diffNote}</span></div>
     <div class="seg" id="askSeg"><span class="label">Ask with</span><div class="btns">
       <button class="${SET.ask === "flag" ? "on" : ""}" onclick="setPair('ask','flag')">Flag</button>
       <button class="${SET.ask === "name" ? "on" : ""}" onclick="setPair('ask','name')">Name</button>

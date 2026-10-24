@@ -546,3 +546,9 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .meter i.lost{background:var(--bad);opacity:.45}
 .verdict .meter{margin-left:6px}
 .dscore .meter{margin-right:6px}
+/* A place's meter: dots in gold, beside the flag's blue bars. Under the study entry's small map. */
+.meter.place i{width:8px;height:8px;border-radius:50%}
+.meter.place i.on{background:var(--gold)}
+.meter.place i.new{background:var(--ok)}
+.fcol > .meter.place,.fcol > .pill.place{align-self:center;margin-top:4px}
+.pill.place{font-size:11px;padding:2px 8px}

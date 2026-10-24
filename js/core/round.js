@@ -178,20 +178,12 @@ function answer(k) {
   q.ans = k;
   const ok = k === q.c;
   S.confirmLeave = false; // carrying on answers the "leave this round?" question
-  // With no flag on screen (a name found on the map) the answer says nothing about knowing the flag: it is counted as
-  // located, and the flag's progress is left alone.
-  if (S.ask !== "flag" && S.dir !== "flag") {
-    const l = located[q.c] || {c: 0, w: 0};
-    if (ok) l.c++;
-    else l.w++;
-    located[q.c] = l;
-    saveL();
-    q.pts = null;
-    return afterAnswer(q, ok);
-  }
-  const r = rec(q.c);
+  // With no flag on screen (a name found on the map) the answer says nothing about knowing the flag: it fills the
+  // place's meter instead, by the same rule, and the flag's progress is left alone.
+  const place = (q.place = S.ask !== "flag" && S.dir !== "flag"),
+    r = place ? loc(q.c) : rec(q.c);
   q.s0 = r.s || 0; // the meter before, for the card to show what this answer filled or emptied
-  // Typed Master alone marks a flag learned in one answer; picking a flag or a place scores at most +3.
+  // Typed Master alone fills a meter in one answer; picking a flag or a place scores at most +3.
   const pts = S.diff === "master" && S.dir !== "name" ? 3 : PTS[S.diff] || 0;
   if (ok) {
     r.c++;
@@ -204,8 +196,13 @@ function answer(k) {
   }
   q.nowMastered = ok && r.s >= MASTER && r.s - pts < MASTER;
   q.s1 = r.s;
-  prog[q.c] = r;
-  save();
+  if (place) {
+    located[q.c] = r;
+    saveL();
+  } else {
+    prog[q.c] = r;
+    save();
+  }
   afterAnswer(q, ok);
 }
 // What follows any answer: the streak, saving the round, the redraw, Drill moving on, the card into view.

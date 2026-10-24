@@ -48,7 +48,7 @@ function saveB() {
 }
 // ---------- LOCATED ----------
 // Rounds with no flag on screen (a name found on the map, a map named) test geography, not flags, so they leave the
-// flag's progress alone and are counted here: code -> {c, w}, for the "located" progress planned in docs/map-plan.md.
+// flag's progress alone and fill a place meter here instead, scored as a flag's is: code -> {c, w, s}.
 const LKEY = "flaglore.located";
 let located = {};
 function loadL() {
@@ -58,6 +58,9 @@ function loadL() {
     located = {};
   }
 }
+// A place's record (s missing in records saved before the place meter, which counted only right and wrong).
+const loc = c => Object.assign({c: 0, w: 0, s: 0}, located[c]);
+const isLocated = c => loc(c).s >= MASTER;
 function saveL() {
   try {
     localStorage.setItem(LKEY, JSON.stringify(located));
