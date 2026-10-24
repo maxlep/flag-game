@@ -2,6 +2,8 @@
 
 Written 2026-10-23 on `preview-coder-1`, branched from `preview` at 1b50f0c; updated the same day after merging `preview` at c5786d7 (sorting and grouped lists, the map list's drawer and tab, one scope control). Plan only; nothing is moved yet.
 
+**Done 2026-10-24** (steps 1 to 3a, on `claude/split`, merged into `preview`): `tools/smoke.js` added and passing before and after; `tools/split_app.py` moved all 232 statements of `js/app.js` into 29 files (and `js/map.js` to `js/ui/map.js`) with its statement check passing, then was removed as planned; Prettier reformatted the new files with identical syntax trees; both commits are in `.git-blame-ignore-revs`. Left for later, as the plan says: renames and tidying (for example, `js/core/store.js` opens with the old file's first comment, which moved with the first statement), and the steps towards a framework below. Names added since the plan was written were placed by the same rules: `checkVersion` with the home screen, `copyResult` and `share` with the results screen (they touch the clipboard and the page, so not `core/share.js`), and `exScreenOf`, `exMidView`, `exNearest` with `exArrow` in `ui/explore/list.js`.
+
 ## Why
 
 `js/app.js` is 1,168 lines and 107 KB: about 210 top-level names, long dense lines, nine sections in one file. It grew 10 KB in the evening between two versions of this plan, which is part of the case. Finding things, reviewing diffs and working in two sessions at once all suffer. The split is about reading and changing the code, not about behaviour.
