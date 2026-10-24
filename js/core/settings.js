@@ -34,8 +34,8 @@ function setOpt(k, v) {
 // kind of round (scoreGain, drawn by gainLine), then what the difficulty changes for this kind of round (DIFF, PICK,
 // MAPDIFF, ASKMAP, ASKMAPF, none of which mention it).
 const MAPDIFF = {
-  easy: "The quiz says which part of the region it is in, and only that part can be tapped.",
-  medium: "Nothing is named until you Check.",
+  easy: "Only its area can be tapped, and the quiz names the area.",
+  medium: "",
   hard: "Small places have no dot until you zoom in close.",
   expert: "No borders are drawn. Small places keep their dots.",
   master: "No borders, and small places have no dot until you zoom in close."

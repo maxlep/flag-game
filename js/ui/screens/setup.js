@@ -19,11 +19,12 @@ function mapNote(pool) {
       : d === "easy" || d === "medium"
         ? "The map shows each place's region. "
         : "The map shows the whole world, since this set spans regions. ",
-    t = SET.dir === "map" ? where + MAPDIFF[d] : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
+    t = SET.dir === "map" ? (where + MAPDIFF[d]).trim() : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
   return t;
 }
 // The first line of the difficulty note: what a right answer adds to each meter the round fills, and what a miss
-// takes away, as icons and numbers: ✓ +2 [flag] +2 [pin]   ✗ −2 [flag] −2 [pin]. Easy says Practice; the others showing what they add is what tells it apart.
+// takes away, as icons and numbers: ✓ +2 [flag] +2 [pin]   ✗ −2 [flag] −2 [pin]. Easy says Practice;
+// the others showing what they add is what tells it apart.
 const OKICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
 const MISSICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>`;
 function gainLine(g, m) {
