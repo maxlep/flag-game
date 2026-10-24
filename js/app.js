@@ -138,10 +138,10 @@ function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
 function capLine(c,showRegion=true){const L=links(c),f=BY[c];const plain=L.sameCap||f.cap==="None";
   const where=f.sov?f.r:geoOf(f)+" · territory";
   return `${plain?esc(f.cap):wl(L.cap,esc(f.cap))}${showRegion?" · "+where:""} · ${wl(L.flag,flagYears(c),"The flag on Wikipedia")}`}
-// "Flag adopted 1994", or, where the same design is older (ORIGIN): revised, readopted or made official later.
+// "Flag adopted 1994", or, where the same design is older (ORIGIN), both years with what each was:
+// "Flag 1889 (21 stars), 1992 (27 stars)".
 function flagYears(c){const y=typeof ADOPTED==="object"&&ADOPTED[c],o=typeof ORIGIN==="object"&&ORIGIN[c];if(!y)return "Flag";
-  if(!o)return "Flag adopted "+y;const [oy,k]=o;
-  return k==="revised"?`Flag revised ${y}, design from ${oy}`:k==="readopted"?`Flag readopted ${y}, first used ${oy}`:`Flag official ${y}, in use since ${oy}`}
+  if(!o)return "Flag adopted "+y;const [oy,t,n]=o;return `Flag ${oy}${t?` (${t})`:""}, ${y}${n?` (${n})`:""}`}
 // The flag on a card: tap to open it in the viewer.
 function cardFlag(c,vi){return `<button type="button" class="flink" onclick="openFlag('${c}',+this.querySelector('.fl:not([hidden])').dataset.v)" title="View large">${img(c,"flag",vi)}</button>`}
 // A small map of the flag's region, the country filled in; opens the viewer on the map slide.

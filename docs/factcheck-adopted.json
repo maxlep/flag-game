@@ -4,7 +4,7 @@
  "rules": [
   "adopted = the latest visible change to the design, or the year it was made official; a law that only set shades or wrote down proportions already in use does not count",
   "readopted flags keep the readoption year",
-  "origin only for the same recognisable design, at least 5 years older, one year, no chains",
+  "origin only for the same recognisable design, at least 5 years older, one year, no chains; each year gets a label of at most four words from the article, or none",
   "'official' only for flags that are official today"
  ],
  "flags": [
@@ -20,7 +20,8 @@
     "adopted": 1993,
     "origin": [
      1866,
-     "revised"
+     "tricolour",
+     "official arms"
     ]
    }
   },
@@ -49,7 +50,8 @@
     "adopted": 2013,
     "origin": [
      1928,
-     "readopted"
+     "tricolour",
+     ""
     ]
    }
   },
@@ -78,7 +80,8 @@
     "adopted": 1999,
     "origin": [
      1990,
-     "revised"
+     "",
+     "arms modified"
     ]
    }
   },
@@ -94,7 +97,8 @@
     "adopted": 1992,
     "origin": [
      1912,
-     "revised"
+     "",
+     "star removed"
     ]
    }
   },
@@ -110,7 +114,8 @@
     "adopted": 1990,
     "origin": [
      1918,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -152,7 +157,8 @@
     "adopted": 1861,
     "origin": [
      1812,
-     "revised"
+     "no sun",
+     "national unification"
     ]
    }
   },
@@ -207,7 +213,8 @@
     "adopted": 1945,
     "origin": [
      1918,
-     "readopted"
+     "",
+     "formally adopted"
     ]
    }
   },
@@ -223,7 +230,8 @@
     "adopted": 1908,
     "origin": [
      1901,
-     "revised"
+     "first flown",
+     "seven-point star"
     ]
    }
   },
@@ -265,7 +273,8 @@
     "adopted": 1991,
     "origin": [
      1918,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -346,7 +355,8 @@
     "adopted": 1990,
     "origin": [
      1879,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -362,7 +372,8 @@
     "adopted": 2002,
     "origin": [
      1932,
-     "revised"
+     "serrated edge",
+     "five points"
     ]
    }
   },
@@ -378,7 +389,8 @@
     "adopted": 1982,
     "origin": [
      1967,
-     "revised"
+     "",
+     "current ratio"
     ]
    }
   },
@@ -394,7 +406,8 @@
     "adopted": 1990,
     "origin": [
      1959,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -410,7 +423,8 @@
     "adopted": 1999,
     "origin": [
      1910,
-     "revised"
+     "",
+     "arms modified"
     ]
    }
   },
@@ -426,7 +440,8 @@
     "adopted": 1959,
     "origin": [
      1906,
-     "revised"
+     "",
+     "emblem added"
     ]
    }
   },
@@ -455,7 +470,8 @@
     "adopted": 1992,
     "origin": [
      1889,
-     "revised"
+     "21 stars",
+     "27 stars"
     ]
    }
   },
@@ -510,7 +526,8 @@
     "adopted": 2012,
     "origin": [
      1995,
-     "revised"
+     "thinner pattern",
+     "thicker pattern"
     ]
    }
   },
@@ -565,7 +582,8 @@
     "adopted": 2006,
     "origin": [
      1963,
-     "readopted"
+     "royal blue",
+     "sky blue"
     ]
    }
   },
@@ -594,7 +612,8 @@
     "adopted": 1991,
     "origin": [
      1959,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -610,7 +629,8 @@
     "adopted": 1889,
     "origin": [
      1841,
-     "revised"
+     "",
+     "cross shape fixed"
     ]
    }
   },
@@ -665,7 +685,8 @@
     "adopted": 1975,
     "origin": [
      1957,
-     "revised"
+     "plain tricolour",
+     "one star"
     ]
    }
   },
@@ -720,7 +741,8 @@
     "adopted": 1902,
     "origin": [
      1850,
-     "official"
+     "first hoisted",
+     "national flag"
     ]
    }
   },
@@ -775,7 +797,8 @@
     "adopted": 2006,
     "origin": [
      1960,
-     "revised"
+     "",
+     "redrawn"
     ]
    }
   },
@@ -804,7 +827,8 @@
     "adopted": 1949,
     "origin": [
      1848,
-     "readopted"
+     "German Confederation",
+     "Federal Republic"
     ]
    }
   },
@@ -846,7 +870,8 @@
     "adopted": 1990,
     "origin": [
      1978,
-     "revised"
+     "independence",
+     ""
     ]
    }
   },
@@ -875,7 +900,8 @@
     "adopted": 1962,
     "origin": [
      1943,
-     "official"
+     "Algerian People's Party",
+     "independence"
     ]
    }
   },
@@ -891,7 +917,8 @@
     "adopted": 1900,
     "origin": [
      1860,
-     "revised"
+     "",
+     "arms added"
     ]
    }
   },
@@ -907,7 +934,8 @@
     "adopted": 1918,
     "origin": [
      1884,
-     "official"
+     "students' society",
+     "national flag"
     ]
    }
   },
@@ -923,7 +951,8 @@
     "adopted": 1984,
     "origin": [
      1952,
-     "revised"
+     "revolution flag",
+     "eagle of Saladin"
     ]
    }
   },
@@ -965,7 +994,8 @@
     "adopted": 1981,
     "origin": [
      1785,
-     "readopted"
+     "naval ensign",
+     "current arms"
     ]
    }
   },
@@ -994,7 +1024,8 @@
     "adopted": 1981,
     "origin": [
      1891,
-     "official"
+     "",
+     "made official"
     ]
    }
   },
@@ -1010,7 +1041,8 @@
     "adopted": 1978,
     "origin": [
      1894,
-     "official"
+     "",
+     "made official"
     ]
    }
   },
@@ -1026,7 +1058,8 @@
     "adopted": 1996,
     "origin": [
      1897,
-     "revised"
+     "stripes reversed",
+     "pentagram emblem"
     ]
    }
   },
@@ -1042,7 +1075,8 @@
     "adopted": 1985,
     "origin": [
      1955,
-     "official"
+     "Council of Europe",
+     "EEC"
     ]
    }
   },
@@ -1084,7 +1118,8 @@
     "adopted": 1999,
     "origin": [
      1948,
-     "revised"
+     "white disc",
+     "disc removed"
     ]
    }
   },
@@ -1100,7 +1135,8 @@
     "adopted": 1978,
     "origin": [
      1962,
-     "revised"
+     "six stars",
+     "four stars"
     ]
    }
   },
@@ -1116,7 +1152,8 @@
     "adopted": 1940,
     "origin": [
      1919,
-     "official"
+     "first raised",
+     "British recognition"
     ]
    }
   },
@@ -1262,7 +1299,8 @@
     "adopted": 1966,
     "origin": [
      1957,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -1330,7 +1368,8 @@
     "adopted": 1979,
     "origin": [
      1968,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -1346,7 +1385,8 @@
     "adopted": 1978,
     "origin": [
      1822,
-     "readopted"
+     "naval ensign",
+     "national flag"
     ]
    }
   },
@@ -1362,7 +1402,8 @@
     "adopted": 1999,
     "origin": [
      1992,
-     "revised"
+     "white disc",
+     ""
     ]
    }
   },
@@ -1391,7 +1432,8 @@
     "adopted": 1948,
     "origin": [
      1917,
-     "revised"
+     "no red border",
+     "red border"
     ]
    }
   },
@@ -1407,7 +1449,8 @@
     "adopted": 1973,
     "origin": [
      1961,
-     "revised"
+     "party flag",
+     "initials removed"
     ]
    }
   },
@@ -1449,7 +1492,8 @@
     "adopted": 1949,
     "origin": [
      1866,
-     "revised"
+     "five stars",
+     ""
     ]
    }
   },
@@ -1465,7 +1509,8 @@
     "adopted": 1990,
     "origin": [
      1848,
-     "revised"
+     "tricolour",
+     "coat of arms"
     ]
    }
   },
@@ -1481,7 +1526,8 @@
     "adopted": 1986,
     "origin": [
      1806,
-     "readopted"
+     "Pétion's republic",
+     "restored"
     ]
    }
   },
@@ -1497,7 +1543,8 @@
     "adopted": 1957,
     "origin": [
      1848,
-     "revised"
+     "",
+     "state flag"
     ]
    }
   },
@@ -1513,7 +1560,8 @@
     "adopted": 1982,
     "origin": [
      1961,
-     "official"
+     "Canarias Libre",
+     "made official"
     ]
    }
   },
@@ -1529,6 +1577,7 @@
     "adopted": 1950,
     "origin": [
      1928,
+     "",
      "official"
     ]
    }
@@ -1545,7 +1594,8 @@
     "adopted": 1937,
     "origin": [
      1848,
-     "official"
+     "",
+     "in the constitution"
     ]
    }
   },
@@ -1561,7 +1611,8 @@
     "adopted": 1948,
     "origin": [
      1897,
-     "official"
+     "Zionist movement",
+     "Israel"
     ]
    }
   },
@@ -1603,7 +1654,8 @@
     "adopted": 2025,
     "origin": [
      1990,
-     "revised"
+     "",
+     "Tudor Crown"
     ]
    }
   },
@@ -1619,7 +1671,8 @@
     "adopted": 2008,
     "origin": [
      1963,
-     "revised"
+     "three stars",
+     "stars removed"
     ]
    }
   },
@@ -1635,7 +1688,8 @@
     "adopted": 1980,
     "origin": [
      1905,
-     "revised"
+     "tricolour",
+     "lion and sun replaced"
     ]
    }
   },
@@ -1651,7 +1705,8 @@
     "adopted": 1944,
     "origin": [
      1915,
-     "official"
+     "red cross added",
+     "republic flag law"
     ]
    }
   },
@@ -1667,7 +1722,8 @@
     "adopted": 1946,
     "origin": [
      1797,
-     "revised"
+     "Cisalpine Republic",
+     "Italian Republic"
     ]
    }
   },
@@ -1683,7 +1739,8 @@
     "adopted": 1981,
     "origin": [
      1757,
-     "revised"
+     "red saltire",
+     "crown and badge added"
     ]
    }
   },
@@ -1725,7 +1782,8 @@
     "adopted": 1999,
     "origin": [
      1870,
-     "official"
+     "civil ensign",
+     "national flag"
     ]
    }
   },
@@ -1754,7 +1812,8 @@
     "adopted": 2023,
     "origin": [
      1992,
-     "revised"
+     "wavy rays",
+     "rays straightened"
     ]
    }
   },
@@ -1770,7 +1829,8 @@
     "adopted": 1993,
     "origin": [
      1948,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -1838,7 +1898,8 @@
     "adopted": 1949,
     "origin": [
      1883,
-     "revised"
+     "Joseon dynasty",
+     ""
     ]
    }
   },
@@ -1867,7 +1928,8 @@
     "adopted": 1999,
     "origin": [
      1959,
-     "revised"
+     "white disc",
+     "disc removed"
     ]
    }
   },
@@ -1896,7 +1958,8 @@
     "adopted": 1975,
     "origin": [
      1945,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -1912,7 +1975,8 @@
     "adopted": 1990,
     "origin": [
      1943,
-     "revised"
+     "",
+     "cedar all green"
     ]
    }
   },
@@ -1928,7 +1992,8 @@
     "adopted": 2002,
     "origin": [
      1967,
-     "revised"
+     "associated statehood",
+     ""
     ]
    }
   },
@@ -1944,7 +2009,8 @@
     "adopted": 1982,
     "origin": [
      1921,
-     "revised"
+     "no crown",
+     "crown modified"
     ]
    }
   },
@@ -1960,7 +2026,8 @@
     "adopted": 1972,
     "origin": [
      1948,
-     "revised"
+     "Dominion of Ceylon",
+     "bo leaves added"
     ]
    }
   },
@@ -2002,7 +2069,8 @@
     "adopted": 1988,
     "origin": [
      1918,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -2018,7 +2086,8 @@
     "adopted": 1993,
     "origin": [
      1848,
-     "official"
+     "de facto",
+     "made law"
     ]
    }
   },
@@ -2034,7 +2103,8 @@
     "adopted": 1990,
     "origin": [
      1921,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -2050,7 +2120,8 @@
     "adopted": 2011,
     "origin": [
      1951,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -2183,7 +2254,8 @@
     "adopted": 1992,
     "origin": [
      1945,
-     "revised"
+     "with star",
+     "star removed"
     ]
    }
   },
@@ -2225,6 +2297,7 @@
     "adopted": 2023,
     "origin": [
      1968,
+     "nationalist flag",
      "official"
     ]
    }
@@ -2241,7 +2314,8 @@
     "adopted": 2017,
     "origin": [
      1959,
-     "revised"
+     "",
+     "red stripes added"
     ]
    }
   },
@@ -2257,7 +2331,8 @@
     "adopted": 1999,
     "origin": [
      1960,
-     "revised"
+     "",
+     "arms modified"
     ]
    }
   },
@@ -2273,7 +2348,8 @@
     "adopted": 1964,
     "origin": [
      1943,
-     "revised"
+     "George Cross added",
+     "blue canton removed"
     ]
    }
   },
@@ -2315,7 +2391,8 @@
     "adopted": 2012,
     "origin": [
      1964,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -2331,7 +2408,8 @@
     "adopted": 1968,
     "origin": [
      1821,
-     "revised"
+     "first national flag",
+     "arms changed"
     ]
    }
   },
@@ -2347,7 +2425,8 @@
     "adopted": 1963,
     "origin": [
      1950,
-     "revised"
+     "11 stripes",
+     "14 stripes"
     ]
    }
   },
@@ -2363,7 +2442,8 @@
     "adopted": 1983,
     "origin": [
      1974,
-     "readopted"
+     "plain triangle",
+     "cogwheel removed"
     ]
    }
   },
@@ -2444,7 +2524,8 @@
     "adopted": 1908,
     "origin": [
      1823,
-     "readopted"
+     "Central America",
+     "restored"
     ]
    }
   },
@@ -2460,7 +2541,8 @@
     "adopted": 1937,
     "origin": [
      1596,
-     "official"
+     "red replaces orange",
+     "red reaffirmed"
     ]
    }
   },
@@ -2528,6 +2610,7 @@
     "adopted": 1902,
     "origin": [
      1869,
+     "",
      "official"
     ]
    }
@@ -2544,7 +2627,8 @@
     "adopted": 2004,
     "origin": [
      1970,
-     "revised"
+     "",
+     "slightly changed"
     ]
    }
   },
@@ -2560,7 +2644,8 @@
     "adopted": 1925,
     "origin": [
      1903,
-     "official"
+     "first used",
+     "adopted by law"
     ]
    }
   },
@@ -2576,7 +2661,8 @@
     "adopted": 1950,
     "origin": [
      1822,
-     "revised"
+     "vertical triband",
+     "arms removed"
     ]
    }
   },
@@ -2618,7 +2704,8 @@
     "adopted": 1998,
     "origin": [
      1898,
-     "revised"
+     "First Republic",
+     "reaffirmed by law"
     ]
    }
   },
@@ -2673,6 +2760,7 @@
     "adopted": 1952,
     "origin": [
      1895,
+     "",
      "official"
     ]
    }
@@ -2689,7 +2777,8 @@
     "adopted": 1988,
     "origin": [
      1964,
-     "revised"
+     "PLO",
+     "State of Palestine"
     ]
    }
   },
@@ -2731,7 +2820,8 @@
     "adopted": 2013,
     "origin": [
      1842,
-     "revised"
+     "flags unified",
+     "seal simplified"
     ]
    }
   },
@@ -2747,7 +2837,8 @@
     "adopted": 1971,
     "origin": [
      1949,
-     "revised"
+     "",
+     "slightly changed"
     ]
    }
   },
@@ -2762,8 +2853,9 @@
    "applied": {
     "adopted": 1989,
     "origin": [
-     1866,
-     "revised"
+     1867,
+     "",
+     "plain tricolour restored"
     ]
    }
   },
@@ -2779,7 +2871,8 @@
     "adopted": 2004,
     "origin": [
      1882,
-     "readopted"
+     "kingdom state flag",
+     "reintroduced"
     ]
    }
   },
@@ -2795,7 +2888,8 @@
     "adopted": 1991,
     "origin": [
      1705,
-     "readopted"
+     "ships",
+     "restored"
     ]
    }
   },
@@ -2824,7 +2918,8 @@
     "adopted": 1973,
     "origin": [
      1938,
-     "official"
+     "curved sword",
+     "made official"
     ]
    }
   },
@@ -2879,7 +2974,8 @@
     "adopted": 1906,
     "origin": [
      1562,
-     "revised"
+     "royal warrant",
+     "colours set by law"
     ]
    }
   },
@@ -2960,7 +3056,8 @@
     "adopted": 1992,
     "origin": [
      1938,
-     "revised"
+     "tricolour only",
+     "arms added"
     ]
    }
   },
@@ -3041,7 +3138,8 @@
     "adopted": 2011,
     "origin": [
      2005,
-     "official"
+     "",
+     "national flag"
     ]
    }
   },
@@ -3070,7 +3168,8 @@
     "adopted": 1916,
     "origin": [
      1822,
-     "readopted"
+     "triband",
+     ""
     ]
    }
   },
@@ -3099,7 +3198,8 @@
     "adopted": 2025,
     "origin": [
      1930,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -3128,7 +3228,8 @@
     "adopted": 1999,
     "origin": [
      1968,
-     "revised"
+     "",
+     "arms modified"
     ]
    }
   },
@@ -3157,7 +3258,8 @@
     "adopted": 2007,
     "origin": [
      1958,
-     "revised"
+     "three stars",
+     "made official"
     ]
    }
   },
@@ -3225,7 +3327,8 @@
     "adopted": 2002,
     "origin": [
      1975,
-     "readopted"
+     "independence declared",
+     "restored"
     ]
    }
   },
@@ -3241,7 +3344,8 @@
     "adopted": 2001,
     "origin": [
      1992,
-     "revised"
+     "1:2 ratio",
+     "2:3 ratio"
     ]
    }
   },
@@ -3283,7 +3387,8 @@
     "adopted": 1936,
     "origin": [
      1844,
-     "revised"
+     "Ottoman flag",
+     "standardised"
     ]
    }
   },
@@ -3312,7 +3417,8 @@
     "adopted": 1997,
     "origin": [
      1978,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -3328,7 +3434,8 @@
     "adopted": 1928,
     "origin": [
      1906,
-     "official"
+     "red field added",
+     "national flag"
     ]
    }
   },
@@ -3357,7 +3464,8 @@
     "adopted": 1992,
     "origin": [
      1918,
-     "readopted"
+     "",
+     "restored"
     ]
    }
   },
@@ -3399,7 +3507,8 @@
     "adopted": 1960,
     "origin": [
      1777,
-     "revised"
+     "13 stars",
+     "50 stars"
     ]
    }
   },
@@ -3467,7 +3576,8 @@
     "adopted": 2006,
     "origin": [
      1811,
-     "revised"
+     "Miranda's tricolour",
+     "eighth star"
     ]
    }
   },
@@ -3483,7 +3593,8 @@
     "adopted": 1999,
     "origin": [
      1960,
-     "revised"
+     "",
+     "arms modified"
     ]
    }
   },
@@ -3512,7 +3623,8 @@
     "adopted": 1955,
     "origin": [
      1940,
-     "revised"
+     "Cochinchina uprising",
+     "star straightened"
     ]
    }
   },
@@ -3554,7 +3666,8 @@
     "adopted": 1962,
     "origin": [
      1948,
-     "revised"
+     "four stars",
+     "independence"
     ]
    }
   },
@@ -3609,7 +3722,8 @@
     "adopted": 1996,
     "origin": [
      1964,
-     "revised"
+     "independence",
+     "lighter green"
     ]
    }
   },
