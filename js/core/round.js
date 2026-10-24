@@ -183,8 +183,9 @@ function answer(k) {
   const place = (q.place = S.ask !== "flag" && S.dir !== "flag"),
     r = place ? loc(q.c) : rec(q.c);
   q.s0 = r.s || 0; // the meter before, for the card to show what this answer filled or emptied
-  // Typed Master alone fills a meter in one answer; picking a flag or a place scores at most +3.
-  const pts = S.diff === "master" && S.dir !== "name" ? 3 : PTS[S.diff] || 0;
+  // Master fills the whole meter when the answer is given unaided (a name typed, a place tapped on a map with no
+  // borders or dots); picking a flag from a grid is recognition, and scores at most +3.
+  const pts = S.diff === "master" && S.dir === "flag" ? 3 : PTS[S.diff] || 0;
   if (ok) {
     r.c++;
     r.s = Math.min(8, (r.s || 0) + pts);

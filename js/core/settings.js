@@ -34,7 +34,7 @@ function setOpt(k, v) {
 // kind of round (scoreGain, drawn by gainLine), then what the difficulty changes for this kind of round (DIFF, PICK,
 // MAPDIFF, ASKMAP, ASKMAPF, none of which mention it).
 const MAPDIFF = {
-  easy: "A tap names the place you picked, and Check answers.",
+  easy: "The part of the region it is in is shaded.",
   medium: "Nothing is named until you Check.",
   hard: "Small places have no dot until you zoom in close.",
   expert: "No borders are drawn. Small places keep their dots.",
@@ -66,6 +66,6 @@ const PICK = {
 // What a right answer adds to the meter at difficulty d, as answer() scores it: the flag's meter, or the place's for a
 // round with no flag on screen.
 function scoreGain(d, ask, dir) {
-  return d === "master" && dir !== "name" ? 3 : PTS[d] || 0;
+  return d === "master" && dir === "flag" ? 3 : PTS[d] || 0;
 }
 const placeRound = (ask, dir) => ask !== "flag" && dir !== "flag";

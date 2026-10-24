@@ -160,8 +160,10 @@ function qmMark(svg, q) {
   let h = "",
     m = "";
   if (!q.ans) {
+    // Easy's hint: the part of the region the place is in (its area, as the study list groups them) is shaded.
+    if (S.diff === "easy") h = (AREAS[AREA_OF[q.c]] || []).map(c => shape(c, "hint")).join("");
     if (q.sel) {
-      h = shape(q.sel, "pick");
+      h += shape(q.sel, "pick");
       m = ring(q.sel, "pick");
     }
   } else {
@@ -178,7 +180,7 @@ function qmMark(svg, q) {
   qmSize(svg);
 }
 // A tap: every place under it counts; a second tap on the same spot goes to the next one
-// under it. It selects without naming the place, which would let you hunt by tapping; Easy names it.
+// under it. It selects without naming the place, which would let you hunt by tapping.
 function qmTap(x, y) {
   const q = S.qs[S.i],
     svg = qmSvg();
@@ -209,13 +211,10 @@ function qmTap(x, y) {
   qmPick(svg, q);
 }
 let qmPrev = null;
-// A selection changed: saved with the round, marked on the map, named on Easy, Check enabled.
+// A selection changed: saved with the round, marked on the map, Check enabled.
 function qmPick(svg, q) {
   saveRound();
   qmMark(svg, q);
-  // Easy names the place picked, so a wrong tap teaches something before Check.
-  const nm = $("#qmPick");
-  if (nm) nm.textContent = q.sel ? BY[q.sel].n : "";
   const b = $("#qmCheck");
   if (b) b.disabled = !q.sel;
 }

@@ -1,7 +1,7 @@
 /* Layout: one narrow column like a field guide; the flag is always the largest thing on screen. */
 :root{
   --bg:#f2f4f7; --surface:#ffffff; --ink:#15223a; --muted:#5b6678; --line:#d6dbe4;
-  --accent:#1e3f8f; --accent-ink:#ffffff; --tint:#e3e9f6; --gold:#c9961a; --place:#8a3fc4;
+  --accent:#1e3f8f; --accent-ink:#ffffff; --tint:#e3e9f6; --gold:#c9961a; --place:#8a3fc4; --hint:#bcd4ff;
   --ok:#1f7a4c; --ok-tint:#dff3e7; --bad:#b4262b; --bad-tint:#fbe3e3;
   --display:"Bricolage Grotesque","Avenir Next",Helvetica,Arial,sans-serif;
   --body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
@@ -9,11 +9,11 @@
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
-  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f; --place:#c08cff;
+  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f; --place:#c08cff; --hint:#2e4f8f;
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
-  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f; --place:#c08cff;
+  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f; --place:#c08cff; --hint:#2e4f8f;
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark }
 
 *{box-sizing:border-box}
@@ -517,6 +517,7 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qmap svg.map{width:100%;height:100%}
 .qmap .ct{transition:fill .12s}
 .qmapsvg .sel path{stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.qmapsvg .sel .hint{fill:var(--hint);stroke:var(--landline,#b9b2a4);stroke-width:1;vector-effect:non-scaling-stroke}
 .qmapsvg .sel .pick{fill:color-mix(in srgb,var(--accent) 35%,transparent);stroke:var(--accent)}
 .qmapsvg .sel .right{fill:color-mix(in srgb,var(--ok) 65%,transparent);stroke:var(--ok)}
 .qmapsvg .sel .wrong{fill:color-mix(in srgb,var(--bad) 55%,transparent);stroke:var(--bad)}
@@ -537,8 +538,6 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qaskmap.sm .mapbtn{width:min(100%,calc(30vh * var(--qa,1.5)))}
 .qaskmap .map{border-radius:0;height:auto}
 .map.qask.noborder .land path{stroke:none}
-.qmpick{min-height:1.4em;margin:0;font-family:var(--display);font-weight:700;font-size:18px;text-align:center}
-.qmpick:empty::before{content:"\00a0"}
 /* The difficulty note: the score on its own line, then what the difficulty changes. */
 .note .dscore{display:flex;align-items:center;font-weight:600;color:var(--ink)}
 /* A flag's meter: one segment per point, full when learned. After an answer the segments it filled show in green and
