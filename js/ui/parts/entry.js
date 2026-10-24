@@ -27,20 +27,20 @@ function meter(s, from, cls = "") {
   const place = /\bplace\b/.test(cls);
   return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${a} of ${MASTER} toward ${place ? "located" : "learned"}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${segs}</span>`;
 }
-// Where a flag stands: learned, its meter, missed, or not quizzed at all.
+// Where a flag stands: learned, its meter (empty after misses alone), nothing before it has been asked, or not
+// quizzed at all.
 const studyPill = f =>
   NOQUIZ.has(f.c)
     ? '<span class="pill">not quizzed</span>'
     : mastered(f.c)
       ? doneTag(false)
-      : rec(f.c).s > 0
+      : rec(f.c).c + rec(f.c).w > 0
         ? meter(rec(f.c).s)
-        : rec(f.c).w > 0
-          ? '<span class="pill bad">missed ' + rec(f.c).w + "</span>"
-          : "";
+        : "";
 // Where a place stands, under the flag's standing at the entry's top right: located, its meter, or nothing before it
 // has been asked.
-const placePill = f => (isLocated(f.c) ? doneTag(true) : loc(f.c).s > 0 ? meter(loc(f.c).s, undefined, "place") : "");
+const placePill = f =>
+  isLocated(f.c) ? doneTag(true) : loc(f.c).c + loc(f.c).w > 0 ? meter(loc(f.c).s, undefined, "place") : "";
 // One study entry: flag (opens the viewer), design chips, a small map (drawn later, by wireMiniMaps), name, standing,
 // capital and description. The explorable map's card is the same entry with no small map; its flag says how to open it.
 const scopeLabel = () => SCOPES.find(x => x[0] === SET.scope)[1];

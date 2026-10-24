@@ -554,6 +554,11 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .meter.place i.on{background:var(--gold)}
 .meter.place i.new{background:var(--ok)}
 /* The flag's standing and the place's, stacked at the entry's top right. */
-.meters{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+.meters{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex:none;align-self:flex-start;margin-top:3px}
+/* Small enough that two rows fit beside the name without pushing the capital down. */
+.meters .meter{padding:0}
+.meters .meter i{width:8px;height:5px;border-radius:1.5px}
+.meters .mi{width:10px;height:10px;margin-right:3px}
+.meters .pill{display:inline-flex;align-items:center;height:11px;font-size:10px;line-height:1;padding:0 6px}
+.meters .pill .mi{width:9px;height:9px}
 .meters:empty{display:none}
-.pill.place{font-size:11px;padding:2px 8px}
