@@ -1,6 +1,6 @@
 # Plan: maps and geography
 
-Not started. Written 2026-10-23 so the thinking isn't lost.
+Written 2026-10-23 so the thinking isn't lost. Steps 1 and 2 of the order below are done; step 3, the explorable map, is in progress.
 
 ## Goal
 
@@ -39,9 +39,39 @@ The thumbnails and the learn card keep the 50m file. The viewer should load a se
 
 Step 1 ships pre-projected paths (Equal Earth, one canvas, a Pacific-centred copy for Oceania, a per-frame correction of the vertical stretch). For the whole-world quiz the map should instead be projected in the app around the centre of the view, as a globe you spin: the build writes quantized lon/lat, the app rotates to the view centre and applies one azimuthal projection (about 40 lines). About 60,000 vertices to project per redraw, a few milliseconds; drawing is the cost, so canvas rather than SVG if it isn't smooth. The hard part is clipping shapes at the horizon; azimuthal equidistant shows the whole sphere with no clipping, orthographic needs a cheap back-face clip. The stretch correction and the Pacific set go away with it.
 
+## The explorable map
+
+A study list laid out as a map instead of alphabetically. Every flag in the region (and the scope) is drawn as its own shape. Tap one to select it: it fills in the accent colour, its capital is marked, and a card at the bottom shows its flag, name, capital and description. Nothing is scored.
+
+Most of what it needs, the map quiz needs too: telling which shape a tap landed on, dots for small places that stay big enough to hit, and panning and zooming as the main thing you do rather than a side feature of the viewer. With it in place, "Find it on the map" is mostly rules on top.
+
+It comes in two parts:
+
+1. By region, on the current pre-projected map. The viewer already pans within a region's frame, so a region is the bounds. Builds the tap test, the dots, the selection and the card.
+2. The whole world, scrollable. This is where projecting on the fly pays off: the flat canvas has a seam at the antimeridian (why Oceania has its own copy) and its stretch correction is fixed per frame, so panning from the world into Scandinavia shows it squashed. A view projected around its own centre has neither problem, and a region becomes a limit on where the centre may go rather than a separate picture. Explore is a gentler first user for it than a timed quiz. The 10m file is decided here too, since explore is where deep zoom happens.
+
+Starting with part 2 would skip a version that gets replaced, at the cost of putting the riskiest work (smooth panning, horizon clipping, perhaps canvas) before anything is usable.
+
+Choices made for the first version, open to change:
+
+- A card pinned at the bottom rather than a popup tied to the spot. A popup has to follow pans and zooms, covers the neighbours you tap next, and has nowhere to sit near a phone's edge. The spot is still marked on the map.
+- Entered from the study list (a Map button beside the scope), so it follows the list's region and scope.
+- Built as a mode of the viewer, so the viewer stays the only zoom. The card's flag opens the designs, and closing them comes back to the map where it was.
+- Where shapes overlap (the United Kingdom and England, a country and its territory), the smaller is on top and a second tap on the same spot goes to the next one under it.
+
+### Open questions
+
+- Where explore is entered: from a region's study list, from its home card next to Study, or as one map with a region picker.
+- Whether the map is bounded by region or is one world map you can scroll. Bounding is cheap now; the whole world wants projection on the fly.
+- What a tap on sea, or on land that isn't shown, does: clear the selection, or nothing. "Not shown" means outside the scope, or an organisation, which has no shape.
+- Whether exploring counts toward "located" progress. Probably not, as browsing the study list doesn't count as learned.
+- Whether explore is a mode of the viewer (keeps "the viewer is the only zoom") or its own screen built on the same map code (that rule would change).
+- Popup at the spot or card at the bottom, if the card doesn't feel right in use.
+
 ## Order
 
-1. Data and the map component: script, data file, drawing, highlight, framing, zoom and pan, a check page. This step has the unknowns (file size, tiny places, which shapes need 10m).
-2. Learn integration: info card, study list, viewer slide, capitals.
-3. Quiz modes and the setup changes. These sit inside the reworked quiz layout (pinned answer drawer), so that layout comes first.
-4. Progress and badges.
+1. Data and the map component: script, data file, drawing, highlight, framing, zoom and pan, a check page. This step has the unknowns (file size, tiny places, which shapes need 10m). Done.
+2. Learn integration: info card, study list, viewer slide, capitals. Done.
+3. The explorable map, by region first, then the whole world with projection on the fly.
+4. Quiz modes and the setup changes. These sit inside the reworked quiz layout (pinned answer drawer), so that layout comes first.
+5. Progress and badges.
