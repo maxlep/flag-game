@@ -383,3 +383,10 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 .exclose{position:absolute;top:-12px;right:-6px;z-index:1;width:32px;height:32px;border-radius:50%;background:var(--surface);color:var(--ink);border:1px solid var(--line);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .excard .flag{width:auto}
 .excard .flag .fl{box-shadow:none;max-width:100%;will-change:auto}
+/* Name, then the region small and muted beside it (it drops under the name when it doesn't fit); then the capital
+   and the flag's years, a line each. */
+.where{display:inline-block;margin-left:8px;font:500 12px/1.4 var(--mono);color:var(--muted);letter-spacing:.01em;white-space:nowrap;vertical-align:baseline}
+h2 .where{font-size:13px}
+.facts{display:flex;flex-direction:column;gap:1px}
+.facts .capital{display:block;line-height:1.5}
+.nw{white-space:nowrap}
