@@ -165,15 +165,20 @@ function qmTap(x, y) {
   const q = S.qs[S.i],
     svg = qmSvg();
   if (!svg || q.ans) return;
-  // A dot itself first, then the shapes, smallest (topmost) first, then the wider tap rings round the dots, so a tap
-  // inside a country goes to it even where a neighbour's ring reaches.
-  const rank = n => (n.classList.contains("hit") ? 2 : n.classList.contains("ct") ? 1 : 0);
+  // A small place's dot or the wider tap ring round it comes first, nearest dot first, then the shapes, smallest
+  // (topmost) first: a tap beside San Marino's dot is San Marino, not the Italy around it. Dots go once a place is
+  // large enough on screen to tap, so this only applies where the place itself would be hard to hit.
+  const near = n => {
+    if (n.tagName !== "circle") return 1e9;
+    const r = n.getBoundingClientRect();
+    return Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+  };
   const hits = [
     ...new Set(
       document
         .elementsFromPoint(x, y)
         .filter(n => svg.contains(n) && n.dataset && n.dataset.c)
-        .map((n, i) => [rank(n), i, n.dataset.c])
+        .map((n, i) => [near(n), i, n.dataset.c])
         .sort((a, b) => a[0] - b[0] || a[1] - b[1])
         .map(a => a[2])
     )
