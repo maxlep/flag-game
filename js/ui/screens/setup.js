@@ -6,12 +6,11 @@ const PAIRNOTE = {
   "flag>name": "You see the flag and choose or type its name.",
   "name>flag": "You see the name and choose among the flags.",
   "flag>map": "You see the flag and find the place on the map.",
-  "name>map": "You see the name and find it on the map. This counts toward places located, not flags learned.",
-  "map>name":
-    "You see a place on the map and choose or type its name. This counts toward places located, not flags learned.",
+  "name>map": "You see the name and find it on the map.",
+  "map>name": "You see a place on the map and choose or type its name.",
   "map>flag": "You see a place on the map and choose its flag."
 };
-// The difficulty note for a round with a map in it; a round counted as located earns no points, so they go unsaid.
+// What the difficulty changes in a round with a map in it.
 function mapNote(pool) {
   const d = SET.diff,
     mixed = new Set(pool.filter(mapHas).map(mapFrameFor)).size > 1,
@@ -21,7 +20,7 @@ function mapNote(pool) {
         ? "The map shows each place's region. "
         : "The map shows the whole world, since this set spans regions. ",
     t = SET.dir === "map" ? where + MAPDIFF[d] : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
-  return SET.ask === "flag" || SET.dir === "flag" ? t + " " + MAPPTS[d] : t;
+  return t;
 }
 function viewSetup() {
   const p = S.pick,
@@ -37,10 +36,6 @@ function viewSetup() {
         ? pool.length
         : Math.min(SET.len, pool.length);
   const eff = grp && !TYPED(SET.diff) && SET.dir !== "map" && SET.ask !== "map" ? "hard" : SET.diff;
-  const PICK = {
-    expert: "Find the flag among nine, drawn from its look-alikes and region. +3 per correct answer.",
-    master: "Find the flag among sixteen look-alikes and neighbours. +3 per correct answer."
-  };
   const diffNote =
     SET.dir === "map" || SET.ask === "map"
       ? mapNote(pool)
@@ -90,7 +85,7 @@ function viewSetup() {
         .join("")}</div></div>
     <div class="seg"><span class="label">Difficulty</span><div class="btns">
       ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" && SET.dir !== "map" && SET.ask !== "map" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
-      <span class="note">${diffNote}</span></div>
+      <span class="note"><span class="dscore">${scoreLine(eff, SET.ask, SET.dir)}</span>${diffNote}</span></div>
     <div class="seg" id="askSeg"><span class="label">Ask with</span><div class="btns">
       <button class="${SET.ask === "flag" ? "on" : ""}" onclick="setPair('ask','flag')">Flag</button>
       <button class="${SET.ask === "name" ? "on" : ""}" onclick="setPair('ask','name')">Name</button>

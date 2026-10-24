@@ -532,3 +532,5 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .map.qask.noborder .land path{stroke:none}
 .qmpick{min-height:1.4em;margin:0;font-family:var(--display);font-weight:700;font-size:18px;text-align:center}
 .qmpick:empty::before{content:"\00a0"}
+/* The difficulty note: the score on its own line, then what the difficulty changes. */
+.note .dscore{display:block;font-weight:600;color:var(--ink)}

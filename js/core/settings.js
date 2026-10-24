@@ -30,8 +30,9 @@ function setOpt(k, v) {
   } catch (e) {}
   render();
 }
-// The difficulty notes for rounds with a map in them, without the points, which a round counted as located doesn't
-// earn (MAPPTS adds them for the others).
+// The difficulty note on the setup screen is two lines: the score, worded the same for every kind of round
+// (scoreLine), then what the difficulty changes for this kind of round (DIFF, PICK, MAPDIFF, ASKMAP, ASKMAPF, none of
+// which mention points).
 const MAPDIFF = {
   easy: "A tap names the place you picked, and Check answers.",
   medium: "Nothing is named until you Check.",
@@ -50,18 +51,23 @@ const ASKMAPF = {
   expert: "Find the flag among the nine places nearest to it.",
   master: "Find the flag among the sixteen places nearest to it. The map draws no borders."
 };
-const MAPPTS = {
-  easy: "Earns no points.",
-  medium: "+1 point per correct answer.",
-  hard: "+2 per correct answer.",
-  expert: "+3 per correct answer.",
-  master: "+3 per correct answer."
-};
 const DIFF = {
-  easy: "Options come from anywhere in the world. Good for a first pass; earns no points.",
-  medium: "Options come from the same region. +1 point per correct answer.",
-  hard: "Options are the flags most often confused with this one. +2 per correct answer.",
-  expert: "No options. Type the country; close spellings and common names count. +3 per correct answer.",
-  master:
-    "Type the exact name, with no suggestions or typo help. Common names still count. +4: one correct answer marks the flag learned."
+  easy: "Options come from anywhere in the world. Good for a first pass.",
+  medium: "Options come from the same region.",
+  hard: "Options are the flags most often confused with this one.",
+  expert: "No options. Type the country; close spellings and common names count.",
+  master: "Type the exact name, with no suggestions or typo help. Common names still count."
 };
+// Picking the flag on Expert and Master grows the grid instead of asking you to type.
+const PICK = {
+  expert: "Find the flag among nine, drawn from its look-alikes and region.",
+  master: "Find the flag among sixteen look-alikes and neighbours."
+};
+// The score line: what a correct answer earns at difficulty d, as answer() scores it. A round with no flag on screen
+// earns nothing and counts toward places located instead.
+function scoreLine(d, ask, dir) {
+  if (ask !== "flag" && dir !== "flag") return "No points. Counts toward places located.";
+  const p = d === "master" && dir !== "name" ? 3 : PTS[d] || 0;
+  if (!p) return "No points.";
+  return `+${p} point${p > 1 ? "s" : ""} per correct answer.${p >= MASTER ? " One marks the flag learned." : ""}`;
+}
