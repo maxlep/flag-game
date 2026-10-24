@@ -215,6 +215,9 @@ function qmGestures(svg, box) {
   };
   box.addEventListener("pointerdown", e => {
     if (e.target.closest("button")) return;
+    // The first finger of a new touch (and any mouse press) starts afresh: a finger whose lift never reached the map
+    // would otherwise stay held, and the next one-finger drag would pinch.
+    if (e.isPrimary) pts.clear();
     try {
       box.setPointerCapture(e.pointerId);
     } catch (x) {}
@@ -263,6 +266,7 @@ function qmGestures(svg, box) {
   };
   box.addEventListener("pointerup", end);
   box.addEventListener("pointercancel", end);
+  box.addEventListener("lostpointercapture", e => end({type: "pointercancel", pointerId: e.pointerId}));
   box.addEventListener(
     "wheel",
     e => {

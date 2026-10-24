@@ -108,13 +108,19 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
       }
       // A wrong place on the first question: the first place in the round that isn't the answer.
       const want=n===0?await js(p,c=>S.qs.map(x=>x.c).find(x=>x!==c),q.c):q.c;
-      const pt=await js(p,c=>{const s=document.querySelector(".qmap svg"),M=MAP.set[MAP.frame[qmFrame(c)].set],[x,y]=M.pt[c];qmSet(s,[x-30,y*(+s.dataset.sy)-30,60,60]);const P=s.createSVGPoint();P.x=x;P.y=y*(+s.dataset.sy);const r=P.matrixTransform(s.getScreenCTM());return {x:r.x,y:r.y}},want);
+      // The place's centre, or where that falls outside it (Norway's lands in Sweden) the nearest point on screen that
+      // is in it.
+      const pt=await js(p,c=>{const s=document.querySelector(".qmap svg"),M=MAP.set[MAP.frame[qmFrame(c)].set],[x,y]=M.pt[c];qmSet(s,[x-30,y*(+s.dataset.sy)-30,60,60]);const P=s.createSVGPoint();P.x=x;P.y=y*(+s.dataset.sy);const r=P.matrixTransform(s.getScreenCTM()),B=s.getBoundingClientRect();
+        r.x=Math.min(B.right-50,Math.max(B.left+10,r.x));r.y=Math.min(B.bottom-10,Math.max(B.top+10,r.y)); // a centre beyond the frame (Russia's)
+        const at=(px,py)=>document.elementsFromPoint(px,py).some(e=>e.dataset&&e.dataset.c===c);
+        for(let d=0;d<240;d+=4)for(let a=0;a<16;a++){const px=r.x+d*Math.cos(a*Math.PI/8),py=r.y+d*Math.sin(a*Math.PI/8);if(at(px,py))return {x:px,y:py}}
+        return {x:r.x,y:r.y}},want);
       for(let k=0;k<4&&(await js(p,()=>S.qs[S.i].sel))!==want;k++){await p.mouse.click(pt.x,pt.y);await p.waitForTimeout(380)} // overlapping places cycle
-      expect(await js(p,()=>S.qs[S.i].sel),"a tap selects the place",want);
+      expect(await js(p,c=>S.qs[S.i].sel===c,want),"a tap selects the place",want);
       expect(await js(p,()=>!S.qs[S.i].ans&&!$("#qmCheck").disabled),"selected, not yet answered");
       if(n%2)await tap(p,"#qmCheck");
       else{await p.evaluate(()=>document.activeElement&&document.activeElement.blur&&document.activeElement.blur());await p.keyboard.press("Enter");await p.waitForTimeout(150)}
-      expect(await js(p,c=>S.qs[S.i].ans===c,want),"Check answers with the place selected");
+      expect(await js(p,c=>S.qs[S.i].ans===c,want),"Check answers with the place selected",await js(p,()=>({ans:S.qs[S.i].ans,sel:S.qs[S.i].sel,act:document.activeElement&&document.activeElement.tagName})));
       expect(await js(p,()=>!!document.querySelector(".qmap .sel .right")),"the right place is marked");
       await tap(p,"#nextBtn");
       if(n<9)expect(await js(p,i=>S.view==="quiz"&&S.i===i+1,q.i),"next question");
