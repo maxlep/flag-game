@@ -90,11 +90,11 @@ function viewQuiz() {
         miss = `<div class="row" style="align-items:center"><button type="button" class="flink" style="flex:0 0 72px" onclick="openFlag('${q.ans}')" title="View large">${img(q.ans, "flag sm")}</button><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
       else miss = `<p class="small muted">${q.typed ? `"${esc(q.typed)}" didn't match a country.` : "Revealed."}</p>`;
     }
-    // Where the flag and the place now stand, for the meters this round fills: "learned" when this
-    // answer filled one, else the meter with what this answer filled or emptied. Nothing on Easy,
+    // Where the flag and the place now stand, for the meters this round fills: the same standing as on the
+    // study cards: full and green once learned, else the meter with what this answer filled or emptied. Nothing on Easy,
     // which changes nothing. Rounds saved before the place meter fill only the flag's (q.s0, q.s1) or, with q.place,
     // only the place's in q.s0, q.s1.
-    const one = (s0, s1, full, place) => (full ? doneTag(place) : meter(s1, s0, place ? "place" : ""));
+    const one = (s0, s1, full, place) => standing(s1, s0, place);
     const pill =
       q.pts === null || q.pts === undefined || !q.pts
         ? ""
@@ -103,11 +103,14 @@ function viewQuiz() {
           : q.s1 !== undefined
             ? one(q.s0, q.s1, q.nowMastered, !!q.place)
             : `<span class="pill ${ok ? "ok" : "bad"}">${q.pts > 0 ? "+" + q.pts : q.pts}</span>`;
+    // Stacked at the card's top right, as on the study cards, so a long verdict never pushes them onto a line of their
+    // own.
+    const meters = pill ? `<span class="meters">${pill}</span>` : "";
     if (S.pace === "drill" && !q.lore) {
       reveal = ok
-        ? `<div class="card lore toast"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`
+        ? `<div class="card lore toast"><div class="vrow"><p class="verdict ok">Correct · ${esc(f.n)}</p>${meters}</div></div>`
         : `<div class="card lore">
-        <p class="verdict bad">Not quite ${pill}</p>
+        <div class="vrow"><p class="verdict bad">Not quite</p>${meters}</div>
         <div><h2>${nameLine(q.c, mixedRound())}</h2><div class="facts">${facts(q.c)}</div></div>
         ${showFlag ? cardFlag(q.c, q.v || 0) : ""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
@@ -115,7 +118,7 @@ function viewQuiz() {
 `;
     } else
       reveal = `<div class="card lore">
-      <p class="verdict ${ok ? "ok" : "bad"}">${ok ? "Correct" : "Not quite"}${S.streak >= 3 ? ` · ${S.streak} in a row` : ""} ${pill}</p>
+      <div class="vrow"><p class="verdict ${ok ? "ok" : "bad"}">${ok ? "Correct" : "Not quite"}${S.streak >= 3 ? ` · ${S.streak} in a row` : ""}</p>${meters}</div>
       ${showFlag ? cardFlag(q.c, q.v || 0) + vchips(q.c, q.v || 0, "setQVar(%i)") : ""}
       <div><h2>${nameLine(q.c, mixedRound())}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c, q.v || 0)}${showFlag ? "" : vchips(q.c, q.v || 0, "setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
