@@ -710,6 +710,9 @@ function groupList(list,wide){const m=sortMode(wide);
     if(!out.length||out[out.length-1].key!==k)out.push({key:k,label:k,items:[]});out[out.length-1].items.push(f)}
   return {mode:m,groups:out}}
 // The group headers and entries, as HTML; the letter index only for A–Z.
+// The index down the side: a letter per group, in the list's order. For A–Z that is the alphabet; grouped, the first
+// letter of each header, repeats and all (S, W, C, S, E for Asia), and the bubble under the finger names the group.
+const groupIndex=G=>G.groups.map(g=>`<span data-l="${esc(g.key)}">${esc(g.key[0])}</span>`).join("");
 const groupHead=(g,mode)=>`<p class="eyebrow letter${mode==="az"?"":" grp"}" data-l="${esc(g.key)}">${esc(g.label)}</p>`;
 const sortChips=(cls,fn,wide)=>{const cur=sortMode(wide);return `<div class="vchips ${cls}" role="group" aria-label="Sort">${sortModes(wide).map(([v,l])=>`<button type="button" class="chipbtn${cur===v?" on":""}" aria-pressed="${cur===v}" onmousedown="event.preventDefault()" onclick="${fn}('${v}')">${l}</button>`).join("")}</div>`};
 function setSort(v){if(SET.sort===v)return;setOpt("sort",v)}
@@ -721,7 +724,7 @@ function viewStudy(){
   const wide=WIDE.includes(r);
   const list=studyList(r);
   const G=groupList(list,wide);
-  const index=list.length&&G.mode==="az"?`<div class="alpha" id="alpha">${G.groups.map(g=>`<span data-l="${g.key}">${g.key}</span>`).join("")}</div>`:"";
+  const index=list.length?`<div class="alpha" id="alpha">${groupIndex(G)}</div>`:"";
   const mixed=wide||SET.scope!=="countries";
   const body=G.groups.map(g=>groupHead(g,G.mode)+g.items.map(f=>studyEntry(f,mixed)).join("")).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
@@ -748,7 +751,7 @@ function wireAlpha(a=$("#alpha"),box=null){
     if(box)box.scrollTop+=target.getBoundingClientRect().top-box.getBoundingClientRect().top;
     else{const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8;
       window.scrollTo(0,target.getBoundingClientRect().top+window.scrollY-off)}
-    if(!bubble){bubble=document.createElement("div");bubble.className="alpha-bubble";document.body.appendChild(bubble)}bubble.textContent=l};
+    if(!bubble){bubble=document.createElement("div");bubble.className="alpha-bubble";document.body.appendChild(bubble)}bubble.textContent=l;bubble.classList.toggle("long",l.length>2)};
   const end=()=>{active=false;lastL="";a.classList.remove("hot");if(bubble){bubble.remove();bubble=null}};
   a.addEventListener("pointerdown",e=>{active=true;a.classList.add("hot");try{a.setPointerCapture(e.pointerId)}catch(x){}jump(e.clientY);e.preventDefault()});
   a.addEventListener("pointermove",e=>{if(active)jump(e.clientY)});
@@ -821,14 +824,19 @@ function whereShown(c){if(!c)return false;if(S.view==="quiz"||S.view==="done")re
 function openViewer(c,o){
   closeFlag(true);
   const ex=o.what==="explore";
-  const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
+  // noanim: the list, tab and bars take their places at once; only later changes are animated (a redraw for a new
+  // scope used to slide the tab in from the edge).
+  const el=document.createElement("div");el.className="lb noanim"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.remove("noanim")));
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
     <div class="lb-top">${ex?`<button type="button" class="lb-back" onclick="closeFlag()" title="Back to ${esc(exBackTo())}" aria-label="Back to ${esc(exBackTo())}"><i aria-hidden="true"></i></button>`:""}<div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`${scopeChips("lb-scope","exScope")}`:""}</div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button>${ex?"":`<button type="button" onclick="closeFlag()" aria-label="Close">×</button>`}</div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>
     ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList" aria-label="Places"><div class="exsort" id="exSort"></div><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>
     <div class="extab" id="exTab" role="group" aria-label="The list"><button type="button" class="exup" onclick="exStep(1)" aria-controls="exList"><i aria-hidden="true"></i></button><button type="button" class="exdown" onclick="exStep(-1)" aria-controls="exList"><i aria-hidden="true"></i></button></div>`:""}`;
-  document.body.appendChild(el);document.body.style.overflow="hidden";
+  // The page behind stops scrolling: locked at the root, since the root's own overflow setting keeps a lock on the
+  // body from reaching the window (the hidden list kept its scrollbar and scrolled).
+  document.body.appendChild(el);document.documentElement.classList.add("locked");
   // The cursor only changes when the mouse moves, so the element it is over takes the viewer's cursor meanwhile.
   const under=[...document.querySelectorAll(":hover")].pop();if(under&&!el.contains(under)){under.style.cursor="grab";el._under=under}
   const stage=el.querySelector("#lbStage"),track=el.querySelector("#lbTrack");
@@ -975,7 +983,7 @@ function lbCaption(){if(!LB)return;if(LB.what==="explore")return exCaption();con
   $("#lbSub").innerHTML=onMap?`${f.cap==="None"?"No capital":`<span class="capdot"></span>${esc(f.cap)}`}`:esc(d?d.l+(d.d?" · "+d.d:""):useLabel(c));
   $("#lbVar").innerHTML=chips}
 // replacing: another view is about to open in its place. A flag opened from the explorable map goes back to the map.
-function closeFlag(replacing){if(!LB)return;const {el,refocus,what}=LB;if(el._under)el._under.style.cursor="";el.remove();document.body.style.overflow="";LB=null;
+function closeFlag(replacing){if(!LB)return;const {el,refocus,what}=LB;if(el._under)el._under.style.cursor="";el.remove();document.documentElement.classList.remove("locked");LB=null;
   if(replacing)return;
   if(what==="explore")EXRET=null;
   else if(EXRET){const k=EXRET;EXRET=null;openExplore(k.region,k);return}
@@ -1024,7 +1032,7 @@ const exFolded=()=>!!SET.exFold;
 function exListBuild(){const b=$("#exBody"),a=$("#exAlpha");if(!b)return;const wide=WIDE.includes(LB.region);
   const list=studyList(LB.region).filter(f=>LB.ex.on.has(f.c)),mixed=wide||SET.scope!=="countries",G=groupList(list,wide);
   b.innerHTML=G.groups.map(g=>groupHead(g,G.mode)+g.items.map(f=>studyEntry(f,mixed,{noMap:true,flagClick:`exFlag('${f.c}',this)`})).join("")).join("")||'<p class="muted small">No places here in this scope.</p>';
-  a.innerHTML=G.mode==="az"?G.groups.map(g=>`<span data-l="${g.key}">${g.key}</span>`).join(""):"";
+  a.innerHTML=groupIndex(G);
   const s=$("#exSort");if(s)s.innerHTML=sortChips("exsortchips","exSort",wide);
   if(b._wired)return;b._wired=true;
   wireAlpha(a,b);

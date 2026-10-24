@@ -484,8 +484,16 @@ h2 .where{font-size:13px}
 .pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 4px}
 .pills .studyscope{margin:0}
 .exsort{flex:none;padding:0 12px 8px}
+.lb.exwide .exsort{padding-top:12px} /* the panel has no top padding of its own; the phone's drawer has 12px */
 .study .grp,.exbody .grp{position:sticky;z-index:3;background:var(--bg);padding-block:8px}
 .study .grp{top:var(--sth,0px);margin-block:-8px}
 .exbody .grp{top:0;margin-top:-4px}
 .exbody .letter.grp{display:flex;align-items:center;gap:10px;font-size:11px;line-height:1}
 .exbody .letter.grp::after{content:"";flex:1;height:1px;background:var(--line)}
+/* While the viewer is open the page behind is locked at the root, and the scrollbar's strip goes to the viewer. */
+html.locked{overflow:hidden;scrollbar-gutter:auto}
+/* A new viewer takes its layout at once; transitions are for changes after that. */
+.lb.noanim .exlist,.lb.noanim .extab,.lb.noanim .lb-foot,.lb.noanim .lb-top{transition:none!important}
+/* The index bubble naming a whole group (Grouped by area or region) widens to fit it. */
+.alpha-bubble.long{width:auto;min-width:56px;padding:0 16px;white-space:nowrap;font-size:18px}
+.alpha-bubble{z-index:60} /* above the viewer, for the index in the map's list */
