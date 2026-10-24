@@ -105,6 +105,8 @@ The split is the first step. What it sets up, and what would come after, so each
 
 The viewer, the explorable map and the keyboard code talk to the browser directly and would stay hand-written inside a component under any framework.
 
-## Open questions
+## Decided
 
-- Keep `tools/smoke.js` in the repo? See the explanation in the chat; it needs Playwright installed locally to run.
+- Two folders, `core/` and `ui/`, organised finely, as a step towards a framework.
+- Reformat right after the split in one commit; it and the move commit go in `.git-blame-ignore-revs`.
+- `tools/smoke.js` stays in the repo. It needs Playwright installed locally (`npm install playwright` anywhere, with `NODE_PATH` pointing at it, as for the map build); the page never loads it. CLAUDE.md gets a line: run it before merging anything larger than a small change.
