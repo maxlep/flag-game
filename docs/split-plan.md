@@ -17,7 +17,7 @@ Written 2026-10-23 on `preview-coder-1`, branched from `preview` at 1b50f0c; upd
 - Function declarations and top-level `const`/`let` in one classic script are visible to every later script and to code that runs later in earlier ones. So code inside functions can call anything in any file.
 - What can break is code that runs while a file loads (an event listener being added is fine; calling a function or reading a `const` from a file that hasn't loaded yet is not). Today that code is: the listeners added at the top level (keys, scroll, touch, resize, edge swipe), the `const`s computed from data (`QUIZ`, `NAMES`, `CANDS` and the like), and `start()` at the end.
 - Rule for the split: a file may use, at load time, only names from files before it. Each file opens with a short header saying what it owns and which files it needs before it.
-- Shared mutable state stays where it is, global, but each piece has one owning file named in that header: `S` (round.js), `SET` and `prog` (store.js), `badges` (store.js), `LB` (viewer.js), `SUG` (quiz.js), `EXRET` (explore.js).
+- Shared mutable state stays where it is, global, but each piece has one owning file named in that header: `S` (core/round.js), `SET` (core/settings.js), `prog` and `badges` (core/store.js), `LB` (ui/viewer.js), `SUG` (ui/viewport.js), `EXRET` (ui/explore/open.js).
 
 ## The files
 
