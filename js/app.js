@@ -743,14 +743,18 @@ function wireMiniMaps(){const boxes=[...app.querySelectorAll(".mapbtn.mini")];if
 // a: the index; box: a scrolling element holding the list (the map's drawer), or none for the page.
 function wireAlpha(a=$("#alpha"),box=null){
   if(!a)return;let bubble=null,active=false,lastL="";
-  const spans=[...a.querySelectorAll("span")];
+  // The letters are read on every move: the map's list redraws them when the sort changes, and old ones would point
+  // at nothing.
   // Letter from the finger's vertical position only, so sideways drift during a fast scrub doesn't lose it.
-  const letterAt=y=>{const r=a.getBoundingClientRect();const i=Math.min(spans.length-1,Math.max(0,Math.floor((y-r.top)/(r.height/spans.length))));return spans[i].dataset.l};
+  const letterAt=y=>{const spans=[...a.querySelectorAll("span")];if(!spans.length)return null;const r=a.getBoundingClientRect();const i=Math.min(spans.length-1,Math.max(0,Math.floor((y-r.top)/(r.height/spans.length))));return spans[i].dataset.l};
   const jump=y=>{const l=letterAt(y);if(!l||l===lastL)return;lastL=l;
-    const target=(box||app).querySelector(`${box?"":".study "}[data-l="${l}"]`);if(!target)return;
-    if(box)box.scrollTop+=target.getBoundingClientRect().top-box.getBoundingClientRect().top;
-    else{const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8;
-      window.scrollTo(0,target.getBoundingClientRect().top+window.scrollY-off)}
+    const target=(box||app).querySelector(`${box?"":".study "}[data-l="${CSS.escape(l)}"]`);if(!target)return;
+    // A pinned group header reports where it is pinned, not where it sits in the list (one scrolled past stays pinned
+    // at the top), so a grouped list is placed by the group's first entry, which lands just under the header.
+    const grp=target.classList.contains("grp"),ref=grp&&target.nextElementSibling||target,cov=grp?target.offsetHeight:0;
+    if(box)box.scrollTop+=ref.getBoundingClientRect().top-box.getBoundingClientRect().top-cov;
+    else{const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8+cov;
+      window.scrollTo(0,ref.getBoundingClientRect().top+window.scrollY-off)}
     if(!bubble){bubble=document.createElement("div");bubble.className="alpha-bubble";document.body.appendChild(bubble)}bubble.textContent=l;bubble.classList.toggle("long",l.length>2)};
   const end=()=>{active=false;lastL="";a.classList.remove("hot");if(bubble){bubble.remove();bubble=null}};
   a.addEventListener("pointerdown",e=>{active=true;a.classList.add("hot");try{a.setPointerCapture(e.pointerId)}catch(x){}jump(e.clientY);e.preventDefault()});
