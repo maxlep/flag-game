@@ -559,8 +559,8 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .place .mi{color:var(--place)}
 .pill .mi{color:inherit;width:12px;height:12px;vertical-align:-2px}
 .meter.place i.on{background:var(--place)}
-.meter.full i.on{background:var(--ok)}
-.meter.full .mi{color:var(--ok)} /* a full meter's icon turns green with it */
+.mchk{display:inline-flex;width:10px;height:10px;margin-left:3px;color:var(--ok)}
+.mchk svg{width:100%;height:100%}
 .meter.place i.new{background:var(--ok)}
 /* The flag's standing and the place's, stacked at the entry's top right. */
 .meters{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex:none;align-self:flex-start;margin-top:3px}

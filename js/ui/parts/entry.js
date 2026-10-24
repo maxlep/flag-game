@@ -8,8 +8,8 @@ function studyVar(btn, i) {
 }
 // A meter: MASTER segments, one per point, after an icon that says which: a flag's (a flag, blue), full when the flag is
 // learned, or a place's (a pin, purple; cls "place", filled by rounds with no flag on screen), full when where it is has been learned.
-// A full meter shows in green (cls "full"), the same size as the others, labelled "learned"; standing() draws a flag's or
-// a place's standing the same way on the study cards and the quiz card.
+// A full meter keeps its colour and ends in a green check (cls "full"), labelled "learned"; standing() draws a flag's or
+// a place's standing the same way on the study cards and the quiz card. Green bars are what an answer just filled.
 const MICON = {
   flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4m0 0c4-2.5 7 2.5 14 0v10c-7 2.5-10-2.5-14 0"/></svg>`,
   place: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`
@@ -26,12 +26,14 @@ function meter(s, from, cls = "") {
   const place = /\bplace\b/.test(cls);
   const what = place ? "where it is" : "the flag",
     label = /\bfull\b/.test(cls) ? `Learned ${what}` : `${a} of ${MASTER} toward learning ${what}`;
-  return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${label}" title="${label}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${segs}</span>`;
+  // A full meter ends in a green check; every meter keeps room for it, so stacked meters line up.
+  const chk = /\bfull\b/.test(cls) ? MCHECK : "";
+  return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${label}" title="${label}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${segs}<span class="mchk" aria-hidden="true">${chk}</span></span>`;
 }
-// A flag's or a place's standing: full and green once learned, else the meter (with what an answer just filled or
-// emptied when from is given).
-const standing = (s, from, place) =>
-  s >= MASTER ? meter(MASTER, undefined, place ? "place full" : "full") : meter(s, from, place ? "place" : "");
+const MCHECK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+// A flag's or a place's standing: the meter (with what an answer just filled or emptied when from is given), and a
+// check once it is full.
+const standing = (s, from, place) => meter(s, from, (place ? "place" : "") + (s >= MASTER ? " full" : ""));
 // Where a flag stands: learned, its meter (empty after misses alone), nothing before it has been asked, or not
 // quizzed at all.
 const studyPill = f =>
