@@ -80,7 +80,9 @@ let restored=[];
 simplified=simplified.map((f,i)=>{const o=polys(fc.features[i].geometry),sp=polys(f.geometry);if(o.length<2&&d3.geoArea(fc.features[i])<SMALL)return f;
   if(!sp.length||o.length!==sp.length)return f;let n=0;
   const out=sp.map((co,j)=>{const ao=d3.geoArea({type:"Polygon",coordinates:o[j]});if(ao>=ISLE)return co;const as=d3.geoArea({type:"Polygon",coordinates:co});
-    if(as<ao*0.5||as>ao*2){n++;return o[j].map(thin)}return co});
+    // Thinning a tiny ring can turn it inside out, which on a sphere means everything but the island (Kiribati covered
+    // the ocean): the thinned ring is kept only when its area still agrees with the original's.
+    if(as<ao*0.5||as>ao*2){n++;const t=o[j].map(thin),at=d3.geoArea({type:"Polygon",coordinates:t});return at>ao*0.5&&at<ao*1.5?t:o[j]}return co});
   if(!n)return f;restored.push((feats[i].c||feats[i].name)+"×"+n);
   return {...f,geometry:out.length===1?{type:"Polygon",coordinates:out[0]}:{type:"MultiPolygon",coordinates:out}}});
 console.error("islands kept whole:",restored.join(" ")||"none");
@@ -164,6 +166,10 @@ for(const c of approx)for(const S of Object.values(out.set))if(S.pt[c])S.cap[c]=
 for(const S of Object.values(out.set))delete S._projection;
 console.error("sizes:",Object.entries(out.set).map(([n,S])=>n+" land "+S.land.length+" shapes "+Object.keys(S.shape).length).join("; "));
 
+// A last check: no piece of any outline may span most of the canvas (an inside-out ring draws the whole world).
+for(const [n,S] of Object.entries(out.set))for(const [c,d] of Object.entries(S.shape))for(const sub of d.match(/M[^M]*/g)||[]){
+  const v=sub.match(/-?\d+(\.\d+)?/g).map(Number),xs=v.filter((_,i)=>i%2===0);if(Math.max(...xs)-Math.min(...xs)>W*0.9&&!["aq","ru","ki","fj","us"].includes(c)||Math.max(...xs)-Math.min(...xs)>W*0.99){
+    console.error("an outline of",c,"in",n,"spans the whole map: a ring is inside out");process.exit(1)}}
 const js=`// Built by tools/build_map.js from Natural Earth (public domain). Equal Earth projection on a ${W}x${out.h} canvas.
 // set.world is centred on 10°E, set.pac on 160°E for the Pacific. In each set: land = every country outline;
 // shape = the outline per flag code; pt = a centre point; box = bounds; area = projected area; cap = the capital.
