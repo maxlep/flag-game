@@ -30,15 +30,20 @@ function viewQuiz() {
   let prompt,
     opts,
     ask = "";
+  const steady = mapq && !!q.ans && S.pace === "drill" && q.ans === q.c;
   if (mapq) {
     // Found on the map: the question (the flag, or the name) above, the map under it filling the band.
     prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
     // Easy names the part of the region it is in; only that part can be tapped.
     const area = S.diff === "easy" && AREA_OF[q.c] ? `It's in ${esc(AREA_OF[q.c])}. ` : "";
     ask = `<p class="eyebrow">${area}Double-tap it on the map, or tap it and Check.</p>`;
-    opts = q.ans
-      ? ""
-      : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line reveal" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
+    // In Drill a right answer moves on by itself with no card: the drawer stays as it was (its buttons idle), so the map
+    // keeps its size from question to question.
+    const off = q.ans ? "disabled" : "";
+    opts =
+      q.ans && !steady
+        ? ""
+        : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel && !q.ans ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line reveal" ${off} onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
   } else if (reverse) {
     prompt = `<p class="eyebrow">Which flag?</p>${askMap ? shown : `<p class="ask">${esc(f.n)}</p>`}`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
@@ -127,7 +132,7 @@ function viewQuiz() {
     </div>`;
   }
   const nextBtn =
-    q.ans && !typed
+    q.ans && !typed && !steady
       ? `<button class="btn" id="nextBtn" onmousedown="event.preventDefault()" onclick="next()">${S.i + 1 < n ? "Next" : "See results"}</button>`
       : "";
   const right = S.qs.filter(x => x.ans === x.c).length;
@@ -136,7 +141,7 @@ function viewQuiz() {
   <div class="progress">${dots}</div>
   ${S.confirmLeave ? `<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>` : ""}</div>
   <div class="qmid${mapq ? " mapq" : ""}" id="qmid" data-i="${S.i}">${prompt}${reverse ? opts : ""}${reveal}</div>
-  <div class="qdrawer${q.ans ? " answered" : ""}${reverse && !q.ans ? " empty" : ""}">${q.ans && (!typed || compact) ? "" : ask}${reverse ? "" : opts}${nextBtn}</div>
+  <div class="qdrawer${q.ans ? " answered" : ""}${reverse && !q.ans ? " empty" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${reverse ? "" : opts}${nextBtn}</div>
   </div>`;
 }
 
