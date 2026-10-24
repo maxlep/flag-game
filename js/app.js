@@ -137,6 +137,8 @@ const wl=(url,text,title="Wikipedia")=>`<a class="wl" href="${url}" target="_bla
 function nameLink(c){return wl(links(c).country,esc(BY[c].n))}
 // The region, shown beside the name where the set mixes regions or territories.
 function whereOf(c){const f=BY[c];return f.sov?f.r:geoOf(f)+", territory"}
+// A round's cards show the region only when its flags come from more than one (a Europe round doesn't need it).
+function mixedRound(){return new Set(S.qs.map(q=>whereOf(q.c))).size>1}
 function nameLine(c,showRegion=true){return nameLink(c)+(showRegion?`<span class="where">${esc(whereOf(c))}</span>`:"")}
 // Under the name: the capital on one line, the flag's years on the next, each its own link.
 function facts(c){const L=links(c),f=BY[c],plain=L.sameCap||f.cap==="None",cap=f.cap==="None"?"No capital":f.cap;
@@ -576,7 +578,7 @@ function viewQuiz(){
       reveal=ok?`<div class="card lore toast"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`
       :`<div class="card lore">
         <p class="verdict bad">Not quite ${pill}</p>
-        <div><h2>${nameLine(q.c)}</h2><div class="facts">${facts(q.c)}</div></div>
+        <div><h2>${nameLine(q.c,mixedRound())}</h2><div class="facts">${facts(q.c)}</div></div>
         ${reverse?cardFlag(q.c,q.v||0):""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
       </div>
@@ -585,7 +587,7 @@ function viewQuiz(){
     reveal=`<div class="card lore">
       <p class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite"}${S.streak>=3?` · ${S.streak} in a row`:""} ${pill}</p>
       ${reverse?cardFlag(q.c,q.v||0)+vchips(q.c,q.v||0,"setQVar(%i)"):""}
-      <div><h2>${nameLine(q.c)}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c,q.v||0)}${reverse?"":vchips(q.c,q.v||0,"setQVar(%i)")}</div>
+      <div><h2>${nameLine(q.c,mixedRound())}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c,q.v||0)}${reverse?"":vchips(q.c,q.v||0,"setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
       ${mapCard(q.c)}
       ${miss}
