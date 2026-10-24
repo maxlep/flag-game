@@ -19,7 +19,7 @@ function mapNote(pool) {
       : d === "easy" || d === "medium"
         ? "The map shows each place's region. "
         : "The map shows the whole world, since this set spans regions. ",
-    t = SET.dir === "map" ? (where + MAPDIFF[d]).trim() : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
+    t = SET.dir === "map" ? (where + MAPDIFF[d]).trim() : SET.dir === "flag" ? ASKMAPF[d] : ASKMAP[d];
   return t;
 }
 // The first line of the difficulty note: what a right answer adds to each meter the round fills, and what a miss
@@ -57,7 +57,7 @@ function viewSetup() {
       : grp && !TYPED(SET.diff)
         ? "Options always come from the look-alike set itself (Hard); Expert and Master " +
           (SET.dir === "flag" ? "show more of them." : "ask you to type.")
-        : SET.dir === "flag" && PICK[SET.diff]
+        : SET.dir === "flag"
           ? PICK[SET.diff]
           : DIFF[SET.diff];
   if (p.mode === "all") p.label = scopeName();
