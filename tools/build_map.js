@@ -103,6 +103,7 @@ const FRAMES={World:{box:[-180,-90,180,90],set:"world"},Europe:{box:[-25,34,45,7
   Asia:{box:[25,-12,150,78],set:"world"},Americas:{box:[-170,-58,-30,84],set:"world"},Antarctic:{box:[-180,-90,180,-35],set:"world"},Oceania:{box:[110,-50,235,25],set:"pac"}};
 const SETS={world:{center:10},pac:{center:160}};
 const out={w:W,h:0,set:{},frame:{}};
+const movedPts=[];
 for(const [name,cfg] of Object.entries(SETS)){
   const projection=d3.geoEqualEarth().rotate([-cfg.center,0]);projection.fitWidth(W,{type:"Sphere"});
   const pathGen=d3.geoPath(projection);const H=Math.ceil(pathGen.bounds({type:"Sphere"})[1][1]);out.h=H;
@@ -120,10 +121,22 @@ for(const [name,cfg] of Object.entries(SETS)){
     if(!meta.c)return;
     S.shape[meta.c]=fmt(d);
     // The box and centre come from the largest polygon alone, so an outlying island (the Aleutians, French Guiana) doesn't pull them away from the body.
-    const main=mainPoly(f),mb=pathGen.bounds(main),cen=pathGen.centroid(main);
+    const main=mainPoly(f),mb=pathGen.bounds(main);let cen=pathGen.centroid(main);
+    // A bent shape's centroid can fall outside it (Norway's lands in Sweden). Then the centre is the middle of the
+    // widest stretch inside the shape along a level line, trying the centroid's line first and then lines further out.
+    {const rings=main.geometry.coordinates.map(r=>r.map(ll=>projection(ll)).filter(Boolean));
+      const inside=([x,y])=>{let k=false;for(const r of rings)for(let a=0,b=r.length-1;a<r.length;b=a++){const [xa,ya]=r[a],[xb,yb]=r[b];
+        if((ya>y)!==(yb>y)&&x<(xb-xa)*(y-ya)/(yb-ya)+xa)k=!k}return k};
+      if(!inside(cen)){const h=mb[1][1]-mb[0][1];let best=null;
+        for(let j=0;j<=40&&!best;j++){const y=cen[1]+(j%2?1:-1)*Math.ceil(j/2)*h/40;const xs=[];
+          for(const r of rings)for(let a=0,b=r.length-1;a<r.length;b=a++){const [xa,ya]=r[a],[xb,yb]=r[b];if((ya>y)!==(yb>y))xs.push(xa+(y-ya)*(xb-xa)/(yb-ya))}
+          xs.sort((p,q)=>p-q);for(let i=0;i+1<xs.length;i+=2){const w=xs[i+1]-xs[i];if(w>0&&(!best||w>best.w))best={w,x:(xs[i]+xs[i+1])/2,y}}}
+        if(best){if(name==="world")movedPts.push(meta.c);cen=[best.x,best.y]}}}
     S.box[meta.c]=[r1(mb[0][0]),r1(mb[0][1]),r1(mb[1][0]),r1(mb[1][1])];S.pt[meta.c]=[r1(cen[0]),r1(cen[1])];S.area[meta.c]=Math.round(pathGen.area(f))});
   out.set[name]=S;out.set[name]._projection=projection;
 }
+
+console.error("centres moved inside their shape:",[...new Set(movedPts)].join(" ")||"none");
 
 // ---- 3. capitals: the populated place whose name matches our capital field, nearest the flag's centre ----
 const places=load("ne_10m_populated_places_simple.geojson").map(f=>({name:f.properties.name,alt:f.properties.namealt||"",a3:f.properties.adm0_a3,cla:f.properties.featurecla,ll:f.geometry.coordinates}));
