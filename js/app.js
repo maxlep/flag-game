@@ -1101,12 +1101,20 @@ function exMark(c,scroll,smooth){const b=$("#exBody");if(!b)return;b.querySelect
     // Keep the entry in view: from below it comes to the bottom edge when it fits there, else to the top.
     const cov=grpCover(b),down=et.top>=bt.top+cov&&et.height<bt.height-16-cov,top=down?b.scrollTop+et.bottom-bt.bottom+8:b.scrollTop+et.top-bt.top-8-cov;
     b.scrollTo({top,behavior:smooth?"smooth":"auto"})}}}
-// The up and down keys walk the list (only while it shows): the next or previous entry is selected and brought into
-// view, on the map too. With nothing selected in the list, they start at the first entry in view.
-function exArrow(d){if(!LB||exFolded())return;const b=$("#exBody");if(!b)return;const ens=[...b.querySelectorAll(".entry")];if(!ens.length)return;
+// The up and down keys walk the list, in its order (so in Area order they go from neighbour to neighbour), whether
+// the list shows or not: hidden, the card follows. They wrap round at the ends. With nothing in the list selected
+// they start at the first entry in view, or with the list hidden at the place nearest the middle of the map; with a
+// place outside the scope selected, at the place in the list nearest it.
+function exArrow(d){if(!LB)return;const b=$("#exBody");if(!b)return;const ens=[...b.querySelectorAll(".entry")];if(!ens.length)return;
   const i=ens.findIndex(e=>e.dataset.c===LB.sel);let n;
-  if(i<0){const c=exTop();n=Math.max(0,ens.findIndex(e=>e.dataset.c===c))}else n=(i+d+ens.length)%ens.length; // past an end, round to the other
+  if(i>=0)n=(i+d+ens.length)%ens.length;
+  else{const c=LB.sel?exNearest(exScreenOf(LB.sel)):exFolded()?exNearest(exMidView()):exTop()||exNearest(exMidView());n=Math.max(0,ens.findIndex(e=>e.dataset.c===c))}
   if(n===i)return;exPick(ens[n].dataset.c)}
+// Where a place's centre is on screen, the middle of the part of the map that shows, and the list's place nearest a point.
+function exScreenOf(c){const S=MAP.set[MAP.frame[LB.ex.frame].set],p=S.pt[c];if(!p)return exMidView();const fl=LB.fl,m=fl.getScreenCTM(),pt=fl.createSVGPoint();
+  pt.x=p[0];pt.y=p[1]*(+fl.dataset.sy||1);const q=pt.matrixTransform(m);return {x:q.x,y:q.y}}
+function exMidView(){const V=exVis();return {x:(V.left+V.right)/2,y:(V.top+V.bottom)/2}}
+function exNearest(P){let best=null,bd=1e18;for(const en of $("#exBody").querySelectorAll(".entry")){const q=exScreenOf(en.dataset.c),d=(q.x-P.x)**2+(q.y-P.y)**2;if(d<bd){bd=d;best=en.dataset.c}}return best}
 // From the list: select, and bring the place into view in the part of the map that shows. The zoom changes only when
 // it must: out, if the place doesn't fit; in, if it is under 24px on screen, but never so far that less than 60
 // units (about 2,300 km) of map show across, so an island keeps some land around it.
