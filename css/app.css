@@ -510,8 +510,8 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qmid.mapq{gap:10px;padding-top:8px;padding-bottom:4px}
 .qscreen:has(.qmid.mapq) .qdrawer{padding-top:8px}
 
-.qmid.mapq .qprompt{text-align:center}
-.qmid.mapq .qprompt .ask{font-size:24px}
+.qprompt{text-align:center} /* the place asked about, by name: the map quiz and pick the flag alike */
+.qprompt .ask{font-size:24px}
 .qmid.mapq .flag.big{max-height:var(--qmf)}
 .qmid.mapq .flag.big .fl{width:min(100%,calc(var(--qmf) * var(--r,1.3333)))}
 .qmid.mapq{--qmf:clamp(56px,12vh,104px)}
