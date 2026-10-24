@@ -7,15 +7,15 @@ function studyVar(btn, i) {
   showVariant(en.dataset.c, i);
 }
 // A meter: MASTER segments, one per point, after an icon that says which: a flag's (a flag, blue), full when the flag is
-// learned, or a place's (a pin, purple; cls "place", filled by rounds with no flag on screen), full when it is located.
+// learned, or a place's (a pin, purple; cls "place", filled by rounds with no flag on screen), full when where it is has been learned.
 // In the study list a full meter shows in green (cls "full"), the same size as the others, so the stack lines up;
-// the quiz card says "learned" or "located" in words, after the same icon (doneTag).
+// the quiz card says "learned" in words, after the same icon (doneTag).
 const MICON = {
   flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4m0 0c4-2.5 7 2.5 14 0v10c-7 2.5-10-2.5-14 0"/></svg>`,
   place: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`
 };
 const doneTag = place =>
-  `<span class="pill ok${place ? " place" : ""}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${place ? "located" : "learned"}</span>`;
+  `<span class="pill ok${place ? " place" : ""}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>learned</span>`;
 // s is where a meter stands now; from, where it stood before an answer, marks the segments that answer filled (new) or emptied (lost). The meter shows 0 to
 // MASTER; the reserve kept beyond full, and the debt below empty, aren't drawn.
 function meter(s, from, cls = "") {
@@ -26,11 +26,8 @@ function meter(s, from, cls = "") {
   for (let i = 0; i < MASTER; i++)
     segs += `<i class="${i < a ? (i >= b ? "on new" : "on") : i < b ? "lost" : ""}"></i>`;
   const place = /\bplace\b/.test(cls);
-  const label = /\bfull\b/.test(cls)
-    ? place
-      ? "located"
-      : "learned"
-    : `${a} of ${MASTER} toward ${place ? "located" : "learned"}`;
+  const what = place ? "where it is" : "the flag",
+    label = /\bfull\b/.test(cls) ? `Learned ${what}` : `${a} of ${MASTER} toward learning ${what}`;
   return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${label}" title="${label}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${segs}</span>`;
 }
 // Where a flag stands: learned, its meter (empty after misses alone), nothing before it has been asked, or not
@@ -43,7 +40,7 @@ const studyPill = f =>
       : rec(f.c).c + rec(f.c).w > 0
         ? meter(rec(f.c).s)
         : "";
-// Where a place stands, under the flag's standing at the entry's top right: located, its meter, or nothing before it
+// Where a place stands, under the flag's standing at the entry's top right: learned, its meter, or nothing before it
 // has been asked.
 const placePill = f =>
   isLocated(f.c)

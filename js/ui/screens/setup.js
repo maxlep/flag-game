@@ -23,10 +23,11 @@ function mapNote(pool) {
   return t;
 }
 // The first line of the difficulty note: what a right answer adds to each meter the round fills, and what a miss
-// takes away, as icons and numbers: ✓ +2 [flag] +2 [pin]   ✗ −2 [flag] −2 [pin].
+// takes away, as icons and numbers: ✓ +2 [flag] +2 [pin]   ✗ −2 [flag] −2 [pin]. Easy, which changes nothing, says so.
 const OKICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
 const MISSICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>`;
 function gainLine(g, m) {
+  if (!g) return `<span class="gain">Practice: nothing gained or lost</span>`;
   const icon = k => `<span class="mi${k === "place" ? " pl" : ""}" aria-hidden="true">${MICON[k]}</span>`;
   const kinds = [m.flag && "flag", m.place && "place"].filter(Boolean),
     each = (n, sign) => kinds.map(k => `<span class="gn">${sign}${n}${icon(k)}</span>`).join("");
@@ -34,7 +35,7 @@ function gainLine(g, m) {
   return `<span class="gain ok" aria-label="A right answer adds ${g} to ${say}"><span class="gi" aria-hidden="true">${OKICON}</span>${each(g, "+")}</span><span class="gain bad" aria-label="A miss takes 2 from ${say}"><span class="gi" aria-hidden="true">${MISSICON}</span>${each(2, "−")}</span>`;
 }
 // The rules behind the meter, in full, folded under More.
-const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, marked with a flag, and a full meter means learned. Rounds with a flag on screen fill it. A right answer fills 1 on Medium, 2 on Hard and 3 on Expert; Easy fills none. Master fills all ${MASTER} when you give the answer yourself, by typing a name or tapping the map, and 3 when you pick a flag from a grid. A miss empties 2. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Each place has a meter too, marked with a pin and drawn in purple, and a full one means located. Rounds with the map fill it by the same rules: name to map and map to name fill only the place's meter, and flag to map and map to flag fill both.</span></div>`;
+const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, marked with a flag, and a full meter means learned. Rounds with a flag on screen fill it. A right answer fills 1 on Medium, 2 on Hard and 3 on Expert. Master fills all ${MASTER} when you give the answer yourself, by typing a name or tapping the map, and 3 when you pick a flag from a grid. A miss empties 2. Easy is practice: nothing is filled or emptied. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Each place has a meter too, marked with a pin and drawn in purple, and a full one means you have learned where it is. Rounds with the map fill it by the same rules: name to map and map to name fill only the place's meter, and flag to map and map to flag fill both.</span></div>`;
 function viewSetup() {
   const p = S.pick,
     pool = poolFor(p.mode, p.arg, p.flt),

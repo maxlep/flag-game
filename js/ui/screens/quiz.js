@@ -90,13 +90,13 @@ function viewQuiz() {
         miss = `<div class="row" style="align-items:center"><button type="button" class="flink" style="flex:0 0 72px" onclick="openFlag('${q.ans}')" title="View large">${img(q.ans, "flag sm")}</button><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
       else miss = `<p class="small muted">${q.typed ? `"${esc(q.typed)}" didn't match a country.` : "Revealed."}</p>`;
     }
-    // Where the flag and the place now stand, for the meters this round fills: "learned" or "located" when this
-    // answer filled one, else the meter with what this answer filled or emptied. Nothing for a right answer on Easy,
+    // Where the flag and the place now stand, for the meters this round fills: "learned" when this
+    // answer filled one, else the meter with what this answer filled or emptied. Nothing on Easy,
     // which changes nothing. Rounds saved before the place meter fill only the flag's (q.s0, q.s1) or, with q.place,
     // only the place's in q.s0, q.s1.
     const one = (s0, s1, full, place) => (full ? doneTag(place) : meter(s1, s0, place ? "place" : ""));
     const pill =
-      q.pts === null || q.pts === undefined || (ok && !q.pts)
+      q.pts === null || q.pts === undefined || !q.pts
         ? ""
         : q.p1 !== undefined
           ? (q.s1 !== undefined ? one(q.s0, q.s1, q.nowMastered, false) : "") + one(q.p0, q.p1, q.nowLocated, true)

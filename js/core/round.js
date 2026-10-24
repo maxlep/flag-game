@@ -183,7 +183,10 @@ function answer(k) {
   // on a map with no borders or dots); picking a flag from a grid is recognition, and scores at most +3.
   const m = roundMeters(S.ask, S.dir),
     pts = S.diff === "master" && S.dir === "flag" ? 3 : PTS[S.diff] || 0;
-  q.pts = ok ? pts : -2;
+  // Easy is practice: a right answer adds nothing and a miss takes nothing away (the miss is still counted, so weak
+  // spots find the flag). Elsewhere a miss takes 2.
+  const loss = S.diff === "easy" ? 0 : 2;
+  q.pts = ok ? pts : -loss;
   q.place = m.place && !m.flag; // only the place's meter (kept for rounds saved before both could fill)
   const fill = r => {
     const s0 = r.s || 0;
@@ -192,7 +195,7 @@ function answer(k) {
       r.s = Math.min(8, s0 + pts);
     } else {
       r.w++;
-      r.s = Math.max(-4, s0 - 2);
+      r.s = Math.max(-4, s0 - loss);
     }
     return [s0, r.s, ok && r.s >= MASTER && s0 < MASTER];
   };
