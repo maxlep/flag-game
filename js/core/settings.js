@@ -34,7 +34,7 @@ function setOpt(k, v) {
 // kind of round (scoreGain, drawn by gainLine), then what the difficulty changes for this kind of round (DIFF, PICK,
 // MAPDIFF, ASKMAP, ASKMAPF, none of which mention it).
 const MAPDIFF = {
-  easy: "The part of the region it is in is shaded.",
+  easy: "The quiz says which part of the region it is in, and only that part can be tapped.",
   medium: "Nothing is named until you Check.",
   hard: "Small places have no dot until you zoom in close.",
   expert: "No borders are drawn. Small places keep their dots.",
@@ -68,4 +68,6 @@ const PICK = {
 function scoreGain(d, ask, dir) {
   return d === "master" && dir === "flag" ? 3 : PTS[d] || 0;
 }
-const placeRound = (ask, dir) => ask !== "flag" && dir !== "flag";
+// Which meters a round fills: the flag's when a flag is on screen (asked or picked), the place's when the map is
+// (asked or answered on). Flag and map together fill both.
+const roundMeters = (ask, dir) => ({flag: ask === "flag" || dir === "flag", place: ask === "map" || dir === "map"});

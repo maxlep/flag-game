@@ -22,13 +22,20 @@ function mapNote(pool) {
     t = SET.dir === "map" ? where + MAPDIFF[d] : (SET.dir === "flag" && ASKMAPF[d]) || ASKMAP[d];
   return t;
 }
-// The first line of the difficulty note: the meter this round fills, lit as far as one right answer fills it.
-function gainLine(g, place) {
+// The first line of the difficulty note: the meters this round fills, each lit as far as one right answer fills it.
+function gainLine(g, m) {
   if (!g) return "Practice: a right answer doesn't fill the meter.";
-  return `${meter(g, undefined, place ? "place" : "")} ${g >= MASTER ? (place ? "A right answer locates the place." : "A right answer learns the flag.") : "per right answer"}`;
+  const which = (m.flag ? meter(g, undefined, "") : "") + (m.place ? meter(g, undefined, "place") : "");
+  const all =
+    m.flag && m.place
+      ? "A right answer learns the flag and locates the place."
+      : m.place
+        ? "A right answer locates the place."
+        : "A right answer learns the flag.";
+  return `${which} ${g >= MASTER ? all : "per right answer"}`;
 }
 // The rules behind the meter, in full, folded under More.
-const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, marked with a flag, and a full meter means learned. A right answer fills 1 on Medium, 2 on Hard and 3 on Expert; Easy fills none. Master fills all ${MASTER} when you give the answer yourself, by typing a name or tapping the map, and 3 when you pick a flag from a grid. A miss empties 2. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Rounds with no flag on screen (name to map, map to name) fill the place's meter, marked with a pin and drawn in purple, by the same rules; a full one means located.</span></div>`;
+const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, marked with a flag, and a full meter means learned. Rounds with a flag on screen fill it. A right answer fills 1 on Medium, 2 on Hard and 3 on Expert; Easy fills none. Master fills all ${MASTER} when you give the answer yourself, by typing a name or tapping the map, and 3 when you pick a flag from a grid. A miss empties 2. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Each place has a meter too, marked with a pin and drawn in purple, and a full one means located. Rounds with the map fill it by the same rules: name to map and map to name fill only the place's meter, and flag to map and map to flag fill both.</span></div>`;
 function viewSetup() {
   const p = S.pick,
     pool = poolFor(p.mode, p.arg, p.flt),
@@ -93,7 +100,7 @@ function viewSetup() {
         .join("")}</div></div>
     <div class="seg"><span class="label">Difficulty</span><div class="btns">
       ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" && SET.dir !== "map" && SET.ask !== "map" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
-      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir), placeRound(SET.ask, SET.dir))}</span>${diffNote}</span></div>
+      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir), roundMeters(SET.ask, SET.dir))}</span>${diffNote}</span></div>
     <div class="seg" id="askSeg"><span class="label">Ask with</span><div class="btns">
       <button class="${SET.ask === "flag" ? "on" : ""}" onclick="setPair('ask','flag')">Flag</button>
       <button class="${SET.ask === "name" ? "on" : ""}" onclick="setPair('ask','name')">Name</button>

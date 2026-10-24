@@ -33,7 +33,9 @@ function viewQuiz() {
   if (mapq) {
     // Found on the map: the question (the flag, or the name) above, the map under it filling the band.
     prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
-    ask = `<p class="eyebrow">Tap it on the map, then Check. Or double-tap it.</p>`;
+    // Easy names the part of the region it is in; only that part can be tapped.
+    const area = S.diff === "easy" && AREA_OF[q.c] ? `It's in ${esc(AREA_OF[q.c])}. ` : "";
+    ask = `<p class="eyebrow">${area}Tap it on the map, then Check, or double-tap it.</p>`;
     opts = q.ans
       ? ""
       : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
@@ -88,16 +90,18 @@ function viewQuiz() {
         miss = `<div class="row" style="align-items:center"><button type="button" class="flink" style="flex:0 0 72px" onclick="openFlag('${q.ans}')" title="View large">${img(q.ans, "flag sm")}</button><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
       else miss = `<p class="small muted">${q.typed ? `"${esc(q.typed)}" didn't match a country.` : "Revealed."}</p>`;
     }
-    // Where the flag, or the place in a round with no flag on screen, now stands: "learned" or "located" when this
-    // answer filled the meter, else the meter with what this answer filled or emptied. Nothing for a right answer on
-    // Easy, which changes nothing.
+    // Where the flag and the place now stand, for the meters this round fills: "learned" or "located" when this
+    // answer filled one, else the meter with what this answer filled or emptied. Nothing for a right answer on Easy,
+    // which changes nothing. Rounds saved before the place meter fill only the flag's (q.s0, q.s1) or, with q.place,
+    // only the place's in q.s0, q.s1.
+    const one = (s0, s1, full, place) => (full ? doneTag(place) : meter(s1, s0, place ? "place" : ""));
     const pill =
       q.pts === null || q.pts === undefined || (ok && !q.pts)
         ? ""
-        : q.nowMastered
-          ? doneTag(q.place)
+        : q.p1 !== undefined
+          ? (q.s1 !== undefined ? one(q.s0, q.s1, q.nowMastered, false) : "") + one(q.p0, q.p1, q.nowLocated, true)
           : q.s1 !== undefined
-            ? meter(q.s1, q.s0, q.place ? "place" : "")
+            ? one(q.s0, q.s1, q.nowMastered, !!q.place)
             : `<span class="pill ${ok ? "ok" : "bad"}">${q.pts > 0 ? "+" + q.pts : q.pts}</span>`;
     if (S.pace === "drill" && !q.lore) {
       reveal = ok

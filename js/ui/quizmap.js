@@ -148,6 +148,12 @@ function qmShow(svg, q) {
 }
 // The marks: before the answer, the place selected; after it, the right place, the wrong pick and the capital.
 function qmMark(svg, q) {
+  // Easy's hint: until the answer, only the part of the region the place is in (its area, as the study list groups
+  // them, named in the instruction) can be tapped; the rest is faded like land outside the scope.
+  const area = S.diff === "easy" && !q.ans && AREAS[AREA_OF[q.c]] ? new Set(AREAS[AREA_OF[q.c]]) : null;
+  svg
+    .querySelectorAll(".cts [data-c], .dots [data-c]")
+    .forEach(n => n.classList.toggle("far", !!area && !area.has(n.dataset.c)));
   const M = MAP.set[MAP.frame[qmFrame(q.c)].set],
     sy = +svg.dataset.sy || 1;
   const shape = (c, cls) => (M.shape[c] ? `<path class="${cls}" d="${M.shape[c]}"/>` : "");
@@ -160,10 +166,8 @@ function qmMark(svg, q) {
   let h = "",
     m = "";
   if (!q.ans) {
-    // Easy's hint: the part of the region the place is in (its area, as the study list groups them) is shaded.
-    if (S.diff === "easy") h = (AREAS[AREA_OF[q.c]] || []).map(c => shape(c, "hint")).join("");
     if (q.sel) {
-      h += shape(q.sel, "pick");
+      h = shape(q.sel, "pick");
       m = ring(q.sel, "pick");
     }
   } else {

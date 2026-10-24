@@ -178,31 +178,35 @@ function answer(k) {
   q.ans = k;
   const ok = k === q.c;
   S.confirmLeave = false; // carrying on answers the "leave this round?" question
-  // With no flag on screen (a name found on the map) the answer says nothing about knowing the flag: it fills the
-  // place's meter instead, by the same rule, and the flag's progress is left alone.
-  const place = (q.place = S.ask !== "flag" && S.dir !== "flag"),
-    r = place ? loc(q.c) : rec(q.c);
-  q.s0 = r.s || 0; // the meter before, for the card to show what this answer filled or emptied
-  // Master fills the whole meter when the answer is given unaided (a name typed, a place tapped on a map with no
-  // borders or dots); picking a flag from a grid is recognition, and scores at most +3.
-  const pts = S.diff === "master" && S.dir === "flag" ? 3 : PTS[S.diff] || 0;
-  if (ok) {
-    r.c++;
-    r.s = Math.min(8, (r.s || 0) + pts);
-    q.pts = pts;
-  } else {
-    r.w++;
-    r.s = Math.max(-4, (r.s || 0) - 2);
-    q.pts = -2;
-  }
-  q.nowMastered = ok && r.s >= MASTER && r.s - pts < MASTER;
-  q.s1 = r.s;
-  if (place) {
-    located[q.c] = r;
-    saveL();
-  } else {
+  // A flag on screen fills the flag's meter; the map on screen fills the place's; a round with both fills both, by
+  // the same rule. Master fills a meter in one answer when the answer is given unaided (a name typed, a place tapped
+  // on a map with no borders or dots); picking a flag from a grid is recognition, and scores at most +3.
+  const m = roundMeters(S.ask, S.dir),
+    pts = S.diff === "master" && S.dir === "flag" ? 3 : PTS[S.diff] || 0;
+  q.pts = ok ? pts : -2;
+  q.place = m.place && !m.flag; // only the place's meter (kept for rounds saved before both could fill)
+  const fill = r => {
+    const s0 = r.s || 0;
+    if (ok) {
+      r.c++;
+      r.s = Math.min(8, s0 + pts);
+    } else {
+      r.w++;
+      r.s = Math.max(-4, s0 - 2);
+    }
+    return [s0, r.s, ok && r.s >= MASTER && s0 < MASTER];
+  };
+  if (m.flag) {
+    const r = rec(q.c);
+    [q.s0, q.s1, q.nowMastered] = fill(r);
     prog[q.c] = r;
     save();
+  }
+  if (m.place) {
+    const r = loc(q.c);
+    [q.p0, q.p1, q.nowLocated] = fill(r);
+    located[q.c] = r;
+    saveL();
   }
   afterAnswer(q, ok);
 }
