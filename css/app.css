@@ -305,7 +305,10 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
   .btn.line:hover{background:var(--tint);filter:none}
   .btn.ghost:hover{background:color-mix(in srgb,var(--tint) 80%,var(--accent) 20%);filter:none}
   .opt:not([disabled]):hover,.fopt:not([disabled]):hover{border-color:var(--accent);background:color-mix(in srgb,var(--surface) 88%,var(--accent) 12%)}
-  .tile:hover{background:var(--tint);border-color:var(--accent)}
+  /* Hovering a card shows what a click does: the card lights up and its quiz button fills in. Over the book or the
+     map, neither, since those do something else. */
+  .tile:hover:not(:has(.tico:not(.tq):hover)){background:var(--tint);border-color:var(--accent)}
+  .tile:hover:not(:has(.tico:not(.tq):hover)) .tico.tq{background:var(--accent);color:var(--accent-ink)}
   .top .back:hover,.link:hover{text-decoration:underline}
   .sugg button:hover{background:var(--accent);color:var(--accent-ink)}
 }
@@ -443,3 +446,6 @@ h2 .where{font-size:13px}
 .lb.exwide .exhandle i{display:none}
 .lb.exwide .lb-top,.lb.exwide .lb-foot{left:360px}
 .lb.exwide .lb-hint{display:block}
+.tico.tq svg{width:16px;height:16px}
+/* On a narrow phone a wide card with its buttons puts the count under the name, so neither wraps. */
+@media (max-width:440px){.tile.wide:has(.tseg) .tmain{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}}

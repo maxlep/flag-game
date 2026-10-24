@@ -443,13 +443,21 @@ function shell(sub){
 }
 // A home card: the card itself starts a round; the trailing link opens the study list.
 const BOOK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>`;
+// A card's three actions, as icons joined in one bordered control: quiz (the play mark, the same as tapping the card),
+// study as a list (the book), study on the map. The group is named for the set; each button has a name, a tooltip
+// and a description (hidden text, by aria-describedby) of what it opens.
+const CARDN={n:0};
+const PLAYICON=`<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>`;
 function card(o){
-  const main=`<button class="tmain" onclick="${o.go}"><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
-  // Both are ways to study the set: as a list (the book) or on the map. Icons only, joined in one bordered control so
-  // they read as buttons; the names are in the labels and the hover titles.
-  const study=o.study?`<button class="tico" onclick="${o.study}" title="Study as a list" aria-label="Study ${esc(o.name)} as a list">${BOOK}</button>`:"";
-  const map=o.map?`<button class="tico" onclick="${o.map}" title="Study on the map" aria-label="Study ${esc(o.name)} on the map">${MAPICON}</button>`:"";
-  return `<div class="tile${o.wide?" wide":""}${o.cls?" "+o.cls:""}">${main}${map||study?`<div class="tlinks"><span class="tseg">${study}${map}</span></div>`:""}</div>`;
+  const id="tc"+(++CARDN.n),d=(k,t)=>`<span hidden id="${id}-${k}">${t}</span>`;
+  const main=`<button class="tmain" onclick="${o.go}"${o.study||o.map?` aria-describedby="${id}-q"`:""}><span class="name${o.name.length>14?" sm":""}">${esc(o.name)}${(o.marks||[]).map(m=>`<span class="mark" title="${esc(m.n)}" aria-label="${esc(m.n)}">${m.e}</span>`).join("")}</span><span class="count">${o.count}</span>${o.bar!==undefined?`<span class="bar"><i style="width:${o.bar}%"></i></span>`:""}</button>`;
+  const nm=esc(o.name);
+  const quiz=`<button type="button" class="tico tq" onclick="${o.go}" title="Quiz" aria-label="Quiz" aria-describedby="${id}-q">${PLAYICON}</button>`;
+  const study=o.study?`<button type="button" class="tico" onclick="${o.study}" title="Study as a list" aria-label="Study as a list" aria-describedby="${id}-l">${BOOK}</button>`:"";
+  const map=o.map?`<button type="button" class="tico" onclick="${o.map}" title="Study on the map" aria-label="Study on the map" aria-describedby="${id}-m">${MAPICON}</button>`:"";
+  const desc=d("q",o.dq||`Choose the settings and start a round on ${nm}.`)+(study?d("l",o.dl||`Every flag in ${nm} in name order, with its capital and what it stands for.`):"")+(map?d("m",o.dm||`A map of ${nm}: tap a place to see its flag.`):"");
+  const ctl=map||study?`<div class="tlinks"><span class="tseg" role="group" aria-label="${nm}">${quiz}${study}${map}</span>${desc}</div>`:"";
+  return `<div class="tile${o.wide?" wide":""}${o.cls?" "+o.cls:""}">${main}${ctl}</div>`;
 }
 function setCards(list){
   return list.map(r=>{const all=regionFlags(r);if(!all.length)return "";const m=all.filter(f=>mastered(f.c)).length;
@@ -458,6 +466,9 @@ function setCards(list){
 }
 const SCOPES=[["countries","Countries"],["territories","Territories"],["all","All"]];
 const scopeSeg=(note,label)=>`<div class="seg">${label?'<span class="label">Flags</span>':""}<div class="btns">${SCOPES.map(([v,l])=>`<button class="${SET.scope===v?"on":""}" onclick="setOpt('scope','${v}')">${l}</button>`).join("")}</div>${note?`<span class="note">${note}</span>`:""}</div>`;
+// The wide card's descriptions, for the scope it covers.
+function wideDesc(){const w={countries:"every country",all:"every flag",territories:"every territory"}[SET.scope];
+  return {dq:`Choose the settings and start a round on ${w}.`,dl:`${w[0].toUpperCase()+w.slice(1)} in name order, with its capital and what its flag stands for.`,dm:"A map of the world: tap a place to see its flag."}}
 function viewHome(){
   const weak=poolFor("weak").length,nb=BADGES.filter(b=>badges[b.id]).length;
   const learned=l=>l.filter(f=>mastered(f.c)).length;
@@ -467,11 +478,11 @@ function viewHome(){
   ${scopeSeg()}
   <p class="eyebrow">Regions</p>
   <div class="tiles">${setCards(ALLREGIONS)}
-    ${card({wide:true,name:scopeName(),marks:["lord","warden","emperor"].filter(k=>badges[k]).map(k=>({e:BADGE[k].e,n:BADGE[k].n})),count:learned(SCOPED())+" / "+SCOPED().length,go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`,map:`openExplore('${scopeName()}')`})}
+    ${card({wide:true,name:scopeName(),marks:["lord","warden","emperor"].filter(k=>badges[k]).map(k=>({e:BADGE[k].e,n:BADGE[k].n})),count:learned(SCOPED())+" / "+SCOPED().length,go:`openSetup('all',null,'${scopeName()}')`,study:`openStudy('${scopeName()}')`,map:`openExplore('${scopeName()}')`,...wideDesc()})}
   </div>
   <p class="eyebrow" style="padding-top:4px">Practice</p>
   <div class="tiles">
-    ${card({wide:true,name:"Look-alikes",count:GROUPS.filter(g=>g.f.filter(c=>inScope(BY[c])).length>=2).length+" sets · mixed round",go:"openSetup('lookmix',null,'Look-alikes')",study:"openLook()"})}
+    ${card({wide:true,name:"Look-alikes",count:GROUPS.filter(g=>g.f.filter(c=>inScope(BY[c])).length>=2).length+" sets · mixed round",go:"openSetup('lookmix',null,'Look-alikes')",study:"openLook()",dq:"Choose the settings and start a round mixing every look-alike set.",dl:"Every set of look-alike flags, with the detail that tells them apart."})}
     ${weak?card({wide:true,name:"Weak spots",count:weak+" to fix",go:"openSetup('weak',null,'Weak spots')"}):`<div class="tile wide dim"><span class="tmain"><span class="name">Weak spots</span><span class="count">nothing missed yet</span></span></div>`}
   </div>
   <div class="tiles" style="padding-top:4px">
