@@ -89,10 +89,16 @@ function viewQuiz() {
         miss = `<div class="row" style="align-items:center"><button type="button" class="flink" style="flex:0 0 72px" onclick="openFlag('${q.ans}')" title="View large">${img(q.ans, "flag sm")}</button><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
       else miss = `<p class="small muted">${q.typed ? `"${esc(q.typed)}" didn't match a country.` : "Revealed."}</p>`;
     }
+    // Where the flag now stands: "learned" when this answer filled the meter, else the meter with what this answer
+    // filled or emptied. Nothing for a round with no flag on screen, or a right answer on Easy, which changes nothing.
     const pill =
-      q.pts === null || q.pts === undefined
+      q.pts === null || q.pts === undefined || (ok && !q.pts)
         ? ""
-        : `<span class="pill ${ok ? (q.pts ? "ok" : "") : "bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered ? "learned" : q.pts > 0 ? "+" + q.pts : q.pts === 0 ? "no points on easy" : q.pts}</span>`;
+        : q.nowMastered
+          ? `<span class="pill ok">learned</span>`
+          : q.s1 !== undefined
+            ? meter(q.s1, q.s0, ok ? "" : "bad")
+            : `<span class="pill ${ok ? "ok" : "bad"}">${q.pts > 0 ? "+" + q.pts : q.pts}</span>`;
     if (S.pace === "drill" && !q.lore) {
       reveal = ok
         ? `<div class="card lore toast"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`

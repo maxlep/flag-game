@@ -4,6 +4,7 @@
 function viewBadges() {
   const nb = BADGES.filter(b => badges[b.id]).length;
   return `${shell({title: "Badges", stat: nb + " of " + BADGES.length + " earned"})}
+  <p class="small muted">Badges are kept once earned.</p>
   <div class="badges">${BADGES.filter(b => !b.title)
     .map(
       b =>
@@ -21,6 +22,5 @@ function viewBadges() {
           return `<span class="tcell${on ? " on" : ""}" title="${esc(b.n)}${on ? " · " + fmtDate(on) : ""}"><span class="be">${b.e}</span><span class="tn">${k[0].toUpperCase() + k.slice(1)}</span></span>`;
         })
         .join("")}</div>`
-  ).join("")}</div>
-  <p class="small muted">A flag counts as learned at 4 points: a correct answer earns 0 on Easy, 1 on Medium, 2 on Hard, 3 on Expert, 4 on Master (3 when picking the flag); a miss costs 2. Badges are kept once earned.</p>`;
+  ).join("")}</div>`;
 }

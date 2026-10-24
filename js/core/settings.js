@@ -30,9 +30,9 @@ function setOpt(k, v) {
   } catch (e) {}
   render();
 }
-// The difficulty note on the setup screen is two lines: the score, worded the same for every kind of round
-// (scoreLine), then what the difficulty changes for this kind of round (DIFF, PICK, MAPDIFF, ASKMAP, ASKMAPF, none of
-// which mention points).
+// The difficulty note on the setup screen is two lines: what a right answer fills of a flag's meter, the same for every
+// kind of round (scoreGain, drawn by gainLine), then what the difficulty changes for this kind of round (DIFF, PICK,
+// MAPDIFF, ASKMAP, ASKMAPF, none of which mention it).
 const MAPDIFF = {
   easy: "A tap names the place you picked, and Check answers.",
   medium: "Nothing is named until you Check.",
@@ -63,11 +63,9 @@ const PICK = {
   expert: "Find the flag among nine, drawn from its look-alikes and region.",
   master: "Find the flag among sixteen look-alikes and neighbours."
 };
-// The score line: what a correct answer earns at difficulty d, as answer() scores it. A round with no flag on screen
-// earns nothing and counts toward places located instead.
-function scoreLine(d, ask, dir) {
-  if (ask !== "flag" && dir !== "flag") return "No points. Counts toward places located.";
-  const p = d === "master" && dir !== "name" ? 3 : PTS[d] || 0;
-  if (!p) return "No points.";
-  return `+${p} point${p > 1 ? "s" : ""} per correct answer.${p >= MASTER ? " One marks the flag learned." : ""}`;
+// What a right answer adds to a flag's meter at difficulty d, as answer() scores it; null for a round with no flag on
+// screen, which counts toward places located instead.
+function scoreGain(d, ask, dir) {
+  if (ask !== "flag" && dir !== "flag") return null;
+  return d === "master" && dir !== "name" ? 3 : PTS[d] || 0;
 }

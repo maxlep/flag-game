@@ -6,14 +6,26 @@ function studyVar(btn, i) {
   en.dataset.v = i;
   showVariant(en.dataset.c, i);
 }
-// Where a flag stands: learned, points so far, missed, or not quizzed at all.
+// A flag's meter: MASTER segments, one per point, full when the flag is learned. s is where it stands now; from, where
+// it stood before an answer, marks the segments that answer filled (new) or emptied (lost). The meter shows 0 to
+// MASTER; the reserve kept beyond full, and the debt below empty, aren't drawn.
+function meter(s, from, cls = "") {
+  const at = x => Math.max(0, Math.min(MASTER, x || 0)),
+    a = at(s),
+    b = from === undefined ? a : at(from);
+  let segs = "";
+  for (let i = 0; i < MASTER; i++)
+    segs += `<i class="${i < a ? (i >= b ? "on new" : "on") : i < b ? "lost" : ""}"></i>`;
+  return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${a} of ${MASTER} toward learned">${segs}</span>`;
+}
+// Where a flag stands: learned, its meter, missed, or not quizzed at all.
 const studyPill = f =>
   NOQUIZ.has(f.c)
     ? '<span class="pill">not quizzed</span>'
     : mastered(f.c)
       ? '<span class="pill ok">learned</span>'
       : rec(f.c).s > 0
-        ? '<span class="pill">' + rec(f.c).s + " / " + MASTER + "</span>"
+        ? meter(rec(f.c).s)
         : rec(f.c).w > 0
           ? '<span class="pill bad">missed ' + rec(f.c).w + "</span>"
           : "";

@@ -190,6 +190,7 @@ function answer(k) {
     return afterAnswer(q, ok);
   }
   const r = rec(q.c);
+  q.s0 = r.s || 0; // the meter before, for the card to show what this answer filled or emptied
   // Typed Master alone marks a flag learned in one answer; picking a flag or a place scores at most +3.
   const pts = S.diff === "master" && S.dir !== "name" ? 3 : PTS[S.diff] || 0;
   if (ok) {
@@ -202,6 +203,7 @@ function answer(k) {
     q.pts = -2;
   }
   q.nowMastered = ok && r.s >= MASTER && r.s - pts < MASTER;
+  q.s1 = r.s;
   prog[q.c] = r;
   save();
   afterAnswer(q, ok);
