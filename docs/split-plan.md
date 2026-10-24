@@ -21,31 +21,40 @@ Written 2026-10-23 on `preview-coder-1`, branched from `preview` at 1b50f0c. Pla
 
 ## The files
 
-Sizes are from the current line ranges and will shift a little.
+Decided: two folders, `core/` (no DOM) and `ui/` (draws and listens), organised as finely as is useful, as a step towards a framework. In `ui/`, screens and the pieces they share are kept apart, because that is the line a framework draws between pages and components.
 
-| File | What moves into it | Roughly |
-|---|---|---|
-| `js/core/util.js` | `$`, `app`, `esc`, `shuffle`, `norm`, `editDist`, `wl`, `fmtDate`, `capture` | small |
-| `js/core/store.js` | progress (`KEY`, `prog`, `load`, `save`, `rec`, `PTS`, `mastered`, `seen`), settings (`SKEY`, `SET`, `loadSet`, `setOpt`, `DIFF`, `TYPED`), badge storage (`BKEY`, `loadB`, `saveB`), the saved round (`RKEY`, `saveRound`, `loadRound`) | 6 KB |
-| `js/core/match.js` | typed answers: `NAMES`, `ALIASN`, `matchStrict`, `matchTyped`, `CANDS`, `allowed`, `suggestAll`, `suggest` | 4 KB |
-| `js/core/catalog.js` | what the app knows about a flag: scope and regions (`geoOf`, `inScope`, `QUIZ`, `SCOPED`, `ALLREGIONS`, `regionFlags`, `regionAll`, `scopeName`, `SCOPES`, `inFilter`, `filterLabel`), designs (`VARS`, `useLabel`, `variantIdx`, `img`, `showVariant`, `useLine`, `vchips`), names and facts (`links`, `nameLink`, `whereOf`, `nameLine`, `facts`, `flagYears`, `cardFlag`, `mapCard`, `flagEmoji`) | 12 KB |
-| `js/core/round.js` | the round: `S`, `poolFor`, `pickOrder`, `optCount`, `distractors`, `startRound`, `submitTyped`, `typeInput`, `pickSugg`, `answer`, `next`, `showLore`, `wake`, `setQVar`, `mixedRound` | 9 KB |
-| `js/core/badges.js` | `BADGES`, `TITLE`, `BADGE`, `checkBadges` | 6 KB |
-| `js/ui/nav.js` | moving between screens and drawing them: `here`, `goBack`, `stayInRound`, `HOME_Y`, `goHome`, `leaveHome`, `openSetup`, `openStudy`, `openLook`, `openBadges`, `render`, `renderQuiz`, `patchAround`, `shell`, the key handler, the edge swipe | 9 KB |
-| `js/ui/quiz.js` | the quiz screen: `viewQuiz`, `shade`, `VVH`, `keyboard`, `fitFlag`, `PRE_T`, `preKeyboard`, `TOUCH_T`, the touch and suggestion-row listeners, `SUG`, `wireZoom` | 16 KB |
-| `js/ui/home.js` | home and setup: `BOOK`, `CARDN`, `PLAYICON`, `card`, `setCards`, `scopeSeg`, `wideDesc`, `viewHome`, `hardReload`, `VER_CHECKED`, `resetAsk`, `viewSetup` | 12 KB |
-| `js/ui/done.js` | the results screen and sharing: `SITE`, `shareGrid`, `shareMissed`, `shareText`, `CLIP`, `viewDone` | 5 KB |
-| `js/ui/study.js` | study list and look-alikes: `studyVar`, `studyPill`, `scopeLabel`, `studyEntry`, `WIDE`, `studyList`, `MAPICON`, `viewStudy`, `wireMiniMaps`, `wireAlpha`, `viewLook` | 7 KB |
-| `js/ui/badges.js` | `viewBadges` | 2 KB |
-| `js/ui/viewer.js` | the viewer: `LB`, `openFlag`, `openMap`, `openViewer`, the `lb*` gesture, zoom, settle, slide and caption functions, `closeFlag`, `lbAnimate` | 12 KB |
-| `js/ui/explore.js` | the explorable map: `EXRET`, `openExplore`, `exRegionSel`, `exRegion`, `exScope`, `exFlag`, `lbHatch`, `lbExHome`, and the `ex*` functions | 10 KB |
-| `js/boot.js` | `start()` and the artifact's hot-reload hook | small |
+| File | What moves into it |
+|---|---|
+| `js/core/util.js` | `esc`, `shuffle`, `norm`, `editDist`, `fmtDate` |
+| `js/core/store.js` | progress (`KEY`, `prog`, `load`, `save`, `rec`, `PTS`, `mastered`, `seen`), badge storage (`BKEY`, `loadB`, `saveB`), the saved round (`RKEY`, `saveRound`, `loadRound`) |
+| `js/core/settings.js` | `SKEY`, `SET`, `loadSet`, `setOpt`, `DIFF`, `TYPED` |
+| `js/core/match.js` | typed answers: `NAMES`, `ALIASN`, `matchStrict`, `matchTyped`, `CANDS`, `allowed`, `suggestAll`, `suggest` |
+| `js/core/scope.js` | regions and scope: `geoOf`, `inScope`, `QUIZ`, `SCOPED`, `ALLREGIONS`, `regionFlags`, `regionAll`, `scopeName`, `SCOPES`, `inFilter`, `filterLabel` |
+| `js/core/flag.js` | facts about one flag, as data: `VARS`, `useLabel`, `variantIdx`, `links`, `whereOf`, `flagYears` |
+| `js/core/round.js` | the round: `S`, `poolFor`, `pickOrder`, `optCount`, `distractors`, `startRound`, `submitTyped`, `typeInput`, `pickSugg`, `answer`, `next`, `showLore`, `wake`, `setQVar`, `mixedRound` |
+| `js/core/badges.js` | `BADGES`, `TITLE`, `BADGE`, `checkBadges` |
+| `js/core/share.js` | `SITE`, `flagEmoji`, `shareGrid`, `shareMissed`, `shareText` |
+| `js/ui/dom.js` | `$`, `app`, `capture`, `wl` |
+| `js/ui/parts/flag.js` | drawing a flag and its facts: `img`, `showVariant`, `useLine`, `vchips`, `nameLink`, `nameLine`, `facts`, `cardFlag`, `mapCard` |
+| `js/ui/parts/card.js` | home and region cards: `BOOK`, `CARDN`, `PLAYICON`, `MAPICON`, `card`, `setCards`, `scopeSeg`, `wideDesc`, `shell` |
+| `js/ui/parts/entry.js` | a study entry, shared by the list and the map: `studyVar`, `studyPill`, `scopeLabel`, `studyEntry` |
+| `js/ui/router.js` | which screen is showing: `here`, `goBack`, `stayInRound`, `HOME_Y`, `goHome`, `leaveHome`, `openSetup`, `openStudy`, `openLook`, `openBadges`, `render`, `renderQuiz`, `patchAround`, the key handler, the edge swipe |
+| `js/ui/screens/home.js` | `viewHome`, `hardReload`, `VER_CHECKED`, `resetAsk` |
+| `js/ui/screens/setup.js` | `viewSetup` |
+| `js/ui/screens/quiz.js` | `viewQuiz`, `wireZoom` |
+| `js/ui/screens/done.js` | `CLIP`, `viewDone` |
+| `js/ui/screens/study.js` | `WIDE`, `studyList`, `viewStudy`, `wireMiniMaps`, `wireAlpha` |
+| `js/ui/screens/look.js` | `viewLook` |
+| `js/ui/screens/badges.js` | `viewBadges` |
+| `js/ui/viewport.js` | the phone keyboard and the pinned quiz layout: `shade`, `VVH`, `keyboard`, `fitFlag`, `PRE_T`, `preKeyboard`, `TOUCH_T`, the touch, scroll and resize listeners, `SUG` and the suggestion-row listeners |
+| `js/ui/viewer.js` | the viewer: `LB`, `openFlag`, `openMap`, `openViewer`, the `lb*` gesture, zoom, settle, slide and caption functions, `closeFlag`, `lbAnimate` |
+| `js/ui/explore.js` | the explorable map: `EXRET`, `openExplore`, `exRegionSel`, `exRegion`, `exScope`, `exFlag`, `lbHatch`, `lbExHome`, and the `ex*` functions |
+| `js/ui/map.js` | today's `js/map.js` (drawing maps), moved |
+| `js/boot.js` | `start()` and the artifact's hot-reload hook |
 
-`js/map.js` (drawing maps) stays where it is for now; it could become `js/ui/map.js` later, with the rest of the map code.
+Some names sit on the line between files (for example `wl` builds a link, so it is UI, while `links` only computes URLs, so it is core). The split script's table is where each one is decided, and a misplaced one is a one-line move later.
 
-Two folders, because the line between them is useful: `core/` has no DOM drawing and could be tested on its own; `ui/` draws and listens. The alternative is one flat `js/` folder with the same file names; it saves a level of nesting and loses that line.
-
-Load order in `index.html`: the data files as now, `js/map.js`, `js/version.js`, then `core/util`, `core/store`, `core/match`, `core/catalog`, `core/badges`, `core/round`, `ui/nav`, `ui/quiz`, `ui/home`, `ui/done`, `ui/study`, `ui/badges`, `ui/viewer`, `ui/explore`, `boot`.
+Load order in `index.html`: the data files and `js/version.js` as now, then `core/` in the order of the table (util, settings, store, match, scope, flag, badges, share, round), then `ui/dom`, `ui/map`, `ui/parts/*`, `ui/viewport`, `ui/router`, `ui/screens/*`, `ui/viewer`, `ui/explore`, and `boot` last.
 
 ## Doing it so it can be redone
 
@@ -65,6 +74,7 @@ Once merged, `app.js` is gone and the script with it.
 - README: the file list.
 - The artifact: about 15 more supporting files, well under the 511 limit; the first publish after the merge removes `js/app.js` with a null entry.
 - Pages workflow and `tools/check_data.py`: nothing.
+- `.git-blame-ignore-revs`: new, with the move commit and the reformat commit.
 
 ## Checking it
 
@@ -77,15 +87,24 @@ Once merged, `app.js` is gone and the script with it.
 1. Write `tools/smoke.js` and run it on `preview` as it is.
 2. Write `tools/split_app.py` with the name → file table, run it, run the statement check and the smoke test.
 3. Update `index.html`, CLAUDE.md and README. Commit on `preview-coder-1`.
+3a. Reformat in its own commit; add both commit hashes to `.git-blame-ignore-revs`.
 4. When the other session is done, rebuild from the latest `preview` by rerunning the script, test again, merge into `preview`, publish.
 
-## Later, separate steps
+## Reformatting
 
-- Reformatting the long lines (Prettier, run locally). A large diff of whitespace only; worth doing once, right after the split, so later diffs read well. Your call.
-- A small renderer for the quiz screen when the map quiz is built, as discussed: it would replace `patchAround`, the scroll keeping and the rewiring after each draw.
+Decided: right after the split, in one commit that changes whitespace only (Prettier, run locally like `tools/build_map.js`, with a `.prettierrc` committed so later runs agree). Its hash goes in `.git-blame-ignore-revs`, so `git blame` (and GitHub's blame view) skips it and still shows who last changed each line. The commit that moves code into the new files goes in the same list, since it only moves lines.
+
+## Towards a framework
+
+The split is the first step. What it sets up, and what would come after, so each step is small and the app keeps working between them:
+
+1. **This split.** Core logic separate from drawing; screens separate from shared parts; one owner per piece of state.
+2. **Events by delegation.** Today the markup calls globals inline (`onclick="answer('fr')"`). A framework can't use those. Replacing them with `data-` attributes and one listener per screen can be done screen by screen, and makes every handler a plain function a component could call.
+3. **State behind small stores.** `S`, `SET`, `prog` and `badges` are changed in many places. Giving each a few named update functions, which then call `render()`, gives a framework one place to subscribe.
+4. **The renderer.** With 1 to 3 done, a screen becomes a function from state to markup with handlers attached, which is what Preact or lit-html expect. Start with the quiz screen, where `patchAround`, the scroll keeping and the rewiring after each draw would go away, then the other screens one at a time.
+
+The viewer, the explorable map and the keyboard code talk to the browser directly and would stay hand-written inside a component under any framework.
 
 ## Open questions
 
-- Two folders (`core/`, `ui/`) or one flat `js/`?
-- Reformat right after the split, or leave the lines as they are?
-- Keep `tools/smoke.js` in the repo? It needs Playwright installed locally to run.
+- Keep `tools/smoke.js` in the repo? See the explanation in the chat; it needs Playwright installed locally to run.
