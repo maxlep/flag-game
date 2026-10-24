@@ -877,8 +877,9 @@ function lbShow(what,vi=0){if(!LB)return;const c=LB.c,v=VARS(c),nd=v?v.length:1;
   else if(what==="map"){LB.track.innerHTML=`<div class="lb-slide">${mapSVG({code:c,cls:"lbmap",aspect:lbBox().w/lbBox().h,pad:0})}</div>`;LB.n=1;LB.vi=0;LB.fls=[LB.track.querySelector(".map")];lbFit()}
   else{LB.track.innerHTML=Array.from({length:nd},(_,i)=>`<div class="lb-slide">${img(c,"flag",i).replace('loading="lazy"','')}</div>`).join("");LB.n=nd;LB.vi=Math.min(nd-1,vi);LB.fls=[...LB.track.querySelectorAll(".lb-slide .flag .fl:not([hidden])")]}
   LB.fl=LB.fls[LB.vi];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbTrack(false);lbCaption();if(what==="map")lbMapHome();
-  // The explorable map's dots are a fixed size on screen (radius 4px, the tap ring 14px), whatever the frame.
-  if(what==="explore"){const u=LB.vb0.w/LB.baseW;LB.fl.querySelectorAll(".dot.ex").forEach(k=>k.dataset.r=(4*u).toFixed(3));LB.fl.querySelectorAll(".hit").forEach(k=>k.dataset.r=(14*u).toFixed(3));lbExHome()}
+  // The explorable map's dots are a fixed size on screen, whatever the frame: radius 5px in the scope, 3px outside it,
+  // and a tap ring of 14px for both.
+  if(what==="explore"){const u=LB.vb0.w/LB.baseW;LB.fl.querySelectorAll(".dot.ex").forEach(k=>k.dataset.r=((k.classList.contains("out")?3:5)*u).toFixed(3));LB.fl.querySelectorAll(".hit").forEach(k=>k.dataset.r=(14*u).toFixed(3));lbExHome()}
   $("#lbHint").textContent=what==="explore"?"Tap a place to see its flag · pinch to zoom":"Pinch or scroll to zoom · drag to pan · double-tap to reset"}
 // The arrow keys walk the chips: designs, then the map.
 function lbStep(d){if(!LB||!LB.chips)return;const v=VARS(LB.c),nd=v?v.length:1,n=nd+(mapHas(LB.c)?1:0),cur=LB.what==="map"?nd:LB.vi,k=cur+d;if(k>=0&&k<n)lbPick(k)}
@@ -929,7 +930,8 @@ function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel;
   LB.el.classList.toggle("picked",!!c);
   if(!c){box.innerHTML="";return}
   const mixed=WIDE.includes(LB.region)||SET.scope!=="countries";
-  box.innerHTML=`<button type="button" class="exclose" onclick="exSelect(null)" aria-label="Close the card">×</button>`+studyEntry(BY[c],mixed,{noMap:true,flagClick:`exFlag('${c}')`,pill:LB.ex.on.has(c)?null:`<span class="pill">not in ${scopeLabel()}</span>`});
+  box.innerHTML=`<button type="button" class="exclose" onclick="exSelect(null)" aria-label="Close the card">×</button>`+studyEntry(BY[c],mixed,{noMap:true,flagClick:`exFlag('${c}')`,pill:LB.ex.on.has(c)?null:`<span class="pill outside">not in ${scopeLabel()}</span>`});
+  if(!LB.ex.on.has(c))box.querySelector(".entry").classList.add("outside");
   box.scrollTop=0}
 
 // The question flag opens the viewer with the flag where it is: a tap, a pinch, a double click or the wheel. A

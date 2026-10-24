@@ -323,8 +323,8 @@ kbd{font:12px var(--mono);color:var(--ink);background:var(--tint);border:1px sol
 .map .dot{fill:var(--accent)}
 .map .dot.ring{fill:none;stroke:var(--accent);stroke-width:1.5;vector-effect:non-scaling-stroke}
 .map .cap{fill:#fff;stroke:#111;stroke-width:1;vector-effect:non-scaling-stroke}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sea:#121a2a;--landfill:#2a3348;--landline:#4a5570;--outland:#1a2130;--outline:#252d3e;--dotout:#4f5a72}}
-:root[data-theme="dark"]{--sea:#121a2a;--landfill:#2a3348;--landline:#4a5570;--outland:#1a2130;--outline:#252d3e;--dotout:#4f5a72}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sea:#121a2a;--landfill:#2a3348;--landline:#4a5570;--outland:#1a2130;--outline:#252d3e;--outfill:#222a3b;--outstroke:#323b50;--hatch:#323c52;--dotout:#3f4960}}
+:root[data-theme="dark"]{--sea:#121a2a;--landfill:#2a3348;--landline:#4a5570;--outland:#1a2130;--outline:#252d3e;--outfill:#222a3b;--outstroke:#323b50;--hatch:#323c52;--dotout:#3f4960}
 .map.sm{max-height:170px;border:1px solid var(--line)}
 .mapbtn{display:block;width:100%;padding:0;border-radius:8px;cursor:zoom-in;margin-top:2px}
 .mapbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -370,8 +370,10 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 .map.explore{border-radius:0}
 .map.explore .land path{fill:var(--outland,#c9ced6);stroke:var(--outline,#b3b9c2)}
 .map .hatch{pointer-events:none}
-.map .hatch .hl{fill:none;stroke:var(--landline,#b9b2a4);stroke-width:1.2;vector-effect:non-scaling-stroke}
-.map .dot.ex.out{fill:var(--dotout,#5b6678);stroke:var(--landfill,#f7f3ea);stroke-width:1}
+.map .hatch .hl{fill:none;stroke:var(--hatch,#d9d2c4);stroke-width:1.2;vector-effect:non-scaling-stroke}
+/* Places outside the scope recede: a paler fill and outline under the hatch, so the places in it read first. */
+.map .ct.out{fill:var(--outfill,#eeebe4);stroke:var(--outstroke,#d3ccbf)}
+.map .dot.ex.out{fill:var(--dotout,#a9afba);stroke:none}
 .lb-scope{align-self:flex-start;margin-top:6px;background:rgba(255,255,255,.15);pointer-events:auto}
 .lb-scope .chipbtn{width:auto;height:auto;border-radius:999px;font-size:12px;line-height:1.3;padding:4px 10px;background:transparent;color:#fff}
 .lb-scope .chipbtn.on{background:#fff;color:#111}
@@ -379,7 +381,7 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 @media (hover:hover){.map .ct:hover{fill:var(--tint)}}
 .map .sel,.map .marks{pointer-events:none}
 /* Small places in the scope get the white dot with a dark ring, which catches the eye; those outside it the plain grey one. */
-.map .dot.ex{fill:#fff;stroke:#3b4558;stroke-width:1.5;vector-effect:non-scaling-stroke;cursor:pointer}
+.map .dot.ex{fill:#fff;stroke:#253047;stroke-width:2;vector-effect:non-scaling-stroke;cursor:pointer}
 .map .dot.ex.on{fill:var(--accent);stroke:var(--landfill,#f7f3ea);stroke-width:1}
 .map .hit{fill:transparent;cursor:pointer}
 .lb.exploring .lb-var{display:none}
@@ -397,3 +399,8 @@ h2 .where{font-size:13px}
 .facts{display:flex;flex-direction:column;gap:1px}
 .facts .capital{display:block;line-height:1.5}
 .nw{white-space:nowrap}
+/* The card of a place outside the scope: the flag dimmed and the pill set in solid ink, so it's plain at a glance; the
+   text stays at full strength for reading. */
+.excard .entry.outside .flink .fl{opacity:.4;filter:grayscale(.7)}
+.pill.outside{background:var(--ink);color:var(--surface);font-weight:600}
+.excard .entry .t .head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:4px}
