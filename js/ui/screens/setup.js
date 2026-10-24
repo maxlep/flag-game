@@ -24,8 +24,9 @@ function mapNote(pool) {
 }
 // The first line of the difficulty note: the meters this round fills, each lit as far as one right answer fills it.
 function gainLine(g, m) {
-  if (!g) return "Practice: a right answer doesn't fill the meter.";
+  // Easy fills nothing: the meters show empty, and the word says why.
   const which = (m.flag ? meter(g, undefined, "") : "") + (m.place ? meter(g, undefined, "place") : "");
+  if (!g) return `${which} Practice`;
   const all =
     m.flag && m.place
       ? "A right answer learns the flag and locates the place."
