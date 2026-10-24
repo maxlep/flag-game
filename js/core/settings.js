@@ -46,7 +46,7 @@ const ASKMAP = {
   easy: "4 names from anywhere.",
   medium: "4 names from its region.",
   hard: "4 names from the places nearest to it.",
-  expert: "No options. Type the name; close spellings and common names count.",
+  expert: "Type the name; close spellings and common names count.",
   master: "Type the exact name, with no suggestions or typo help. The map draws no borders."
 };
 // Asked with the map, answered with the flag.
@@ -62,7 +62,7 @@ const DIFF = {
   easy: "4 names from anywhere.",
   medium: "4 names from its region.",
   hard: "4 names from its look-alikes and region.",
-  expert: "No options. Type the name; close spellings and common names count.",
+  expert: "Type the name; close spellings and common names count.",
   master: "Type the exact name, with no suggestions or typo help. Common names still count."
 };
 // Asked with the name, answered with the flag: the grid grows instead of asking you to type.

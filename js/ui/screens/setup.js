@@ -61,6 +61,8 @@ function viewSetup() {
           ? PICK[SET.diff]
           : DIFF[SET.diff];
   if (p.mode === "all") p.label = scopeName();
+  // The rows go from what a round is to how it runs: what it asks and how you answer, then the difficulty (its note
+  // describes options that only make sense once those are chosen), the pace and the length.
   // Settings that change which flags and designs you see sit under "More"; the summary line says what they are set to.
   const more = [],
     sumParts = [];
@@ -88,6 +90,22 @@ function viewSetup() {
   const summary = sumParts.join(" · ");
   return `${shell({title: p.label, stat: pool.length + (p.mode === "group" ? " flags in the set" : " flags"), back: S.from && S.from.view === "look" ? "Look-alikes" : "Home"})}
   <div class="card">
+    <div class="seg" id="askSeg"><span class="label">Ask with</span><div class="btns">
+      <button class="${SET.ask === "flag" ? "on" : ""}" onclick="setPair('ask','flag')">Flag</button>
+      <button class="${SET.ask === "name" ? "on" : ""}" onclick="setPair('ask','name')">Name</button>
+      <button class="${SET.ask === "map" ? "on" : ""}" onclick="setPair('ask','map')">Map</button></div></div>
+    <div class="seg" id="dirSeg"><span class="label">Answer with</span><div class="btns">
+      <button class="${SET.dir === "name" ? "on" : ""}" onclick="setPair('dir','name')">Name</button>
+      <button class="${SET.dir === "flag" ? "on" : ""}" onclick="setPair('dir','flag')">Flag</button>
+      <button class="${SET.dir === "map" ? "on" : ""}" onclick="setPair('dir','map')">Map</button></div>
+      <span class="note">${PAIRNOTE[SET.ask + ">" + SET.dir] || ""}</span></div>
+    <div class="seg"><span class="label">Difficulty</span><div class="btns">
+      ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" && SET.dir !== "map" && SET.ask !== "map" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
+      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir), roundMeters(SET.ask, SET.dir))}</span>${diffNote}</span></div>
+    <div class="seg"><span class="label">Pace</span><div class="btns">
+      <button class="${SET.pace === "learn" ? "on" : ""}" onclick="setOpt('pace','learn')">Learn</button>
+      <button class="${SET.pace === "drill" ? "on" : ""}" onclick="setOpt('pace','drill')">Drill</button></div>
+      <span class="note">${SET.pace === "drill" ? "Correct answers advance automatically." : "Shows what the flag means after each answer."}</span></div>
     <div class="seg"><span class="label">Round length</span><div class="btns">
       ${[
         [10, "10"],
@@ -99,22 +117,6 @@ function viewSetup() {
             `<button class="${SET.len === v ? "on" : ""}" onclick="setOpt('len',${typeof v === "string" ? "'all'" : v})">${l}</button>`
         )
         .join("")}</div></div>
-    <div class="seg"><span class="label">Difficulty</span><div class="btns">
-      ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" && SET.dir !== "map" && SET.ask !== "map" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
-      <span class="note"><span class="dscore">${gainLine(scoreGain(eff, SET.ask, SET.dir), roundMeters(SET.ask, SET.dir))}</span>${diffNote}</span></div>
-    <div class="seg" id="askSeg"><span class="label">Ask with</span><div class="btns">
-      <button class="${SET.ask === "flag" ? "on" : ""}" onclick="setPair('ask','flag')">Flag</button>
-      <button class="${SET.ask === "name" ? "on" : ""}" onclick="setPair('ask','name')">Name</button>
-      <button class="${SET.ask === "map" ? "on" : ""}" onclick="setPair('ask','map')">Map</button></div></div>
-    <div class="seg" id="dirSeg"><span class="label">Answer with</span><div class="btns">
-      <button class="${SET.dir === "name" ? "on" : ""}" onclick="setPair('dir','name')">Name</button>
-      <button class="${SET.dir === "flag" ? "on" : ""}" onclick="setPair('dir','flag')">Flag</button>
-      <button class="${SET.dir === "map" ? "on" : ""}" onclick="setPair('dir','map')">Map</button></div>
-      <span class="note">${PAIRNOTE[SET.ask + ">" + SET.dir] || ""}</span></div>
-    <div class="seg"><span class="label">Pace</span><div class="btns">
-      <button class="${SET.pace === "learn" ? "on" : ""}" onclick="setOpt('pace','learn')">Learn</button>
-      <button class="${SET.pace === "drill" ? "on" : ""}" onclick="setOpt('pace','drill')">Drill</button></div>
-      <span class="note">${SET.pace === "drill" ? "Correct answers advance automatically." : "Shows what the flag means after each answer."}</span></div>
     ${more.length ? `<details class="more"${S.more ? " open" : ""} ontoggle="S.more=this.open"><summary><span class="label">More</span><span class="sum">${esc(summary)}</span></summary>${more.join("")}</details>` : ""}
   </div>
   <div class="dock">${n ? `<button class="btn" id="startBtn" onclick="startRound(S.pick.mode,S.pick.arg,S.pick.label,S.pick.flt)">Start · ${n} questions</button>` : `<p class="muted small" style="text-align:center">No flags here for this scope. Pick another scope under More.</p>`}</div>`;

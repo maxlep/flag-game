@@ -98,9 +98,11 @@ const W=1000;
 const r1=n=>Math.round(n*10)/10;
 const fmt=d=>d.replace(/(\d+\.\d{2,})/g,m=>String(r1(+m)));
 // Frames are lon/lat boxes; each is drawn from a projection centred on it, so nothing in it is cut at the seam.
+// The Americas' box is centred between the United States and Brazil (about 75°W): its west edge reaches mainland
+// Alaska where the projection draws it at its latitude, and its east edge Greenland; the Aleutians fall outside.
 // Oceania straddles the antimeridian, so it gets its own Pacific-centred set of shapes ("pac").
 const FRAMES={World:{box:[-180,-90,180,90],set:"world"},Europe:{box:[-25,34,45,72],set:"world"},Africa:{box:[-26,-36,58,38],set:"world"},
-  Asia:{box:[25,-12,150,78],set:"world"},Americas:{box:[-170,-58,-30,84],set:"world"},Antarctic:{box:[-180,-90,180,-35],set:"world"},Oceania:{box:[110,-50,235,25],set:"pac"}};
+  Asia:{box:[25,-12,150,78],set:"world"},Americas:{box:[-136,-58,-3,84],set:"world"},Antarctic:{box:[-180,-90,180,-35],set:"world"},Oceania:{box:[110,-50,235,25],set:"pac"}};
 const SETS={world:{center:10},pac:{center:160}};
 const out={w:W,h:0,set:{},frame:{}};
 const movedPts=[];
