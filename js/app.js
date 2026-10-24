@@ -177,10 +177,13 @@ const img=(c,cls="flag",vi=0)=>{
     return `<div class="fl${BARE.has(c)||ve&&ve.bare?" bare":""}" data-v="${i}" style="--r:${r};--w:${w.toFixed(1)}%"${i===vi?"":" hidden"}><img src="${src}/${stem}.svg" alt="Flag of ${BY[c].n}"${i===vi?' loading="lazy"':""}></div>`};
   return `<div class="${cls}" data-c="${c}">${v.map(one).join("")}</div>`};
 // Switch every rendered copy of flag c to design i, in place.
+// The page, and the explorable map's list and card, which live in the viewer outside it. (Not the viewer's own slides:
+// each of those shows one design on purpose.)
 function showVariant(c,i){
-  app.querySelectorAll(`.flag[data-c="${c}"] .fl`).forEach(fl=>{fl.hidden=+fl.dataset.v!==i});
-  app.querySelectorAll(`.vchips[data-c="${c}"]`).forEach(ch=>[...ch.children].forEach((b,j)=>b.classList.toggle("on",j===i)));
-  app.querySelectorAll(`.vline[data-c="${c}"]`).forEach(p=>p.outerHTML=useLine(c,i));
+  const all=q=>[app,$("#exList"),$("#exCard")].filter(Boolean).flatMap(r=>[...r.querySelectorAll(q)]);
+  all(`.flag[data-c="${c}"] .fl`).forEach(fl=>{fl.hidden=+fl.dataset.v!==i});
+  all(`.vchips[data-c="${c}"]`).forEach(ch=>[...ch.children].forEach((b,j)=>b.classList.toggle("on",j===i)));
+  all(`.vline[data-c="${c}"]`).forEach(p=>p.outerHTML=useLine(c,i));
 }
 // One line naming the design on screen (text only), and a separate row of chips to switch designs. Keeping them apart
 // means the chips sit in a fixed spot under the flag and never move with the length of the label.
@@ -307,7 +310,9 @@ function wake(){const t=$("#typeIn");if(t&&document.activeElement===t&&!document
 function setQVar(i){const q=S.qs[S.i];q.v=i;saveRound();showVariant(q.c,i)}
 // Keyboard: A-D or 1-4 pick an option, Enter moves on.
 document.addEventListener("keydown",e=>{
-  if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbStep(e.key==="ArrowRight"?1:-1);return}
+  if(LB){if(e.key==="Escape")closeFlag();else if(e.key==="ArrowLeft"||e.key==="ArrowRight")lbStep(e.key==="ArrowRight"?1:-1);
+    else if((e.key==="ArrowUp"||e.key==="ArrowDown")&&LB.what==="explore"&&e.target.tagName!=="SELECT"){e.preventDefault();exArrow(e.key==="ArrowDown"?1:-1)}
+    return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==="Tab"&&S.view==="quiz"){e.preventDefault();const inp=$("#typeIn");if(inp&&document.activeElement!==inp)inp.focus();return}
   const t=e.target.tagName;if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA"||t==="BUTTON")return;
@@ -942,7 +947,7 @@ function closeFlag(replacing){if(!LB)return;const {el,refocus,what}=LB;if(el._un
 function exTap(x,y){if(!LB||LB.what!=="explore")return;
   const hits=[...new Set(document.elementsFromPoint(x,y).filter(n=>LB.fl.contains(n)).map(n=>n.dataset.c).filter(Boolean))];
   if(!hits.length){exSelect(null);return}
-  const i=hits.indexOf(LB.sel);exSelect(i>=0?hits[(i+1)%hits.length]:hits[0],hits)}
+  const i=hits.indexOf(LB.sel);LB.smoothMark=true;exSelect(i>=0?hits[(i+1)%hits.length]:hits[0],hits);LB.smoothMark=false}
 // Select a flag: fill its shape, mark its capital, show its card. Null clears the selection.
 function exSelect(c,hits,scroll=true){if(!LB)return;const m=LB.fl,sel=m.querySelector(".sel"),marks=m.querySelector(".marks");
   LB.sel=c;LB.hits=c&&hits&&hits.length>1?hits:null;
@@ -955,7 +960,7 @@ function exSelect(c,hits,scroll=true){if(!LB)return;const m=LB.fl,sel=m.querySel
     if(S.cap[c]){const [cx,cy]=S.cap[c],r=3.5*LB.vb0.w/LB.baseW;
       marks.innerHTML=`<circle class="cap" data-r="${r.toFixed(2)}" cx="${cx}" cy="${(cy*sy).toFixed(1)}" r="${(r/LB.scale).toFixed(2)}"/>`}
     marks.innerHTML=ring+marks.innerHTML}
-  exCaption();exCard();exMark(c,scroll)}
+  exCaption();exCard();exMark(c,scroll,LB.smoothMark)}
 function exCaption(){if(!LB)return;const c=LB.sel,S=MAP.set[MAP.frame[LB.ex.frame].set],n=LB.ex.codes.filter(x=>S.shape[x]&&LB.ex.on.has(x)).length;
   let t=n+(n===1?" place":" places");
   if(c&&LB.hits){const i=LB.hits.indexOf(c),nx=LB.hits[(i+1)%LB.hits.length];t=`Tap again for ${BY[nx].n}`}
@@ -991,7 +996,8 @@ function exStep(d){if(!LB||LB.what!=="explore")return;
   if(d>0){if(SET.exFold)exFoldTo(false);else exFull()}
   else if(!SET.exFold)exFoldTo(true)}
 function exFoldTo(h){SET.exFold=h;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}
-  $("#exList").classList.toggle("folded",h);exTabSync();exCard();exLayout();if(!h&&LB.sel)exMark(LB.sel,true)}
+  if(!h&&LB.sel)exMark(LB.sel,true); // scrolled there before it slides in, so there is nothing to watch
+  $("#exList").classList.toggle("folded",h);exTabSync();exCard();exLayout()}
 function exFull(){const L=$("#exList");L.classList.add("full");LB.el.classList.add("exfull");setTimeout(()=>{if(LB&&LB.what==="explore")exToList()},260)}
 function exTabSync(){const t=$("#exTab");if(!t)return;const h=!!SET.exFold,up=t.querySelector(".exup"),dn=t.querySelector(".exdown");
   const lab=(b,l)=>{b.setAttribute("aria-label",l);b.title=l};
@@ -1031,9 +1037,19 @@ function exLayout(){if(!LB||!LB.ex)return;const L=$("#exList"),wide=exWide(),hid
 // The part of the stage the map can be seen in, past the list, the card and the title.
 function exVis(){const r=LB.stage.getBoundingClientRect(),i=LB.ins||{l:0,t:0,b:0};return {left:r.left+i.l,top:r.top+i.t,right:r.right,bottom:r.bottom-i.b}}
 // Mark the selected entry and scroll the list so it shows.
-function exMark(c,scroll){const b=$("#exBody");if(!b)return;b.querySelectorAll(".entry.sel").forEach(e=>e.classList.remove("sel"));
+// smooth: glide (a tap on the map); otherwise jump, so opening the list or stepping by key shows no motion.
+function exMark(c,scroll,smooth){const b=$("#exBody");if(!b)return;b.querySelectorAll(".entry.sel").forEach(e=>e.classList.remove("sel"));
   const en=c&&b.querySelector(`.entry[data-c="${c}"]`);if(!en)return;en.classList.add("sel");
-  if(scroll&&!exFolded()){const bt=b.getBoundingClientRect(),et=en.getBoundingClientRect();if(et.top<bt.top||et.bottom>bt.bottom)b.scrollTo({top:b.scrollTop+et.top-bt.top-8,behavior:"smooth"})}}
+  if(scroll&&!exFolded()){const bt=b.getBoundingClientRect(),et=en.getBoundingClientRect();if(et.top<bt.top||et.bottom>bt.bottom){
+    // Keep the entry in view: from below it comes to the bottom edge when it fits there, else to the top.
+    const down=et.top>=bt.top&&et.height<bt.height-16,top=down?b.scrollTop+et.bottom-bt.bottom+8:b.scrollTop+et.top-bt.top-8;
+    b.scrollTo({top,behavior:smooth?"smooth":"auto"})}}}
+// The up and down keys walk the list (only while it shows): the next or previous entry is selected and brought into
+// view, on the map too. With nothing selected in the list, they start at the first entry in view.
+function exArrow(d){if(!LB||exFolded())return;const b=$("#exBody");if(!b)return;const ens=[...b.querySelectorAll(".entry")];if(!ens.length)return;
+  const i=ens.findIndex(e=>e.dataset.c===LB.sel);let n;
+  if(i<0){const c=exTop();n=Math.max(0,ens.findIndex(e=>e.dataset.c===c))}else n=Math.min(ens.length-1,Math.max(0,i+d));
+  if(i>=0&&n===i)return;exPick(ens[n].dataset.c)}
 // From the list: select, and bring the place into view in the part of the map that shows. The zoom changes only when
 // it must: out, if the place doesn't fit; in, if it is under 24px on screen, but never so far that less than 60
 // units (about 2,300 km) of map show across, so an island keeps some land around it.
