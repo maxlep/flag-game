@@ -546,12 +546,14 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .meter i.lost{background:var(--bad);opacity:.45}
 .verdict .meter{margin-left:6px}
 .dscore .meter{margin-right:6px}
-/* A place's meter: gold, beside the flag's blue; the icon in front says which. Under the study entry's small map. */
+/* A place's meter: gold, beside the flag's blue; the icon in front says which. */
 .mi{display:inline-flex;width:13px;height:13px;margin-right:4px;color:var(--accent)}
 .mi svg{width:100%;height:100%}
 .place .mi{color:var(--gold)}
 .pill .mi{color:inherit;width:12px;height:12px;vertical-align:-2px}
 .meter.place i.on{background:var(--gold)}
 .meter.place i.new{background:var(--ok)}
-.fcol > .meter.place,.fcol > .pill.place{align-self:center;margin-top:4px}
+/* The flag's standing and the place's, stacked at the entry's top right. */
+.meters{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+.meters:empty{display:none}
 .pill.place{font-size:11px;padding:2px 8px}
