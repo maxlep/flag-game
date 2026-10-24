@@ -536,10 +536,10 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .qmpick{min-height:1.4em;margin:0;font-family:var(--display);font-weight:700;font-size:18px;text-align:center}
 .qmpick:empty::before{content:"\00a0"}
 /* The difficulty note: the score on its own line, then what the difficulty changes. */
-.note .dscore{display:block;font-weight:600;color:var(--ink)}
+.note .dscore{display:flex;align-items:center;font-weight:600;color:var(--ink)}
 /* A flag's meter: one segment per point, full when learned. After an answer the segments it filled show in green and
    those it emptied in red, fading. */
-.meter{display:inline-flex;gap:2px;vertical-align:middle;padding:3px 0}
+.meter{display:inline-flex;align-items:center;gap:2px;vertical-align:middle;padding:3px 0}
 .meter i{width:10px;height:8px;border-radius:2px;background:var(--line)}
 .meter i.on{background:var(--accent)}
 .meter i.new{background:var(--ok)}
