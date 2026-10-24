@@ -147,7 +147,7 @@ function viewQuiz() {
   <div class="progress">${dots}</div>
   ${S.confirmLeave ? `<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>` : ""}</div>
   <div class="qmid${mapq ? " mapq" : ""}" id="qmid" data-i="${S.i}">${prompt}${reveal}</div>
-  <div class="qdrawer${q.ans ? " answered" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${opts}${nextBtn}</div>
+  <div class="qdrawer${q.ans ? " answered" : ""}${compact ? " compact" : ""}${!typed && !mapq && S.pace === "drill" ? " hold" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${opts}${nextBtn}</div>
   </div>`;
 }
 
