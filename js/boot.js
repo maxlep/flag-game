@@ -5,6 +5,7 @@
 load();
 loadSet();
 loadB();
+loadL();
 function start(data) {
   if (location.search.startsWith("?r=")) history.replaceState(null, "", location.pathname);
   keyboard();

@@ -13,7 +13,8 @@ function viewQuiz() {
           .join("");
   const letters = "ABCDEFGHIJKLMNOP";
   const reverse = S.dir === "flag",
-    typed = TYPED(S.diff) && !reverse,
+    mapq = S.dir === "map",
+    typed = TYPED(S.diff) && !reverse && !mapq,
     strict = S.diff === "master";
   // When a card is shown the keyboard is closed and the drawer condenses; when it isn't (Drill, correct) the drawer keeps
   // its height so the flag doesn't resize between answers.
@@ -21,7 +22,15 @@ function viewQuiz() {
   let prompt,
     opts,
     ask = "";
-  if (reverse) {
+  if (mapq) {
+    // Found on the map: the question (the flag, or the name) above, the map under it filling the band.
+    const easy = S.diff === "easy";
+    prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
+    ask = `<p class="eyebrow">${easy ? "Tap it on the map." : "Tap it on the map, then Check."}</p>`;
+    opts = q.ans
+      ? ""
+      : `<div class="row">${easy ? "" : `<button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button>`}<button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;
+  } else if (reverse) {
     prompt = `<p class="eyebrow">Which flag?</p><p class="ask">${esc(f.n)}</p>`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
       .map((c, i) => {
@@ -62,7 +71,8 @@ function viewQuiz() {
   let reveal = "";
   if (q.ans) {
     const ok = q.ans === q.c,
-      picked = BY[q.ans];
+      picked = BY[q.ans],
+      showFlag = reverse || (mapq && S.ask === "name");
     let miss = "";
     if (!ok) {
       const gi = GROUP_OF[q.c] && GROUP_OF[q.c].find(i => GROUPS[i].f.includes(q.ans));
@@ -71,24 +81,27 @@ function viewQuiz() {
         miss = `<div class="row" style="align-items:center"><button type="button" class="flink" style="flex:0 0 72px" onclick="openFlag('${q.ans}')" title="View large">${img(q.ans, "flag sm")}</button><p class="small muted">You picked ${esc(picked.n)}. ${hint}</p></div>`;
       else miss = `<p class="small muted">${q.typed ? `"${esc(q.typed)}" didn't match a country.` : "Revealed."}</p>`;
     }
-    const pill = `<span class="pill ${ok ? (q.pts ? "ok" : "") : "bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered ? "learned" : q.pts > 0 ? "+" + q.pts : q.pts === 0 ? "no points on easy" : q.pts}</span>`;
+    const pill =
+      q.pts === null || q.pts === undefined
+        ? ""
+        : `<span class="pill ${ok ? (q.pts ? "ok" : "") : "bad"}" style="font-family:var(--mono);font-size:12px;vertical-align:middle">${q.nowMastered ? "learned" : q.pts > 0 ? "+" + q.pts : q.pts === 0 ? "no points on easy" : q.pts}</span>`;
     if (S.pace === "drill" && !q.lore) {
       reveal = ok
         ? `<div class="card lore toast"><p class="verdict ok">Correct · ${esc(f.n)} ${pill}</p></div>`
         : `<div class="card lore">
         <p class="verdict bad">Not quite ${pill}</p>
         <div><h2>${nameLine(q.c, mixedRound())}</h2><div class="facts">${facts(q.c)}</div></div>
-        ${reverse ? cardFlag(q.c, q.v || 0) : ""}${miss}
+        ${showFlag ? cardFlag(q.c, q.v || 0) : ""}${miss}
         <button class="link" style="text-align:left" onclick="showLore()">Show the story</button>
       </div>
 `;
     } else
       reveal = `<div class="card lore">
       <p class="verdict ${ok ? "ok" : "bad"}">${ok ? "Correct" : "Not quite"}${S.streak >= 3 ? ` · ${S.streak} in a row` : ""} ${pill}</p>
-      ${reverse ? cardFlag(q.c, q.v || 0) + vchips(q.c, q.v || 0, "setQVar(%i)") : ""}
-      <div><h2>${nameLine(q.c, mixedRound())}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c, q.v || 0)}${reverse ? "" : vchips(q.c, q.v || 0, "setQVar(%i)")}</div>
+      ${showFlag ? cardFlag(q.c, q.v || 0) + vchips(q.c, q.v || 0, "setQVar(%i)") : ""}
+      <div><h2>${nameLine(q.c, mixedRound())}</h2><div class="facts">${facts(q.c)}</div>${useLine(q.c, q.v || 0)}${showFlag ? "" : vchips(q.c, q.v || 0, "setQVar(%i)")}</div>
       <p>${esc(f.m)}</p>
-      ${mapCard(q.c)}
+      ${mapq ? "" : mapCard(q.c)}
       ${miss}
     </div>`;
   }
@@ -101,7 +114,7 @@ function viewQuiz() {
   <div class="sticky"><div class="top"><button class="back" onclick="goBack()">‹ Exit</button><span class="stat">${esc(S.label)} · ${right} right · ${S.i + 1} / ${n}</span></div>
   <div class="progress">${dots}</div>
   ${S.confirmLeave ? `<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>` : ""}</div>
-  <div class="qmid" id="qmid" data-i="${S.i}">${prompt}${reverse ? opts : ""}${reveal}</div>
+  <div class="qmid${mapq ? " mapq" : ""}" id="qmid" data-i="${S.i}">${prompt}${reverse ? opts : ""}${reveal}</div>
   <div class="qdrawer${q.ans ? " answered" : ""}${reverse && !q.ans ? " empty" : ""}">${q.ans && (!typed || compact) ? "" : ask}${reverse ? "" : opts}${nextBtn}</div>
   </div>`;
 }

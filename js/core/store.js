@@ -46,6 +46,23 @@ function saveB() {
     localStorage.setItem(BKEY, JSON.stringify(badges));
   } catch (e) {}
 }
+// ---------- LOCATED ----------
+// Rounds with no flag on screen (a name found on the map, a map named) test geography, not flags, so they leave the
+// flag's progress alone and are counted here: code -> {c, w}, for the "located" progress planned in docs/map-plan.md.
+const LKEY = "flaglore.located";
+let located = {};
+function loadL() {
+  try {
+    located = JSON.parse(localStorage.getItem(LKEY)) || {};
+  } catch (e) {
+    located = {};
+  }
+}
+function saveL() {
+  try {
+    localStorage.setItem(LKEY, JSON.stringify(located));
+  } catch (e) {}
+}
 // The round in progress (and its results screen) is kept in localStorage so a refresh resumes it.
 const RKEY = "flaglore.round";
 function saveRound() {
@@ -66,6 +83,7 @@ function loadRound() {
       r.scope = "all";
     }
     if (r && !r.scope) r.scope = r.mode === "region" && !REGIONS.includes(r.arg) ? "all" : "countries";
+    if (r && !r.ask) r.ask = r.dir === "flag" ? "name" : "flag"; // saved before Ask with existed
     return r && r.qs && r.qs.length ? r : null;
   } catch (e) {
     return null;

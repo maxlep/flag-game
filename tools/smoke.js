@@ -9,7 +9,8 @@
 //
 // It goes through: home; a study list; the explorable map (list entry, map tap, hiding and showing the list, a design
 // from the list, back); a Learn round with the viewer from the question flag and from the card's map, through to the
-// results; a Drill round; a typed (Expert) round answered from the suggestions; the badges page. On a phone-sized
+// results; a Drill round; a typed (Expert) round answered from the suggestions; map rounds asked with the flag and with the name; the badges
+// page. On a phone-sized
 // touch screen and on a desktop-sized one.
 const path=require("path");
 let pw;try{pw=require("playwright")}catch(e){pw=require("playwright-core")}
@@ -41,7 +42,7 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
     expect(await js(p,()=>S.view)==="setup","setup screen");
     await tap(p,'.seg button:text-is("10")');
     await tap(p,`.seg button:text-is("${diff[0].toUpperCase()+diff.slice(1)}")`);
-    await tap(p,'.seg button:text-is("Country name")');
+    await tap(p,'#dirSeg button:text-is("Name")');
     await tap(p,`.seg button:text-is("${pace[0].toUpperCase()+pace.slice(1)}")`);
     await tap(p,"#startBtn");
     expect(await js(p,()=>S.view)==="quiz","round started");
@@ -80,6 +81,49 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
     expect(await js(p,()=>S.view)==="done","results screen");
   }
 
+  // A round answered on the map, asked with the flag or the name: the first question tapped wrong, the rest right,
+  // each tap on the place's centre, then Check (by its button, or the Enter key). Panned and zoomed on the way.
+  async function mapRound(p,ask){
+    step=`map round asked with the ${ask}: setup`;
+    await js(p,()=>goHome());
+    await tap(p,'.tile:has-text("Europe") .tmain');
+    await tap(p,'.seg button:text-is("10")');
+    await tap(p,'.seg button:text-is("Medium")');
+    await tap(p,'#dirSeg button:text-is("Map")');
+    await tap(p,`#askSeg button:text-is("${ask==="flag"?"Flag":"Name"}")`);
+    await tap(p,'.seg button:text-is("Learn")');
+    await tap(p,"#startBtn");
+    expect(await js(p,()=>S.view==="quiz"&&S.dir==="map"&&!!document.querySelector(".qmap svg")),"map round started");
+    for(let n=0;n<10;n++){
+      step=`map round asked with the ${ask}: question ${n+1}`;
+      const q=await js(p,()=>({c:S.qs[S.i].c,i:S.i}));
+      if(n===0){
+        const vb0=await js(p,()=>document.querySelector(".qmap svg").getAttribute("viewBox"));
+        await tap(p,'.qmctl button[aria-label="Zoom in"]');
+        const box=await js(p,()=>{const r=document.querySelector(".qmap").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}});
+        await p.mouse.move(box.x,box.y);await p.mouse.down();await p.mouse.move(box.x+40,box.y+20,{steps:4});await p.mouse.up();
+        expect(await js(p,v=>document.querySelector(".qmap svg").getAttribute("viewBox")!==v,vb0),"zoom and pan move the map");
+        expect(await js(p,()=>!S.qs[S.i].sel),"a drag selects nothing");
+        await p.mouse.dblclick(box.x,box.y);await p.waitForTimeout(150);
+      }
+      // A wrong place on the first question: the first place in the round that isn't the answer.
+      const want=n===0?await js(p,c=>S.qs.map(x=>x.c).find(x=>x!==c),q.c):q.c;
+      const pt=await js(p,c=>{const s=document.querySelector(".qmap svg"),M=MAP.set[MAP.frame[qmFrame(c)].set],[x,y]=M.pt[c];qmSet(s,[x-30,y*(+s.dataset.sy)-30,60,60]);const P=s.createSVGPoint();P.x=x;P.y=y*(+s.dataset.sy);const r=P.matrixTransform(s.getScreenCTM());return {x:r.x,y:r.y}},want);
+      for(let k=0;k<4&&(await js(p,()=>S.qs[S.i].sel))!==want;k++){await p.mouse.click(pt.x,pt.y);await p.waitForTimeout(380)} // overlapping places cycle
+      expect(await js(p,()=>S.qs[S.i].sel),"a tap selects the place",want);
+      expect(await js(p,()=>!S.qs[S.i].ans&&!$("#qmCheck").disabled),"selected, not yet answered");
+      if(n%2)await tap(p,"#qmCheck");
+      else{await p.evaluate(()=>document.activeElement&&document.activeElement.blur&&document.activeElement.blur());await p.keyboard.press("Enter");await p.waitForTimeout(150)}
+      expect(await js(p,c=>S.qs[S.i].ans===c,want),"Check answers with the place selected");
+      expect(await js(p,()=>!!document.querySelector(".qmap .sel .right")),"the right place is marked");
+      await tap(p,"#nextBtn");
+      if(n<9)expect(await js(p,i=>S.view==="quiz"&&S.i===i+1,q.i),"next question");
+    }
+    step=`map round asked with the ${ask}: results`;
+    expect(await js(p,()=>S.view)==="done","results screen");
+    expect(await js(p,a=>a==="name"?Object.keys(located).length>0:true,ask),"name to map counts as located");
+  }
+
   async function run(name,opts){
     const p=await open(opts);
     step=`${name}: home`;
@@ -114,6 +158,8 @@ const URL="file://"+path.resolve(__dirname,"..","index.html");
     await round(p,{pace:"learn",diff:"medium"});
     await round(p,{pace:"drill",diff:"hard"});
     await round(p,{pace:"learn",diff:"expert",typed:true});
+    await mapRound(p,"flag");
+    await mapRound(p,"name");
 
     step=`${name}: badges`;
     await js(p,()=>goHome());

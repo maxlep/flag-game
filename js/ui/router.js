@@ -100,10 +100,13 @@ document.addEventListener("keydown", e => {
     if (q.ans) {
       e.preventDefault();
       next();
+    } else if (S.dir === "map" && q.sel) {
+      e.preventDefault();
+      qmCheck();
     }
     return;
   }
-  if (q.ans) return;
+  if (q.ans || S.dir === "map") return;
   const k = e.key.toLowerCase();
   let i = -1;
   if (k >= "a" && k <= "p") i = k.charCodeAt(0) - 97;
@@ -183,6 +186,7 @@ function renderQuiz() {
     const t = $("#typeIn");
     if (t && !S.kbOff) t.focus({preventScroll: true});
     wireZoom();
+    wireQuizMap();
     return;
   }
   // A focused answer box is never replaced: phones close the keyboard, or scroll, when focus moves. The box is

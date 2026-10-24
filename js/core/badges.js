@@ -89,6 +89,11 @@ function checkBadges() {
     }
   };
   award("first");
+  // Titles and badges are about flags; map rounds earn none for now (docs/map-plan.md).
+  if (S.ask === "map" || S.dir === "map") {
+    saveB();
+    return earned;
+  }
   if (perfect && n >= 10 && D >= 1) award("clean10");
   if (perfect && n >= 25 && D >= 2) award("sharp25");
   if (perfect && n >= 25 && typed) award("typed25");

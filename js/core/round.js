@@ -56,7 +56,8 @@ function distractors(c, diff, mode, n = 3) {
   return [...out];
 }
 function startRound(mode, arg, label, flt = null) {
-  const pool = poolFor(mode, arg, flt);
+  // Answered on the map, a round can only ask about places with a shape (not the organisations).
+  const pool = poolFor(mode, arg, flt).filter(c => SET.dir !== "map" || mapHas(c));
   if (!pool.length) return;
   const from = S.view === "quiz" || S.view === "done" || S.view === "setup" ? S.from : here();
   const diff = SET.diff;
@@ -100,7 +101,8 @@ function startRound(mode, arg, label, flt = null) {
     i: 0,
     streak: 0,
     best: 0,
-    diff: grp && !TYPED(diff) ? "hard" : diff,
+    diff: grp && !TYPED(diff) && SET.dir !== "map" ? "hard" : diff,
+    ask: SET.ask,
     dir: SET.dir,
     nOpt,
     pace: SET.pace,
@@ -154,8 +156,20 @@ function answer(k) {
   q.ans = k;
   const ok = k === q.c;
   S.confirmLeave = false; // carrying on answers the "leave this round?" question
+  // With no flag on screen (a name found on the map) the answer says nothing about knowing the flag: it is counted as
+  // located, and the flag's progress is left alone.
+  if (S.ask !== "flag" && S.dir !== "flag") {
+    const l = located[q.c] || {c: 0, w: 0};
+    if (ok) l.c++;
+    else l.w++;
+    located[q.c] = l;
+    saveL();
+    q.pts = null;
+    return afterAnswer(q, ok);
+  }
   const r = rec(q.c);
-  const pts = S.diff === "master" && S.dir === "flag" ? 3 : PTS[S.diff] || 0;
+  // Typed Master alone marks a flag learned in one answer; picking a flag or a place scores at most +3.
+  const pts = S.diff === "master" && S.dir !== "name" ? 3 : PTS[S.diff] || 0;
   if (ok) {
     r.c++;
     r.s = Math.min(8, (r.s || 0) + pts);
@@ -168,6 +182,10 @@ function answer(k) {
   q.nowMastered = ok && r.s >= MASTER && r.s - pts < MASTER;
   prog[q.c] = r;
   save();
+  afterAnswer(q, ok);
+}
+// What follows any answer: the streak, saving the round, the redraw, Drill moving on, the card into view.
+function afterAnswer(q, ok) {
   S.streak = ok ? S.streak + 1 : 0;
   S.best = Math.max(S.best, S.streak);
   saveRound();
@@ -188,7 +206,8 @@ function answer(k) {
   requestAnimationFrame(() => {
     const mid = $("#qmid"),
       card = mid && mid.querySelector(".card.lore");
-    if (!card) return;
+    // A map round leaves the map where it is: it shrinks to make room, and the card starts under it.
+    if (!card || S.dir === "map") return;
     // The whole card if it fits under the flag, otherwise its top.
     card.scrollIntoView({block: card.offsetHeight < mid.clientHeight * 0.6 ? "end" : "start", behavior: "smooth"});
   });

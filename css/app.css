@@ -497,3 +497,29 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 /* The index bubble naming a whole group (Grouped by area or region) widens to fit it. */
 .alpha-bubble.long{width:auto;min-width:56px;padding:0 16px;white-space:nowrap;font-size:18px}
 .alpha-bubble{z-index:60} /* above the viewer, for the index in the map's list */
+/* The map quiz: the question small at the top of the middle band and the map under it, filling the rest (its height is
+   set in wireQuizMap). The place selected is outlined in the accent colour; after the answer the right place is green
+   and a wrong pick red. Small places keep their dots, with a ring for the mark. Master draws no borders. */
+.qmid.mapq{gap:10px;padding-top:10px}
+.qmid.mapq .qprompt{text-align:center}
+.qmid.mapq .qprompt .ask{font-size:24px}
+.qmid.mapq .flag.big{max-height:var(--qmf)}
+.qmid.mapq .flag.big .fl{width:min(100%,calc(var(--qmf) * var(--r,1.3333)))}
+.qmid.mapq{--qmf:clamp(56px,12vh,104px)}
+.qmap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;touch-action:none;background:var(--sea,#dfe8f3);user-select:none;-webkit-user-select:none}
+.qmap svg.map{width:100%;height:100%}
+.qmap .ct{transition:fill .12s}
+.qmapsvg .sel path{stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.qmapsvg .sel .pick{fill:color-mix(in srgb,var(--accent) 35%,transparent);stroke:var(--accent)}
+.qmapsvg .sel .right{fill:color-mix(in srgb,var(--ok) 65%,transparent);stroke:var(--ok)}
+.qmapsvg .sel .wrong{fill:color-mix(in srgb,var(--bad) 55%,transparent);stroke:var(--bad)}
+.qmapsvg .marks .ring{fill:none;stroke-width:2.5;vector-effect:non-scaling-stroke}
+.qmapsvg .marks .ring.pick{stroke:var(--accent)}
+.qmapsvg .marks .ring.right{stroke:var(--ok)}
+.qmapsvg .marks .ring.wrong{stroke:var(--bad)}
+.qmapsvg.noborder .ct,.qmapsvg.noborder .ct.out{fill:var(--landfill,#f7f3ea);stroke:var(--landfill,#f7f3ea)}
+.qmapsvg.noborder .land path{stroke:none}
+@media (hover:hover){.qmapsvg.noborder .ct:hover{fill:var(--landfill,#f7f3ea)}}
+.qmctl{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
+.qmctl button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.qmctl button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}

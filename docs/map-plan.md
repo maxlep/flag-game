@@ -71,10 +71,21 @@ Choices made for the first version, open to change:
 - Whether explore is a mode of the viewer (keeps "the viewer is the only zoom") or its own screen built on the same map code (that rule would change).
 - Popup at the spot or card at the bottom, if the card doesn't feel right in use.
 
+## The map quiz
+
+Decided 2026-10-24. Part one, the map as the answer, is built; the map as the question is next.
+
+- Setup has two choices, Ask with (Flag · Name · Map) and Answer with (Name · Flag · Map), never the same. Settings `SET.ask` and `SET.dir` (the answer); an old saved setting without `ask` gets the one it implied (Pick the flag asked with the name).
+- Built in two parts: the map as the answer first ("find it on the map", from a flag or a name), then the map as the question ("which place is this?", answered with its name, typed or picked, or its flag).
+- Answering on the map: the map fills the middle of the quiz screen under the question, framed to the place's region on Easy and Medium and the whole world from Hard. It pans and zooms in place. A tap selects a place without naming it (naming it would let you hunt by tapping), and Check answers; on Easy the tap answers at once. Overlapping places cycle on a second tap, places in the set sit above those outside it, small places have their dots. After the answer the right place is filled and a wrong pick marked, and the map moves to show them if they are out of view.
+- Master hides the borders (one idea to try; others may follow).
+- Progress: a round with a flag on screen (flag to map, map to flag) counts toward the flag's learning as now. One without (name to map, map to name) tests geography only: it is kept apart, as "located" (`flaglore.located`), for the separate progress planned below.
+- Titles and badges stay about flags: map rounds earn none for now (only the first-round badge).
+
 ## Order
 
 1. Data and the map component: script, data file, drawing, highlight, framing, zoom and pan, a check page. This step has the unknowns (file size, tiny places, which shapes need 10m). Done.
 2. Learn integration: info card, study list, viewer slide, capitals. Done.
 3. The explorable map, by region first, then the whole world with projection on the fly.
-4. Quiz modes and the setup changes. These sit inside the reworked quiz layout (pinned answer drawer), so that layout comes first.
+4. Quiz modes and the setup changes (the pinned answer drawer they needed is in place). In progress: see The map quiz.
 5. Progress and badges.

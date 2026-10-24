@@ -28,7 +28,7 @@ function shareText() {
   const n = S.qs.length,
     right = S.qs.filter(q => q.ans === q.c).length;
   const diff = S.diff[0].toUpperCase() + S.diff.slice(1),
-    mode = S.dir === "flag" ? "pick the flag" : "name the flag";
+    mode = S.dir === "map" ? "find it on the map" : S.dir === "flag" ? "pick the flag" : "name the flag";
   const scope =
     S.mode === "region" && S.scope === "all"
       ? " with territories"

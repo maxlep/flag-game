@@ -1,6 +1,13 @@
 // js/ui/screens/setup.js: The setup screen before a round.
 // Needs before it at load time: nothing.
 
+// What a round asks and how it is answered, for the note under the two rows.
+const PAIRNOTE = {
+  "flag>name": "You see the flag and choose or type its name.",
+  "name>flag": "You see the name and choose among the flags.",
+  "flag>map": "You see the flag and find the place on the map.",
+  "name>map": "You see the name and find it on the map. This counts toward places located, not flags learned."
+};
 function viewSetup() {
   const p = S.pick,
     pool = poolFor(p.mode, p.arg, p.flt),
@@ -14,18 +21,20 @@ function viewSetup() {
       : SET.len === "all"
         ? pool.length
         : Math.min(SET.len, pool.length);
-  const eff = grp && !TYPED(SET.diff) ? "hard" : SET.diff;
+  const eff = grp && !TYPED(SET.diff) && SET.dir !== "map" ? "hard" : SET.diff;
   const PICK = {
     expert: "Find the flag among nine, drawn from its look-alikes and region. +3 per correct answer.",
     master: "Find the flag among sixteen look-alikes and neighbours. +3 per correct answer."
   };
   const diffNote =
-    grp && !TYPED(SET.diff)
-      ? "Options always come from the look-alike set itself (Hard); Expert and Master " +
-        (SET.dir === "flag" ? "show more of them." : "ask you to type.")
-      : SET.dir === "flag" && PICK[SET.diff]
-        ? PICK[SET.diff]
-        : DIFF[SET.diff];
+    SET.dir === "map"
+      ? MAPDIFF[SET.diff]
+      : grp && !TYPED(SET.diff)
+        ? "Options always come from the look-alike set itself (Hard); Expert and Master " +
+          (SET.dir === "flag" ? "show more of them." : "ask you to type.")
+        : SET.dir === "flag" && PICK[SET.diff]
+          ? PICK[SET.diff]
+          : DIFF[SET.diff];
   if (p.mode === "all") p.label = scopeName();
   // Settings that change which flags and designs you see sit under "More"; the summary line says what they are set to.
   const more = [],
@@ -65,12 +74,16 @@ function viewSetup() {
         )
         .join("")}</div></div>
     <div class="seg"><span class="label">Difficulty</span><div class="btns">
-      ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
+      ${["easy", "medium", "hard", "expert", "master"].map(d => `<button class="${eff === d ? "on" : ""}${grp && !TYPED(d) && d !== "hard" && SET.dir !== "map" ? " off" : ""}" onclick="setOpt('diff','${d}')">${d[0].toUpperCase() + d.slice(1)}</button>`).join("")}</div>
       <span class="note">${diffNote}</span></div>
-    <div class="seg"><span class="label">Answer with</span><div class="btns">
-      <button class="${SET.dir === "name" ? "on" : ""}" onclick="setOpt('dir','name')">Country name</button>
-      <button class="${SET.dir === "flag" ? "on" : ""}" onclick="setOpt('dir','flag')">Pick the flag</button></div>
-      <span class="note">${SET.dir === "flag" ? "You see the name and choose among four flags." : "You see the flag and choose or type the name."}</span></div>
+    <div class="seg" id="askSeg"><span class="label">Ask with</span><div class="btns">
+      <button class="${SET.ask === "flag" ? "on" : ""}" onclick="setPair('ask','flag')">Flag</button>
+      <button class="${SET.ask === "name" ? "on" : ""}" onclick="setPair('ask','name')">Name</button></div></div>
+    <div class="seg" id="dirSeg"><span class="label">Answer with</span><div class="btns">
+      <button class="${SET.dir === "name" ? "on" : ""}" onclick="setPair('dir','name')">Name</button>
+      <button class="${SET.dir === "flag" ? "on" : ""}" onclick="setPair('dir','flag')">Flag</button>
+      <button class="${SET.dir === "map" ? "on" : ""}" onclick="setPair('dir','map')">Map</button></div>
+      <span class="note">${PAIRNOTE[SET.ask + ">" + SET.dir] || ""}</span></div>
     <div class="seg"><span class="label">Pace</span><div class="btns">
       <button class="${SET.pace === "learn" ? "on" : ""}" onclick="setOpt('pace','learn')">Learn</button>
       <button class="${SET.pace === "drill" ? "on" : ""}" onclick="setOpt('pace','drill')">Drill</button></div>
