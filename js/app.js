@@ -784,9 +784,10 @@ function openViewer(c,o){
   const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
     <div class="lb-top"><div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`<div class="vchips lb-scope">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" onmousedown="event.preventDefault()" onclick="exScope('${v}')">${l}</button>`).join("")}</div>`:""}</div><div class="ctl">
-    ${ex?`<button type="button" class="lb-list" onclick="exToList()" title="Study as a list" aria-label="Study as a list" aria-describedby="exListD">${BOOK}</button><span hidden id="exListD">The same places as a page you scroll, opened at the place selected or at the one at the top of the list here.</span>`:""}<button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
+    <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>
-    ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList"><button type="button" class="exhandle" onclick="exFold()" aria-expanded="${!SET.exFold}"><span id="exCount"></span><i aria-hidden="true"></i></button><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>`:""}`;
+    ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList" aria-label="Places"><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>
+    <div class="extab" id="exTab" role="group" aria-label="The list"><button type="button" class="exup" onclick="exStep(1)" aria-controls="exList"><i aria-hidden="true"></i></button><button type="button" class="exdown" onclick="exStep(-1)" aria-controls="exList"><i aria-hidden="true"></i></button></div>`:""}`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   // The cursor only changes when the mouse moves, so the element it is over takes the viewer's cursor meanwhile.
   const under=[...document.querySelectorAll(":hover")].pop();if(under&&!el.contains(under)){under.style.cursor="grab";el._under=under}
@@ -794,7 +795,7 @@ function openViewer(c,o){
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
   const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
   LB={c,fromEx:!!o.fromEx,chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
-  if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null;exListBuild();exLayout()}
+  if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null;exListBuild();exTabWire();exTabSync();exLayout()}
   lbShow(o.what,o.vi||0);
   if(ex&&o.at&&!o.keep){const b=$("#exBody"),en=b&&b.querySelector(`.entry[data-c="${o.at}"]`);if(en)b.scrollTop+=en.getBoundingClientRect().top-b.getBoundingClientRect().top-8}
   if(ex&&o.keep){const k=o.keep;LB.scale=k.scale;LB.x=k.x;LB.y=k.y;lbApply();if(k.top!==undefined)$("#exBody").scrollTop=k.top;if(k.sel)exSelect(k.sel,null,k.top===undefined)}
@@ -958,7 +959,7 @@ function exSelect(c,hits,scroll=true){if(!LB)return;const m=LB.fl,sel=m.querySel
 function exCaption(){if(!LB)return;const c=LB.sel,S=MAP.set[MAP.frame[LB.ex.frame].set],n=LB.ex.codes.filter(x=>S.shape[x]&&LB.ex.on.has(x)).length;
   let t=n+(n===1?" place":" places");
   if(c&&LB.hits){const i=LB.hits.indexOf(c),nx=LB.hits[(i+1)%LB.hits.length];t=`Tap again for ${BY[nx].n}`}
-  $("#lbSub").textContent=t;$("#lbVar").innerHTML="";const n2=$("#exCount");if(n2)n2.textContent=n+(n===1?" place":" places")}
+  $("#lbSub").textContent=t;$("#lbVar").innerHTML="";}
 // The card: the flag's study entry. Its flag opens the designs in the viewer; closing them comes back to the map.
 // Shown only when the list can't show the place: it is folded away, or the place isn't in the scope.
 function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel,inList=c&&LB.ex.on.has(c)&&!exFolded();
@@ -974,7 +975,7 @@ function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel,inList=c&
 // A tap on an entry (not on its links or buttons) selects the place and brings it into view; a tap on the map marks
 // the entry and scrolls the list to it.
 const exWide=()=>matchMedia("(min-width: 820px) and (min-height: 480px)").matches;
-const exFolded=()=>!!SET.exFold&&!exWide();
+const exFolded=()=>!!SET.exFold;
 function exListBuild(){const b=$("#exBody"),a=$("#exAlpha");if(!b)return;
   const list=studyList(LB.region).filter(f=>LB.ex.on.has(f.c)),mixed=WIDE.includes(LB.region)||SET.scope!=="countries";
   const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();let last="";
@@ -982,9 +983,30 @@ function exListBuild(){const b=$("#exBody"),a=$("#exAlpha");if(!b)return;
   a.innerHTML=[...new Set(list.map(letter))].map(l=>`<span data-l="${l}">${l}</span>`).join("");
   wireAlpha(a,b);
   b.addEventListener("click",e=>{if(e.target.closest("a,button"))return;const en=e.target.closest(".entry");if(en)exPick(en.dataset.c)})}
-function exFold(){SET.exFold=!SET.exFold;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}
-  const L=$("#exList");L.classList.toggle("folded",!!SET.exFold);L.querySelector(".exhandle").setAttribute("aria-expanded",String(!SET.exFold));
-  exCard();exLayout();if(!SET.exFold&&LB.sel)exMark(LB.sel,true)}
+// The list has three states on one control, the tab on its edge (over the map): hidden, open beside the map, and the
+// full study list, which is the same list grown to fill the screen and then handed to the study view at the same
+// place. Up (or right, on a wide screen) goes a step towards the full list; down (left) a step towards hidden. A drag
+// on the tab does the same. Hidden or open is remembered.
+function exStep(d){if(!LB||LB.what!=="explore")return;
+  if(d>0){if(SET.exFold)exFoldTo(false);else exFull()}
+  else if(!SET.exFold)exFoldTo(true)}
+function exFoldTo(h){SET.exFold=h;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}
+  $("#exList").classList.toggle("folded",h);exTabSync();exCard();exLayout();if(!h&&LB.sel)exMark(LB.sel,true)}
+function exFull(){const L=$("#exList");L.classList.add("full");LB.el.classList.add("exfull");setTimeout(()=>{if(LB&&LB.what==="explore")exToList()},260)}
+function exTabSync(){const t=$("#exTab");if(!t)return;const h=!!SET.exFold,up=t.querySelector(".exup"),dn=t.querySelector(".exdown");
+  const lab=(b,l)=>{b.setAttribute("aria-label",l);b.title=l};
+  lab(up,h?"Show the list":"Open the full list");up.setAttribute("aria-expanded",String(!h));
+  lab(dn,"Hide the list");dn.hidden=h;t.classList.toggle("folded",h)}
+// A drag on the tab: towards the map's middle a step out, back a step in. A drag doesn't also count as a tap.
+function exTabWire(){const t=$("#exTab");if(!t)return;let moved=false;
+  // The drag is followed on the window, not by capturing the pointer: a capture would send the click to the tab
+  // rather than its button, and the pointer soon leaves a tab this small.
+  t.addEventListener("pointerdown",e=>{const p={x:e.clientX,y:e.clientY};moved=false;
+    const mv=ev=>{if(!moved&&Math.hypot(ev.clientX-p.x,ev.clientY-p.y)>8)moved=true};
+    const up=ev=>{removeEventListener("pointermove",mv);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);
+      if(ev.type==="pointercancel")return;const d=exWide()?ev.clientX-p.x:p.y-ev.clientY;if(moved&&Math.abs(d)>30)exStep(d>0?1:-1)};
+    addEventListener("pointermove",mv);addEventListener("pointerup",up);addEventListener("pointercancel",up)});
+  t.addEventListener("click",e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false}},true)}
 // The list and the map are two views of one list, and keep their place between them. From the map: the study list of
 // the region, at the selected place, or else at the entry at the top of the drawer. From the study list: the map,
 // its drawer at the entry at the top of the page (studyTop).
@@ -1000,11 +1022,12 @@ function exToList(){if(!LB||LB.what!=="explore")return;const r=LB.region,c=LB.se
   window.scrollTo(0,en.getBoundingClientRect().top+window.scrollY-off)}
 // The room the list and the card take, as insets on the map: the stage stays full screen, the map's centre and its
 // panning limits move instead. --exh lifts the card above the drawer.
-function exLayout(){if(!LB||!LB.ex)return;const L=$("#exList"),wide=exWide(),top=LB.el.querySelector(".lb-top .title");
+function exLayout(){if(!LB||!LB.ex)return;const L=$("#exList"),wide=exWide(),hid=!!SET.exFold,top=LB.el.querySelector(".lb-top .title");
   LB.el.classList.toggle("exwide",wide);
-  const h=wide?0:L.getBoundingClientRect().height,card=$("#exCard"),ch=card&&card.firstChild?card.getBoundingClientRect().height+12:0;
-  LB.el.style.setProperty("--exh",h+"px");
-  LB.ins={l:wide?L.getBoundingClientRect().right:0,t:top?top.getBoundingClientRect().bottom+6:0,b:h+ch}}
+  // Sizes as laid out, not as on screen: the list slides away by a transform that may still be running.
+  const h=wide||hid?0:L.offsetHeight,w=wide&&!hid?L.offsetWidth:0,card=$("#exCard"),ch=card&&card.firstChild?card.offsetHeight+12:0;
+  LB.el.style.setProperty("--exh",h+"px");LB.el.style.setProperty("--exw",w+"px");
+  LB.ins={l:w,t:top?top.getBoundingClientRect().bottom+6:0,b:h+ch}}
 // The part of the stage the map can be seen in, past the list, the card and the title.
 function exVis(){const r=LB.stage.getBoundingClientRect(),i=LB.ins||{l:0,t:0,b:0};return {left:r.left+i.l,top:r.top+i.t,right:r.right,bottom:r.bottom-i.b}}
 // Mark the selected entry and scroll the list so it shows.
