@@ -42,6 +42,7 @@ What the project is and where files live: see README.md. This file holds the rul
 - `js/core/` holds what doesn't touch the page (settings, progress, matching, scope, sorting, badges, the round) and `js/ui/` what does (`dom`, `map`, `parts/` shared by screens, `screens/`, `router`, `viewport`, `viewer`, `explore/`); `js/boot.js` starts the app. Each file opens with a header saying what it owns and what it needs before it at load time; the plan and the reasons are in `docs/split-plan.md`.
 - They are classic scripts, loaded in order by `index.html`, not modules (a page opened from disk can't load modules). Code inside a function may use any file's names; code that runs while a file loads (a `const` computed from another, a call) may use only files loaded before it. Shared state is global, each piece owned by one file: `S` (`core/round.js`), `SET` (`core/settings.js`), `prog` and `badges` (`core/store.js`), `LB` (`ui/viewer.js`), `SUG` (`ui/viewport.js`), `EXRET` (`ui/explore/open.js`).
 - A new file goes in `index.html`'s script tags and in the artifact's files.
+- Code is formatted with Prettier using the committed `.prettierrc` (printWidth 120); format what you change. `.git-blame-ignore-revs` lists the commits that only moved or reformatted code, so blame looks past them.
 - Run `tools/smoke.js` before merging anything larger than a small change (needs Playwright locally; its header says how). It goes through every screen on a phone-sized and a desktop-sized page and fails on any page error.
 
 ## Behaviour that the code relies on

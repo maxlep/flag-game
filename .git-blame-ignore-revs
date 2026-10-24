@@ -1,0 +1,6 @@
+# Commits git blame should look past: they move or reformat code without changing it. GitHub's blame view reads this
+# file; locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+# The split of js/app.js into js/core, js/ui and js/boot.js (moves statements unchanged; see docs/split-plan.md)
+db3566203d1d25a2a72493abb2d913952b03f6a3
+# Prettier over the split files (layout only; the syntax trees are identical)
+ed88d1e9c13e0ae180fbcb30f7f52f251ab897d9
