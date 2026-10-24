@@ -661,8 +661,9 @@ function studyVar(btn,i){const en=btn.closest(".entry");en.dataset.v=i;showVaria
 const studyPill=f=>NOQUIZ.has(f.c)?'<span class="pill">not quizzed</span>':mastered(f.c)?'<span class="pill ok">learned</span>':rec(f.c).s>0?'<span class="pill">'+rec(f.c).s+' / '+MASTER+'</span>':rec(f.c).w>0?'<span class="pill bad">missed '+rec(f.c).w+'</span>':"";
 // One study entry: flag (opens the viewer), design chips, a small map (drawn later, by wireMiniMaps), name, standing,
 // capital and description. The explorable map's card is the same entry with no small map; its flag says how to open it.
+const scopeLabel=()=>SCOPES.find(x=>x[0]===SET.scope)[1];
 function studyEntry(f,mixed,o={}){const fl=o.flagClick||`openFlag('${f.c}',+this.closest('.entry').dataset.v)`;
-  return `<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="${fl}" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${o.noMap||!mapHas(f.c)?"":`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`}</div><div class="t"><span class="head"><span class="name">${nameLine(f.c,mixed)}</span>${studyPill(f)}</span><span class="facts">${facts(f.c)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}
+  return `<div class="entry" data-c="${f.c}" data-v="0"><div class="fcol"><button class="flink" type="button" onclick="${fl}" title="View large">${img(f.c,"flag sm")}</button>${vchips(f.c,0,"studyVar(this,%i)")}${o.noMap||!mapHas(f.c)?"":`<button type="button" class="mapbtn mini" data-c="${f.c}" onclick="openMap('${f.c}')" title="Open the map"></button>`}</div><div class="t"><span class="head"><span class="name">${nameLine(f.c,mixed)}</span>${o.pill||studyPill(f)}</span><span class="facts">${facts(f.c)}</span>${VARS(f.c)||NOQUIZ.has(f.c)?useLine(f.c,0):""}<p>${esc(f.m)}</p></div></div>`}
 const WIDE=["Whole world","Everything","All territories"];
 // The flags a study list shows, in name order: a region's, or the whole scope's for the wide card.
 const studyList=r=>(WIDE.includes(r)?SCOPED(true):regionFlags(r,true)).slice().sort((a,b)=>a.n.localeCompare(b.n));
@@ -679,7 +680,7 @@ function viewStudy(){
   const body=list.map(f=>{const l=letter(f),head=l!==lastL?`<p class="eyebrow letter" data-l="${lastL=l}">${l}</p>`:"";if(l!==lastL)lastL=l;return head+studyEntry(f,mixed)}).join("");
   const mode=wide?"all":"region",arg=mode==="region"?r:null;
   const sel=`<select id="scopeSel" onchange="if(WIDE.includes(S.region))S.region={countries:'Whole world',all:'Everything',territories:'All territories'}[this.value];setOpt('scope',this.value)">${SCOPES.map(([v,l])=>`<option value="${v}" ${SET.scope===v?"selected":""}>${l}</option>`).join("")}</select>`;
-  const mapb=exploreOf(wide?"World":r,list.map(f=>f.c))?`<button type="button" class="mapopen" onclick="openExplore(S.region)" title="Explore on a map">${MAPICON}Map</button>`:"";
+  const mapb=exploreOf(wide?"World":r,regionAll(r).map(f=>f.c))?`<button type="button" class="mapopen" onclick="openExplore(S.region)" title="Explore on a map">${MAPICON}Map</button>`:"";
   return `${shell({title:wide?scopeName():r,stat:list.length+" flags",extra:`<div class="tr-ctl">${mapb}${sel}</div>`})}${index}
   <div class="study${index?" indexed":""}">${body}</div>
   ${list.length?`<button class="btn" onclick="openSetup('${mode}',${arg?`'${arg}'`:"null"},'${wide?scopeName():r}')">Quiz me on ${esc(wide?scopeName():r)}</button>`:'<p class="muted small">No flags in this region for the current scope.</p>'}`;
@@ -743,8 +744,16 @@ function openMap(c,chips=true){openViewer(c,{what:"map",chips})}
 // The explorable map: a study list's flags laid out on the map of its region. A tap selects a shape; the card at the
 // bottom is its study entry. The card's flag opens the designs, and closing those comes back here as it was (EXRET).
 let EXRET=null;
-function openExplore(region,keep){const wide=WIDE.includes(region),list=studyList(region),ex=exploreOf(wide?"World":region,list.map(f=>f.c));if(!ex)return;
+// Every flag of the region is drawn and can be tapped, whatever the scope; the scope (set from the bar at the top)
+// only decides which are drawn plainly and which hatched. So the frame doesn't change with it.
+const regionAll=r=>WIDE.includes(r)?FLAGS:FLAGS.filter(f=>geoOf(f)===r);
+function openExplore(region,keep){const wide=WIDE.includes(region),ex=exploreOf(wide?"World":region,regionAll(region).map(f=>f.c));if(!ex)return;
+  ex.on=new Set(studyList(region).map(f=>f.c));
   openViewer(null,{what:"explore",region,title:wide?scopeName():region,ex,keep})}
+// The scope, changed from the map: the setting itself (the study list behind follows), then the map again as it was.
+function exScope(v){if(!LB||LB.what!=="explore"||SET.scope===v)return;const k={sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y};let r=LB.region;
+  if(WIDE.includes(r))r=S.region={countries:"Whole world",all:"Everything",territories:"All territories"}[v];
+  setOpt("scope",v);openExplore(r,k)}
 function exFlag(c){if(!LB||LB.what!=="explore")return;const vi=+(LB.el.querySelector(".excard .entry")||{dataset:{v:0}}).dataset.v;
   EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y};openFlag(c,vi)}
 function openViewer(c,o){
@@ -752,7 +761,7 @@ function openViewer(c,o){
   const ex=o.what==="explore";
   const el=document.createElement("div");el.className="lb"+(o.quiet?" quiet":"")+(ex?" exploring":"");el.id="lb";
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
-    <div class="lb-top"><div class="title"><span class="nm">${esc(ex?o.title:BY[c].n)}</span><span class="sub" id="lbSub"></span></div><div class="ctl">
+    <div class="lb-top"><div class="title"><span class="nm">${esc(ex?o.title:BY[c].n)}</span><span class="sub" id="lbSub"></span>${ex?`<div class="vchips lb-scope">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" onmousedown="event.preventDefault()" onclick="exScope('${v}')">${l}</button>`).join("")}</div>`:""}</div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
     <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
@@ -835,7 +844,9 @@ function lbApply(){if(!LB)return;const fl=LB.fl;
   // The window stays inside the frame: the map carries no land beyond it.
   const mx=(s-1)*W/2,my=(s-1)*H/2;LB.x=Math.max(-mx,Math.min(mx,LB.x));LB.y=Math.max(-my,Math.min(my,LB.y));
   fl.setAttribute("viewBox",`${(v.x+v.w/2-(W/2+LB.x)*u/s).toFixed(2)} ${(v.y+v.h/2-(H/2+LB.y)*u/s).toFixed(2)} ${(v.w/s).toFixed(2)} ${(v.h/s).toFixed(2)}`);
-  fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/s).toFixed(2))})}
+  fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/s).toFixed(2))});
+  // The explorable map's hatch keeps 6px stripes on screen at any zoom, and square despite the vertical correction.
+  const hp=fl.querySelector("#exHatch");if(hp){const k=u/s,sy=+fl.dataset.sy||1;hp.setAttribute("patternTransform",`scale(${k.toFixed(5)},${(k/sy).toFixed(5)}) rotate(45)`)}}
 // Entering the map: remember its full frame and open zoomed to the country's close frame (data-fit), so zooming
 // out reaches the region and a double tap resets to it.
 function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
@@ -901,8 +912,8 @@ function exSelect(c,hits){if(!LB)return;const m=LB.fl,sel=m.querySelector(".sel"
     if(S.cap[c]){const [cx,cy]=S.cap[c],r=3.5*LB.vb0.w/LB.baseW;
       marks.innerHTML=`<circle class="cap" data-r="${r.toFixed(2)}" cx="${cx}" cy="${(cy*sy).toFixed(1)}" r="${(r/LB.scale).toFixed(2)}"/>`}}
   exCaption();exCard()}
-function exCaption(){if(!LB)return;const n=LB.ex.codes.length,c=LB.sel;
-  let t=n+(n===1?" place":" places");
+function exCaption(){if(!LB)return;const c=LB.sel,S=MAP.set[MAP.frame[LB.ex.frame].set],drawn=LB.ex.codes.filter(x=>S.shape[x]),n=drawn.filter(x=>LB.ex.on.has(x)).length,out=drawn.length-n;
+  let t=n+(n===1?" place":" places")+(out?`. Hatched places aren't in ${scopeLabel()}.`:"");
   if(c&&LB.hits){const i=LB.hits.indexOf(c),nx=LB.hits[(i+1)%LB.hits.length];t=`Tap again for ${BY[nx].n}`}
   $("#lbSub").textContent=t;$("#lbVar").innerHTML=""}
 // The card: the flag's study entry. Its flag opens the designs in the viewer; closing them comes back to the map.
@@ -910,7 +921,7 @@ function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel;
   LB.el.classList.toggle("picked",!!c);
   if(!c){box.innerHTML="";return}
   const mixed=WIDE.includes(LB.region)||SET.scope!=="countries";
-  box.innerHTML=`<button type="button" class="exclose" onclick="exSelect(null)" aria-label="Close the card">×</button>`+studyEntry(BY[c],mixed,{noMap:true,flagClick:`exFlag('${c}')`});
+  box.innerHTML=`<button type="button" class="exclose" onclick="exSelect(null)" aria-label="Close the card">×</button>`+studyEntry(BY[c],mixed,{noMap:true,flagClick:`exFlag('${c}')`,pill:LB.ex.on.has(c)?null:`<span class="pill">not in ${scopeLabel()}</span>`});
   box.scrollTop=0}
 
 // The question flag opens the viewer with the flag where it is: a tap, a pinch, a double click or the wheel. A

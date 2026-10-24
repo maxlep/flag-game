@@ -39,11 +39,13 @@ function mapFit(frame,code,aspect,sy){
 }
 
 // The explorable map: every flag in codes drawn as its own shape (data-c), over the land of the frame. Larger shapes
-// go first, so where they overlap (the United Kingdom and England, a country and its territory) the smaller is on top.
+// go first, so where they overlap (the United Kingdom and England, a country and its territory) the smaller is on top;
+// but places in the scope always go above those outside it.
 // Places too small to see at the frame's scale also get a dot, with a wider invisible ring that takes the tap.
 // The frame is the region's, widened to take in any flag lying wholly outside it (a far-flung territory; Russia, which
 // reaches into the frame, doesn't widen it), then padded to the aspect ratio asked for. data-fit is the frame before
 // that padding, in drawn units, for a viewer that opens zoomed to it.
+// o.on, when given, is the set of codes in the current scope; the others are drawn hatched (.out) but stay tappable.
 // Selection marks (the .hi copy of a shape and the capital) are added by the viewer.
 function mapExploreSVG(o){
   const frame=o.frame,S=MAP.set[MAP.frame[frame].set],codes=o.codes.filter(c=>S.shape[c]);
@@ -55,12 +57,15 @@ function mapExploreSVG(o){
   if(o.aspect){const cur=(x1-x0)/((y1-y0)*sy);if(cur<o.aspect){const d=(o.aspect*(y1-y0)*sy-(x1-x0))/2;x0-=d;x1+=d}else{const d=((x1-x0)/(o.aspect*sy)-(y1-y0))/2;y0-=d;y1+=d}}
   const w=x1-x0,h=y1-y0,dot=Math.max(1.2,w*0.006),Y=y=>(y*sy).toFixed(1);
   const land=S.land.map((d,i)=>{const b=S.lbox[i];return b[0]<x1&&b[2]>x0&&b[1]<y1&&b[3]>y0?`<path d="${d}"/>`:""}).join("");
-  const order=codes.slice().sort((a,b)=>S.area[b]-S.area[a]);
-  const shapes=order.map(c=>`<path class="ct" data-c="${c}" d="${S.shape[c]}"/>`).join("");
+  // Places in the scope go above those outside it, so a country isn't drawn hatched under its own parts.
+  const isOn=c=>!o.on||o.on.has(c);
+  const order=codes.slice().sort((a,b)=>isOn(a)-isOn(b)||S.area[b]-S.area[a]);
+  const out=c=>o.on&&!o.on.has(c)?" out":"";
+  const shapes=order.map(c=>`<path class="ct${out(c)}" data-c="${c}" d="${S.shape[c]}"/>`).join("");
   const tiny=order.filter(c=>{const b=S.box[c];return Math.hypot(b[2]-b[0],(b[3]-b[1])*sy)<w*0.012});
-  const dots=tiny.map(c=>{const [px,py]=S.pt[c];return `<circle class="dot ex" data-c="${c}" cx="${px}" cy="${Y(py)}" r="${dot.toFixed(2)}"/>`}).join("")
+  const dots=tiny.map(c=>{const [px,py]=S.pt[c];return `<circle class="dot ex${out(c)}" data-c="${c}" cx="${px}" cy="${Y(py)}" r="${dot.toFixed(2)}"/>`}).join("")
     +tiny.map(c=>{const [px,py]=S.pt[c];return `<circle class="hit" data-c="${c}" cx="${px}" cy="${Y(py)}" r="${(dot*3).toFixed(2)}"/>`}).join("");
-  return `<svg class="map explore${o.cls?" "+o.cls:""}" data-fit="${fit}" data-sy="${sy.toFixed(4)}" viewBox="${x0.toFixed(1)} ${Y(y0)} ${w.toFixed(1)} ${Y(h)}" preserveAspectRatio="xMidYMid meet"><rect class="sea" x="${x0.toFixed(1)}" y="${Y(y0)}" width="${w.toFixed(1)}" height="${Y(h)}"/><g transform="scale(1,${sy.toFixed(4)})"><g class="land">${land}</g><g class="cts">${shapes}</g><g class="sel"></g></g><g class="dots">${dots}</g><g class="marks"></g></svg>`;
+  return `<svg class="map explore${o.cls?" "+o.cls:""}" data-fit="${fit}" data-sy="${sy.toFixed(4)}" viewBox="${x0.toFixed(1)} ${Y(y0)} ${w.toFixed(1)} ${Y(h)}" preserveAspectRatio="xMidYMid meet"><defs><pattern id="exHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect class="hb" width="6" height="6"/><line class="hl" x1="0" y1="0" x2="0" y2="6"/></pattern></defs><rect class="sea" x="${x0.toFixed(1)}" y="${Y(y0)}" width="${w.toFixed(1)}" height="${Y(h)}"/><g transform="scale(1,${sy.toFixed(4)})"><g class="land">${land}</g><g class="cts">${shapes}</g><g class="sel"></g></g><g class="dots">${dots}</g><g class="marks"></g></svg>`;
 }
 // The flags an explorable map can show, and the frame to show them in: a region's own, the world for the wide lists.
 // Null when none of them has a shape (the organisations).
