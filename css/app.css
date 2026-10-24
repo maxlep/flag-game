@@ -92,7 +92,7 @@ body.kb .qdrawer{padding-bottom:3px} /* riding the top of the keyboard */
 .qdrawer .opt{min-height:46px;padding:9px 14px}
 /* Drill's "Correct" strip stays visible at the foot of the middle band even when the flag fills it. */
 .qmid .card.toast{position:sticky;bottom:0;padding:10px 16px;margin-top:-6px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.qdrawer.compact .opt{min-height:40px;padding:6px 14px;font-size:15px}
+.qdrawer.answered .opt{min-height:40px;padding:6px 14px;font-size:15px}
 .qdrawer .opts{gap:8px}
 .qdrawer::before{content:"";position:absolute;top:-1px;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:var(--bg);z-index:-1;border-top:1px solid transparent;transition:border-color .15s,box-shadow .15s}
 .qdrawer.lift::before{border-color:var(--line);box-shadow:0 -10px 24px -12px rgba(10,20,40,.35)}
@@ -603,6 +603,7 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
    with the room (--flagh) up to a size that still leaves space round it. */
 .qprompt.big{margin-block:auto}
 .qprompt.big .ask{font-size:clamp(28px,calc(var(--flagh,300px) * .14),46px);line-height:1.15;text-wrap:balance}
-/* Drill with options to pick: a right answer swaps the question line for Next and keeps every option, so the line holds
-   Next's height from the start and the drawer stays the same size. */
-.qdrawer.hold .eyebrow{min-height:42px;display:flex;align-items:flex-end;margin-bottom:0}
+/* Picking the flag in Drill, answered right: the drawer keeps its height (set from the page) and the right flag sits
+   alone in the middle of the room above Next. */
+.qdrawer.held .flagopts{flex:1;min-height:0;display:flex;justify-content:center;align-items:center}
+.qdrawer.held .fopt{width:calc(50% - 5px);max-height:100%}

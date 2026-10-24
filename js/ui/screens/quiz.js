@@ -31,6 +31,9 @@ function viewQuiz() {
     opts,
     ask = "";
   const steady = mapq && !!q.ans && S.pace === "drill" && q.ans === q.c;
+  // Picking the flag in Drill, answered right: no card, so the drawer keeps the height it had (pinDrawer) and holds the
+  // right flag alone, with Next under it.
+  const held = reverse && !!q.ans && S.pace === "drill" && q.ans === q.c;
   if (mapq) {
     // Found on the map: the question (the flag, or the name) above, the map under it filling the band.
     // Easy names the part of the region it is in, beside the name as regions are on the cards (under the flag when the
@@ -53,7 +56,7 @@ function viewQuiz() {
     ask = `<p class="eyebrow">Which flag?</p>`;
     opts = `<div class="flagopts n${q.opts.length}">${q.opts
       .map((c, i) => {
-        if (compact && c !== q.c && c !== q.ans) return "";
+        if ((compact || held) && c !== q.c && c !== q.ans) return "";
         let cls = "fopt";
         if (q.ans) {
           if (c === q.c) cls += " right";
@@ -147,10 +150,19 @@ function viewQuiz() {
   <div class="progress">${dots}</div>
   ${S.confirmLeave ? `<div class="leave"><span>Leave this round? Its score won't be kept.</span><span class="row" style="flex:none"><button class="btn line sm" onclick="goBack()">Leave</button><button class="btn sm" onclick="stayInRound()">Stay</button></span></div>` : ""}</div>
   <div class="qmid${mapq ? " mapq" : ""}" id="qmid" data-i="${S.i}">${prompt}${reveal}</div>
-  <div class="qdrawer${q.ans ? " answered" : ""}${compact ? " compact" : ""}${!typed && !mapq && S.pace === "drill" ? " hold" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${opts}${nextBtn}</div>
+  <div class="qdrawer${q.ans ? " answered" : ""}${compact ? " compact" : ""}${held ? " held" : ""}">${q.ans && (!typed || compact) && !steady ? "" : ask}${opts}${nextBtn}</div>
   </div>`;
 }
 
+// The drawer's height before an answer, kept so a drawer that changes its contents without a card (held) can keep it.
+let QDH = null;
+function pinDrawer() {
+  const dr = app.querySelector(".qdrawer"),
+    q = S.qs && S.qs[S.i];
+  if (!dr || !q) return;
+  if (!q.ans) QDH = {i: S.i, h: dr.offsetHeight};
+  else if (dr.classList.contains("held") && QDH && QDH.i === S.i) dr.style.height = QDH.h + "px";
+}
 // The question flag opens the viewer with the flag where it is: a tap, a pinch, a double click or the wheel. A
 // pinch's pointers are captured by the flag's box, so their moves and lifts are passed on to the viewer.
 function wireZoom() {
