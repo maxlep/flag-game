@@ -8,7 +8,8 @@ function studyVar(btn, i) {
 }
 // A meter: MASTER segments, one per point, after an icon that says which: a flag's (a flag, blue), full when the flag is
 // learned, or a place's (a pin, purple; cls "place", filled by rounds with no flag on screen), full when it is located.
-// The same icons go before "learned" and "located" (doneTag).
+// In the study list a full meter shows in green (cls "full"), the same size as the others, so the stack lines up;
+// the quiz card says "learned" or "located" in words, after the same icon (doneTag).
 const MICON = {
   flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4m0 0c4-2.5 7 2.5 14 0v10c-7 2.5-10-2.5-14 0"/></svg>`,
   place: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`
@@ -25,7 +26,12 @@ function meter(s, from, cls = "") {
   for (let i = 0; i < MASTER; i++)
     segs += `<i class="${i < a ? (i >= b ? "on new" : "on") : i < b ? "lost" : ""}"></i>`;
   const place = /\bplace\b/.test(cls);
-  return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${a} of ${MASTER} toward ${place ? "located" : "learned"}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${segs}</span>`;
+  const label = /\bfull\b/.test(cls)
+    ? place
+      ? "located"
+      : "learned"
+    : `${a} of ${MASTER} toward ${place ? "located" : "learned"}`;
+  return `<span class="meter${cls ? " " + cls : ""}" role="img" aria-label="${label}" title="${label}"><span class="mi" aria-hidden="true">${MICON[place ? "place" : "flag"]}</span>${segs}</span>`;
 }
 // Where a flag stands: learned, its meter (empty after misses alone), nothing before it has been asked, or not
 // quizzed at all.
@@ -33,14 +39,18 @@ const studyPill = f =>
   NOQUIZ.has(f.c)
     ? '<span class="pill">not quizzed</span>'
     : mastered(f.c)
-      ? doneTag(false)
+      ? meter(MASTER, undefined, "full")
       : rec(f.c).c + rec(f.c).w > 0
         ? meter(rec(f.c).s)
         : "";
 // Where a place stands, under the flag's standing at the entry's top right: located, its meter, or nothing before it
 // has been asked.
 const placePill = f =>
-  isLocated(f.c) ? doneTag(true) : loc(f.c).c + loc(f.c).w > 0 ? meter(loc(f.c).s, undefined, "place") : "";
+  isLocated(f.c)
+    ? meter(MASTER, undefined, "place full")
+    : loc(f.c).c + loc(f.c).w > 0
+      ? meter(loc(f.c).s, undefined, "place")
+      : "";
 // One study entry: flag (opens the viewer), design chips, a small map (drawn later, by wireMiniMaps), name, standing,
 // capital and description. The explorable map's card is the same entry with no small map; its flag says how to open it.
 const scopeLabel = () => SCOPES.find(x => x[0] === SET.scope)[1];
