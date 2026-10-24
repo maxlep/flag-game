@@ -386,8 +386,8 @@ button.wl{font:inherit;color:inherit;background:none;padding:0}
 .excard:empty{display:none}
 .excard .entry{max-height:min(42vh,320px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 10px 40px rgba(0,0,0,.45)}
 .exclose{position:absolute;top:-12px;right:-6px;z-index:1;width:32px;height:32px;border-radius:50%;background:var(--surface);color:var(--ink);border:1px solid var(--line);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.excard .flag{width:auto}
-.excard .flag .fl{box-shadow:none;max-width:100%;will-change:auto}
+.excard .flag,.exbody .flag{width:auto}
+.excard .flag .fl,.exbody .flag .fl{box-shadow:none;max-width:100%;will-change:auto}
 /* Name, then the region small and muted beside it (it drops under the name when it doesn't fit); then the capital
    and the flag's years, a line each. */
 .where{display:inline-block;margin-left:8px;font:500 12px/1.4 var(--mono);color:var(--muted);letter-spacing:.01em;white-space:nowrap;vertical-align:baseline}
@@ -417,3 +417,29 @@ h2 .where{font-size:13px}
 .tico svg{width:19px;height:19px}
 .tico:hover,.tico:active{background:var(--tint)}
 .tico:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+/* The list beside the explorable map. On a phone, a drawer at the bottom: its handle names the count and folds it
+   away; open, it takes up to 46% of the height. On a wide screen, a panel down the left that stays. Either way the
+   entries are the study list's, and the selected one is outlined in the accent. The card, when shown (the list
+   folded, or a place outside the scope), sits just above the drawer. */
+.exlist{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;flex-direction:column;height:min(46vh,440px);background:var(--bg);color:var(--ink);text-align:left;
+  border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.35);padding-bottom:env(safe-area-inset-bottom,0px)}
+.exlist.folded{height:auto}
+.exhandle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:12px 18px;font:500 13px/1.3 var(--mono);color:var(--muted);flex:none}
+.exhandle i{width:9px;height:9px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-4px}
+.exlist.folded .exhandle i{transform:rotate(-135deg);margin-top:4px}
+.exhandle:focus-visible{outline:3px solid var(--accent);outline-offset:-3px;border-radius:16px 16px 0 0}
+.exwrap{position:relative;flex:1;min-height:0;display:flex}
+.exlist.folded .exwrap{display:none}
+.exbody{flex:1;min-width:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding:0 30px 14px 12px}
+.exbody .entry{cursor:pointer}
+.exbody .entry.sel{border-color:var(--accent);box-shadow:0 0 0 1.5px var(--accent)}
+.exbody .letter{padding-top:4px}
+.exlist .alpha{position:absolute;right:2px;top:50%;transform:translateY(-50%)}
+.lb.exploring .lb-foot{bottom:var(--exh,0px);padding-bottom:12px}
+.lb.exploring:has(.exlist:not(.folded)) .lb-hint{display:none}
+.lb.exwide .exlist{top:0;bottom:0;right:auto;width:360px;height:auto;border-radius:0;box-shadow:8px 0 30px rgba(0,0,0,.3);padding-top:env(safe-area-inset-top,0px)}
+.lb.exwide .exlist.folded .exwrap{display:flex}
+.lb.exwide .exhandle{pointer-events:none}
+.lb.exwide .exhandle i{display:none}
+.lb.exwide .lb-top,.lb.exwide .lb-foot{left:360px}
+.lb.exwide .lb-hint{display:block}

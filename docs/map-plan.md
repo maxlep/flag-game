@@ -54,6 +54,7 @@ Starting with part 2 would skip a version that gets replaced, at the cost of put
 
 Choices made for the first version, open to change:
 
+- The study list of the places in the set sits beside the map: a drawer at the bottom on a phone, which folds to its handle, and a panel on the left on a wide screen. A tap on an entry selects the place and brings it into view; a tap on the map marks the entry. The selected entry is the card, so a separate card shows only when the list is folded or the place is outside the scope.
 - A card pinned at the bottom rather than a popup tied to the spot. A popup has to follow pans and zooms, covers the neighbours you tap next, and has nowhere to sit near a phone's edge. The spot is still marked on the map.
 - Entered from a region card (a map button joined to the book that opens the list) or the study list (a Map button beside the scope). The region is picked from the map's title, and the scope from its top bar. The top line gives only the count: the hatch and dots should explain themselves.
 - Built as a mode of the viewer, so the viewer stays the only zoom. The card's flag opens the designs, and closing them comes back to the map where it was.

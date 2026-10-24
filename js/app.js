@@ -695,15 +695,17 @@ function wireMiniMaps(){const boxes=[...app.querySelectorAll(".mapbtn.mini")];if
   const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){draw(x.target);io.unobserve(x.target)}}),{rootMargin:"300px 0px"});
   boxes.forEach(b=>io.observe(b))}
 // Alphabet index: tap or drag along the letters to jump the list, like a phone's contacts list.
-function wireAlpha(){
-  const a=$("#alpha");if(!a)return;let bubble=null,active=false,lastL="";
+// a: the index; box: a scrolling element holding the list (the map's drawer), or none for the page.
+function wireAlpha(a=$("#alpha"),box=null){
+  if(!a)return;let bubble=null,active=false,lastL="";
   const spans=[...a.querySelectorAll("span")];
   // Letter from the finger's vertical position only, so sideways drift during a fast scrub doesn't lose it.
   const letterAt=y=>{const r=a.getBoundingClientRect();const i=Math.min(spans.length-1,Math.max(0,Math.floor((y-r.top)/(r.height/spans.length))));return spans[i].dataset.l};
   const jump=y=>{const l=letterAt(y);if(!l||l===lastL)return;lastL=l;
-    const target=app.querySelector(`.study [data-l="${l}"]`);if(!target)return;
-    const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8;
-    window.scrollTo(0,target.getBoundingClientRect().top+window.scrollY-off);
+    const target=(box||app).querySelector(`${box?"":".study "}[data-l="${l}"]`);if(!target)return;
+    if(box)box.scrollTop+=target.getBoundingClientRect().top-box.getBoundingClientRect().top;
+    else{const head=app.querySelector(".sticky");const off=(head?head.getBoundingClientRect().height:0)+8;
+      window.scrollTo(0,target.getBoundingClientRect().top+window.scrollY-off)}
     if(!bubble){bubble=document.createElement("div");bubble.className="alpha-bubble";document.body.appendChild(bubble)}bubble.textContent=l};
   const end=()=>{active=false;lastL="";a.classList.remove("hot");if(bubble){bubble.remove();bubble=null}};
   a.addEventListener("pointerdown",e=>{active=true;a.classList.add("hot");try{a.setPointerCapture(e.pointerId)}catch(x){}jump(e.clientY);e.preventDefault()});
@@ -762,8 +764,8 @@ function exRegion(r){if(!LB||LB.what!=="explore")return;if(S.view==="study"){S.r
 function exScope(v){if(!LB||LB.what!=="explore"||SET.scope===v)return;const k={sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y};let r=LB.region;
   if(WIDE.includes(r))r=S.region={countries:"Whole world",all:"Everything",territories:"All territories"}[v];
   setOpt("scope",v);openExplore(r,k)}
-function exFlag(c){if(!LB||LB.what!=="explore")return;const vi=+(LB.el.querySelector(".excard .entry")||{dataset:{v:0}}).dataset.v;
-  EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y};openFlag(c,vi)}
+function exFlag(c,btn){if(!LB||LB.what!=="explore")return;const en=btn&&btn.closest(".entry"),vi=en?+en.dataset.v:0,b=$("#exBody");
+  EXRET={region:LB.region,sel:LB.sel,scale:LB.scale,x:LB.x,y:LB.y,top:b?b.scrollTop:0};openFlag(c,vi)}
 function openViewer(c,o){
   closeFlag(true);
   const ex=o.what==="explore";
@@ -771,7 +773,8 @@ function openViewer(c,o){
   el.innerHTML=`<div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
     <div class="lb-top"><div class="title">${ex?exRegionSel(o.region):`<span class="nm">${esc(BY[c].n)}</span>`}<span class="sub" id="lbSub"></span>${ex?`<div class="vchips lb-scope">${SCOPES.map(([v,l])=>`<button type="button" class="chipbtn${SET.scope===v?" on":""}" onmousedown="event.preventDefault()" onclick="exScope('${v}')">${l}</button>`).join("")}</div>`:""}</div><div class="ctl">
     <button type="button" onclick="lbZoom(1/1.5)" aria-label="Zoom out">−</button><button type="button" onclick="lbZoom(1.5)" aria-label="Zoom in">+</button><button type="button" onclick="closeFlag()" aria-label="Close">×</button></div></div>
-    <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>`;
+    <div class="lb-foot">${ex?`<div class="excard" id="exCard"></div>`:""}<div class="lb-var" id="lbVar"></div><p class="lb-hint" id="lbHint"></p></div>
+    ${ex?`<div class="exlist${SET.exFold?" folded":""}" id="exList"><button type="button" class="exhandle" onclick="exFold()" aria-expanded="${!SET.exFold}"><span id="exCount"></span><i aria-hidden="true"></i></button><div class="exwrap"><div class="exbody" id="exBody"></div><div class="alpha" id="exAlpha"></div></div></div>`:""}`;
   document.body.appendChild(el);document.body.style.overflow="hidden";
   // The cursor only changes when the mouse moves, so the element it is over takes the viewer's cursor meanwhile.
   const under=[...document.querySelectorAll(":hover")].pop();if(under&&!el.contains(under)){under.style.cursor="grab";el._under=under}
@@ -779,9 +782,9 @@ function openViewer(c,o){
   // Typing waits: the keyboard goes away so the whole screen is free, and the box gets its focus back on close.
   const inp=$("#typeIn"),refocus=!!inp&&document.activeElement===inp;if(refocus)inp.blur();
   LB={c,chips:o.chips!==false&&!o.quiet&&!ex,refocus,min:1,scale:1,x:0,y:0,pts:new Map(),el,stage,track};
-  if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null}
+  if(ex){LB.region=o.region;LB.ex=o.ex;LB.sel=null;exListBuild();exLayout()}
   lbShow(o.what,o.vi||0);
-  if(ex&&o.keep){const k=o.keep;LB.scale=k.scale;LB.x=k.x;LB.y=k.y;lbApply();if(k.sel)exSelect(k.sel)}
+  if(ex&&o.keep){const k=o.keep;LB.scale=k.scale;LB.x=k.x;LB.y=k.y;lbApply();if(k.top!==undefined)$("#exBody").scrollTop=k.top;if(k.sel)exSelect(k.sel,null,k.top===undefined)}
   if(o.from&&LB.what==="flag"){const r=o.from,C=lbCenter(),s=r.width/LB.baseW;LB.from={s,x:r.left+r.width/2-C.x,y:r.top+r.height/2-C.y};LB.min=Math.min(1,s);LB.scale=s;LB.x=LB.from.x;LB.y=LB.from.y;lbApply()}
   const st=stage;
   st.addEventListener("pointerdown",e=>{capture(st,e);lbDown(e)});
@@ -850,7 +853,10 @@ function lbApply(){if(!LB)return;const fl=LB.fl;
   if(!LB.vb0){const b=fl.viewBox.baseVal;LB.vb0={x:b.x,y:b.y,w:b.width,h:b.height}}
   const v=LB.vb0,W=LB.baseW,H=W*v.h/v.w,u=v.w/W,s=LB.scale;
   // The window stays inside the frame: the map carries no land beyond it.
-  const mx=(s-1)*W/2,my=(s-1)*H/2;LB.x=Math.max(-mx,Math.min(mx,LB.x));LB.y=Math.max(-my,Math.min(my,LB.y));
+  // On the explorable map the list, the card and the title cover part of the stage, so the map may be pulled out from
+  // under them by as much.
+  const mx=(s-1)*W/2,my=(s-1)*H/2,I=LB.what==="explore"&&LB.ins||{l:0,t:0,b:0};
+  LB.x=Math.max(-mx,Math.min(mx+I.l,LB.x));LB.y=Math.max(-my-I.b,Math.min(my+I.t,LB.y));
   fl.setAttribute("viewBox",`${(v.x+v.w/2-(W/2+LB.x)*u/s).toFixed(2)} ${(v.y+v.h/2-(H/2+LB.y)*u/s).toFixed(2)} ${(v.w/s).toFixed(2)} ${(v.h/s).toFixed(2)}`);
   fl.querySelectorAll("circle").forEach(k=>{if(!k.dataset.r)k.dataset.r=k.getAttribute("r");k.setAttribute("r",(k.dataset.r/s).toFixed(2))});
   lbHatch()}
@@ -873,8 +879,11 @@ function lbMapHome(){if(!LB||LB.fl.tagName!=="svg")return;const fl=LB.fl;
 // The explorable map opens with its region filling the stage: the region's frame (data-fit) covers it, so a wide
 // region on a tall phone fills the height and pans sideways. No more than twice the size that shows all of it.
 function lbExHome(){if(!LB)return;const fl=LB.fl,v=LB.vb0,f=(fl.dataset.fit||"").split(" ").map(Number);if(f.length!==4)return;
-  const u=v.w/LB.baseW,contain=Math.min(v.w/f[2],v.h/f[3]),cover=Math.max(v.w/f[2],v.h/f[3]),s=Math.max(1,Math.min(lbMax(),cover,contain*2));
-  LB.home=s;LB.scale=s;LB.x=-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
+  // Fitted to the part of the stage that shows (past the list and the title), centred there.
+  const u=v.w/LB.baseW,V=exVis(),vw=(V.right-V.left)*u,vh=(V.bottom-V.top)*u,C=lbCenter();
+  const contain=Math.min(vw/f[2],vh/f[3]),cover=Math.max(vw/f[2],vh/f[3]),s=Math.max(1,Math.min(lbMax(),cover,contain*2));
+  const P={x:(V.left+V.right)/2,y:(V.top+V.bottom)/2};
+  LB.home=s;LB.scale=s;LB.x=(P.x-C.x)-s*((f[0]+f[2]/2)-(v.x+v.w/2))/u;LB.y=(P.y-C.y)-s*((f[1]+f[3]/2)-(v.y+v.h/2))/u;lbApply()}
 // The strip of designs: slide vi is in view. The chips move it (animated); there is no swiping, so a drag is always a pan.
 function lbTrack(anim){if(!LB)return;LB.track.classList.toggle("anim",!!anim);LB.track.style.transform=`translateX(${-100*LB.vi}%)`}
 function lbGo(i){if(!LB)return;i=Math.min(LB.n-1,Math.max(0,i));if(i!==LB.vi){LB.scale=1;LB.x=0;LB.y=0;lbApply();LB.vi=i;LB.fl=LB.fls[i];LB.baseW=LB.fl.getBoundingClientRect().width;lbApply();lbCaption()}lbTrack(true)}
@@ -919,28 +928,79 @@ function exTap(x,y){if(!LB||LB.what!=="explore")return;
   if(!hits.length){exSelect(null);return}
   const i=hits.indexOf(LB.sel);exSelect(i>=0?hits[(i+1)%hits.length]:hits[0],hits)}
 // Select a flag: fill its shape, mark its capital, show its card. Null clears the selection.
-function exSelect(c,hits){if(!LB)return;const m=LB.fl,sel=m.querySelector(".sel"),marks=m.querySelector(".marks");
+function exSelect(c,hits,scroll=true){if(!LB)return;const m=LB.fl,sel=m.querySelector(".sel"),marks=m.querySelector(".marks");
   LB.sel=c;LB.hits=c&&hits&&hits.length>1?hits:null;
   m.querySelectorAll(".dot.ex.on").forEach(d=>d.classList.remove("on"));
   sel.innerHTML="";marks.innerHTML="";
   if(c){const S=MAP.set[MAP.frame[LB.ex.frame].set],sy=+m.dataset.sy;
     sel.innerHTML=`<path class="hi" d="${S.shape[c]}"/>`;
-    const d=m.querySelector(`.dot.ex[data-c="${c}"]`);if(d)d.classList.add("on");
+    // A small place gets a ring as well, 12px out, so the selection shows past the capital marker on top of it.
+    const d=m.querySelector(`.dot.ex[data-c="${c}"]`);let ring="";if(d){d.classList.add("on");const r=12*LB.vb0.w/LB.baseW;ring=`<circle class="dot ring" data-r="${r.toFixed(2)}" cx="${d.getAttribute("cx")}" cy="${d.getAttribute("cy")}" r="${(r/LB.scale).toFixed(2)}"/>`}
     if(S.cap[c]){const [cx,cy]=S.cap[c],r=3.5*LB.vb0.w/LB.baseW;
-      marks.innerHTML=`<circle class="cap" data-r="${r.toFixed(2)}" cx="${cx}" cy="${(cy*sy).toFixed(1)}" r="${(r/LB.scale).toFixed(2)}"/>`}}
-  exCaption();exCard()}
+      marks.innerHTML=`<circle class="cap" data-r="${r.toFixed(2)}" cx="${cx}" cy="${(cy*sy).toFixed(1)}" r="${(r/LB.scale).toFixed(2)}"/>`}
+    marks.innerHTML=ring+marks.innerHTML}
+  exCaption();exCard();exMark(c,scroll)}
 function exCaption(){if(!LB)return;const c=LB.sel,S=MAP.set[MAP.frame[LB.ex.frame].set],n=LB.ex.codes.filter(x=>S.shape[x]&&LB.ex.on.has(x)).length;
   let t=n+(n===1?" place":" places");
   if(c&&LB.hits){const i=LB.hits.indexOf(c),nx=LB.hits[(i+1)%LB.hits.length];t=`Tap again for ${BY[nx].n}`}
-  $("#lbSub").textContent=t;$("#lbVar").innerHTML=""}
+  $("#lbSub").textContent=t;$("#lbVar").innerHTML="";const n2=$("#exCount");if(n2)n2.textContent=n+(n===1?" place":" places")}
 // The card: the flag's study entry. Its flag opens the designs in the viewer; closing them comes back to the map.
-function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel;
+// Shown only when the list can't show the place: it is folded away, or the place isn't in the scope.
+function exCard(){const box=$("#exCard");if(!box)return;const c=LB.sel,inList=c&&LB.ex.on.has(c)&&!exFolded();
   LB.el.classList.toggle("picked",!!c);
-  if(!c){box.innerHTML="";return}
+  if(!c||inList){box.innerHTML="";exLayout();return}
   const mixed=WIDE.includes(LB.region)||SET.scope!=="countries";
-  box.innerHTML=`<button type="button" class="exclose" onclick="exSelect(null)" aria-label="Close the card">×</button>`+studyEntry(BY[c],mixed,{noMap:true,flagClick:`exFlag('${c}')`,pill:LB.ex.on.has(c)?null:`<span class="pill outside">not in ${scopeLabel()}</span>`});
+  box.innerHTML=`<button type="button" class="exclose" onclick="exSelect(null)" aria-label="Close the card">×</button>`+studyEntry(BY[c],mixed,{noMap:true,flagClick:`exFlag('${c}',this)`,pill:LB.ex.on.has(c)?null:`<span class="pill outside">not in ${scopeLabel()}</span>`});
   if(!LB.ex.on.has(c))box.querySelector(".entry").classList.add("outside");
-  box.scrollTop=0}
+  box.scrollTop=0;exLayout()}
+
+// The list beside the map: the study list of the places in the scope, in name order, with the letter index. On a phone
+// it is a drawer at the bottom that folds down to its handle; on a wide screen a panel on the left that stays.
+// A tap on an entry (not on its links or buttons) selects the place and brings it into view; a tap on the map marks
+// the entry and scrolls the list to it.
+const exWide=()=>matchMedia("(min-width: 820px) and (min-height: 480px)").matches;
+const exFolded=()=>!!SET.exFold&&!exWide();
+function exListBuild(){const b=$("#exBody"),a=$("#exAlpha");if(!b)return;
+  const list=studyList(LB.region).filter(f=>LB.ex.on.has(f.c)),mixed=WIDE.includes(LB.region)||SET.scope!=="countries";
+  const letter=f=>f.n.normalize("NFD").replace(/[\u0300-\u036f]/g,"")[0].toUpperCase();let last="";
+  b.innerHTML=list.map(f=>{const l=letter(f),h=l!==last?`<p class="eyebrow letter" data-l="${last=l}">${l}</p>`:"";return h+studyEntry(f,mixed,{noMap:true,flagClick:`exFlag('${f.c}',this)`})}).join("")||'<p class="muted small">No places here in this scope.</p>';
+  a.innerHTML=[...new Set(list.map(letter))].map(l=>`<span data-l="${l}">${l}</span>`).join("");
+  wireAlpha(a,b);
+  b.addEventListener("click",e=>{if(e.target.closest("a,button"))return;const en=e.target.closest(".entry");if(en)exPick(en.dataset.c)})}
+function exFold(){SET.exFold=!SET.exFold;try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}
+  const L=$("#exList");L.classList.toggle("folded",!!SET.exFold);L.querySelector(".exhandle").setAttribute("aria-expanded",String(!SET.exFold));
+  exCard();exLayout();if(!SET.exFold&&LB.sel)exMark(LB.sel,true)}
+// The room the list and the card take, as insets on the map: the stage stays full screen, the map's centre and its
+// panning limits move instead. --exh lifts the card above the drawer.
+function exLayout(){if(!LB||!LB.ex)return;const L=$("#exList"),wide=exWide(),top=LB.el.querySelector(".lb-top .title");
+  LB.el.classList.toggle("exwide",wide);
+  const h=wide?0:L.getBoundingClientRect().height,card=$("#exCard"),ch=card&&card.firstChild?card.getBoundingClientRect().height+12:0;
+  LB.el.style.setProperty("--exh",h+"px");
+  LB.ins={l:wide?L.getBoundingClientRect().right:0,t:top?top.getBoundingClientRect().bottom+6:0,b:h+ch}}
+// The part of the stage the map can be seen in, past the list, the card and the title.
+function exVis(){const r=LB.stage.getBoundingClientRect(),i=LB.ins||{l:0,t:0,b:0};return {left:r.left+i.l,top:r.top+i.t,right:r.right,bottom:r.bottom-i.b}}
+// Mark the selected entry and scroll the list so it shows.
+function exMark(c,scroll){const b=$("#exBody");if(!b)return;b.querySelectorAll(".entry.sel").forEach(e=>e.classList.remove("sel"));
+  const en=c&&b.querySelector(`.entry[data-c="${c}"]`);if(!en)return;en.classList.add("sel");
+  if(scroll&&!exFolded()){const bt=b.getBoundingClientRect(),et=en.getBoundingClientRect();if(et.top<bt.top||et.bottom>bt.bottom)b.scrollTo({top:b.scrollTop+et.top-bt.top-8,behavior:"smooth"})}}
+// From the list: select, and bring the place into view in the part of the map that shows. The zoom changes only when
+// it must: out, if the place doesn't fit; in, if it is under 24px on screen, but never so far that less than 60
+// units (about 2,300 km) of map show across, so an island keeps some land around it.
+function exPick(c){if(!LB)return;exSelect(c,null,true);const S=MAP.set[MAP.frame[LB.ex.frame].set],b=S.box[c];if(!b)return;
+  const fl=LB.fl,sy=+fl.dataset.sy||1,v=LB.vb0,u=v.w/LB.baseW,C=lbCenter(),V=exVis(),vw=V.right-V.left,vh=V.bottom-V.top;
+  const bw=(b[2]-b[0])/u,bh=(b[3]-b[1])*sy/u; // the place at scale 1, in px
+  const fitS=Math.min(vw*0.8/Math.max(bw,1e-6),vh*0.8/Math.max(bh,1e-6)),size=Math.max(bw,bh),ctxS=vw*u/60;
+  let s=LB.scale;
+  if(s>fitS)s=fitS;else if(size*s<24)s=Math.max(s,Math.min(ctxS,24/Math.max(size,1e-6)));
+  s=Math.max(1,Math.min(lbMax(),s));
+  const cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2*sy,P={x:(V.left+V.right)/2,y:(V.top+V.bottom)/2};
+  const tx=(P.x-C.x)-s*(cx-(v.x+v.w/2))/u,ty=(P.y-C.y)-s*(cy-(v.y+v.h/2))/u;
+  lbAnimate(s,tx,ty)}
+// Ease the map to a scale and offset over a quarter of a second.
+function lbAnimate(s1,x1,y1){const s0=LB.scale,x0=LB.x,y0=LB.y,t0=performance.now(),me=LB;
+  const step=t=>{if(LB!==me)return;const k=Math.min(1,(t-t0)/250),e=1-Math.pow(1-k,3);
+    LB.scale=s0+(s1-s0)*e;LB.x=x0+(x1-x0)*e;LB.y=y0+(y1-y0)*e;lbApply();if(k<1)requestAnimationFrame(step)};
+  requestAnimationFrame(step)}
 
 // The question flag opens the viewer with the flag where it is: a tap, a pinch, a double click or the wheel. A
 // pinch's pointers are captured by the flag's box, so their moves and lifts are passed on to the viewer.
@@ -968,6 +1028,7 @@ function wireZoom(){
   });
 }
 
+addEventListener("resize",()=>{if(LB&&LB.what==="explore")exLayout()});
 // ---------- BOOT ----------
 load();loadSet();loadB();
 function start(data){
