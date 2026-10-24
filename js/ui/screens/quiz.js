@@ -35,7 +35,7 @@ function viewQuiz() {
     prompt = `<div class="qprompt">${S.ask === "name" ? `<p class="eyebrow">Find it on the map</p><p class="ask">${esc(f.n)}</p>` : `<div class="qflag">${img(q.c, "flag big", q.v || 0)}</div>`}</div><div class="qmap">${qmSVG(q)}${QMCTL}</div>`;
     // Easy names the part of the region it is in; only that part can be tapped.
     const area = S.diff === "easy" && AREA_OF[q.c] ? `It's in ${esc(AREA_OF[q.c])}. ` : "";
-    ask = `<p class="eyebrow">${area}Tap it on the map, then Check, or double-tap it.</p>`;
+    ask = `<p class="eyebrow">${area}Tap it on the map, then tap it again or Check.</p>`;
     opts = q.ans
       ? ""
       : `<div class="row"><button type="button" class="btn" id="qmCheck" ${q.sel ? "" : "disabled"} onmousedown="event.preventDefault()" onclick="qmCheck()">Check</button><button type="button" class="btn line" onmousedown="event.preventDefault()" onclick="answer('__wrong__')">Reveal</button></div>`;

@@ -183,9 +183,11 @@ function qmMark(svg, q) {
   svg.querySelector(".marks").innerHTML = m;
   qmSize(svg);
 }
-// A tap: every place under it counts; a second tap on the same spot goes to the next one
-// under it. It selects without naming the place, which would let you hunt by tapping.
-function qmTap(x, y) {
+// A tap selects the place under it, without naming it (naming it would let you hunt by tapping). A tap on the place
+// already selected answers with it; one that lands on another place only moves the selection, so a second tap a
+// little off target doesn't answer for the wrong place. A long press goes to the next place under the finger (the
+// United Kingdom under England, Italy around San Marino).
+function qmTap(x, y, long) {
   const q = S.qs[S.i],
     svg = qmSvg();
   if (!svg || q.ans) return;
@@ -207,14 +209,16 @@ function qmTap(x, y) {
         .map(a => a[2])
     )
   ];
-  const i = hits.indexOf(q.sel);
-  // Kept for a double tap: when this tap only moved on from a place already selected under it, the double tap means
-  // that place (the United Kingdom picked by tapping again over England is the one answered).
-  qmPrev = i >= 0 ? q.sel : null;
-  q.sel = !hits.length ? null : i >= 0 ? hits[(i + 1) % hits.length] : hits[0];
+  // A tap answers when the selection is the place on top here, or when it was reached by a long press on this same
+  // stack of places (the United Kingdom picked over England answers from England, while a tap on Wales picks Wales).
+  const i = hits.indexOf(q.sel),
+    stack = hits.join(" ");
+  if (!long && i >= 0 && (i === 0 || stack === qmStack)) return qmCheck();
+  q.sel = !hits.length ? null : long && i >= 0 ? hits[(i + 1) % hits.length] : hits[0];
+  qmStack = long ? stack : "";
   qmPick(svg, q);
 }
-let qmPrev = null;
+let qmStack = "";
 // A selection changed: saved with the round, marked on the map, Check enabled.
 function qmPick(svg, q) {
   saveRound();
@@ -225,16 +229,6 @@ function qmPick(svg, q) {
 function qmCheck() {
   const q = S.qs[S.i];
   if (q.sel && !q.ans) answer(q.sel);
-}
-// A double tap answers with the place its first tap picked, so Check needn't be reached for at the bottom.
-function qmDouble() {
-  const q = S.qs[S.i];
-  if (q.ans) return;
-  if (qmPrev) {
-    q.sel = qmPrev;
-    qmPrev = null;
-  }
-  qmCheck();
 }
 // Zoom about a point on screen (the middle when none is given).
 function qmZoom(f, P) {
@@ -250,12 +244,13 @@ function qmZoom(f, P) {
     h = v[3] / f;
   qmSet(svg, [wx - (P.x - r.left) * (w / r.width), wy - (P.y - r.top) * (w / r.width), w, h]);
 }
-// Drag pans, two fingers pinch, the wheel zooms, a tap selects, a double tap answers.
+// Drag pans, two fingers pinch, the wheel zooms, a tap selects (or answers, on the selection), a long press goes to
+// the next place under the finger.
 function qmGestures(svg, box) {
   const pts = new Map();
   let st = null,
     moved = false,
-    last = null;
+    downT = 0;
   const begin = () => {
     st = {vb: QMV.vb.slice(), pts: [...pts.values()].map(p => ({...p}))};
   };
@@ -268,7 +263,10 @@ function qmGestures(svg, box) {
       box.setPointerCapture(e.pointerId);
     } catch (x) {}
     pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
-    if (pts.size === 1) moved = false;
+    if (pts.size === 1) {
+      moved = false;
+      downT = Date.now();
+    }
     begin();
   });
   box.addEventListener("pointermove", e => {
@@ -301,13 +299,7 @@ function qmGestures(svg, box) {
     if (pts.size) return begin();
     st = null;
     if (moved || e.type === "pointercancel") return;
-    const now = Date.now();
-    if (last && now - last.t < 320 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 30) {
-      last = null;
-      return qmDouble();
-    }
-    last = {t: now, x: e.clientX, y: e.clientY};
-    qmTap(e.clientX, e.clientY);
+    qmTap(e.clientX, e.clientY, Date.now() - downT > 450);
   };
   // The page itself must not zoom on a double tap (iOS does, whatever touch-action says): the second quick touch's
   // default is cancelled. The pointer events above still arrive; the zoom buttons keep their clicks.
