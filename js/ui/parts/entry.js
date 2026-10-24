@@ -7,7 +7,7 @@ function studyVar(btn, i) {
   showVariant(en.dataset.c, i);
 }
 // A meter: MASTER segments, one per point, after an icon that says which: a flag's (a flag, blue), full when the flag is
-// learned, or a place's (a pin, gold; cls "place", filled by rounds with no flag on screen), full when it is located.
+// learned, or a place's (a pin, purple; cls "place", filled by rounds with no flag on screen), full when it is located.
 // The same icons go before "learned" and "located" (doneTag).
 const MICON = {
   flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4m0 0c4-2.5 7 2.5 14 0v10c-7 2.5-10-2.5-14 0"/></svg>`,

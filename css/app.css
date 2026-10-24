@@ -1,7 +1,7 @@
 /* Layout: one narrow column like a field guide; the flag is always the largest thing on screen. */
 :root{
   --bg:#f2f4f7; --surface:#ffffff; --ink:#15223a; --muted:#5b6678; --line:#d6dbe4;
-  --accent:#1e3f8f; --accent-ink:#ffffff; --tint:#e3e9f6; --gold:#c9961a;
+  --accent:#1e3f8f; --accent-ink:#ffffff; --tint:#e3e9f6; --gold:#c9961a; --place:#8a3fc4;
   --ok:#1f7a4c; --ok-tint:#dff3e7; --bad:#b4262b; --bad-tint:#fbe3e3;
   --display:"Bricolage Grotesque","Avenir Next",Helvetica,Arial,sans-serif;
   --body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
@@ -9,11 +9,11 @@
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
-  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f;
+  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f; --place:#c08cff;
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0f1521; --surface:#182033; --ink:#eef1f7; --muted:#a3adc2; --line:#2a3550;
-  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f;
+  --accent:#4f7ee8; --accent-ink:#ffffff; --tint:#1f2b47; --gold:#e8b63f; --place:#c08cff;
   --ok:#5ad08f; --ok-tint:#15301f; --bad:#ff8a8f; --bad-tint:#3b1c1e; color-scheme:dark }
 
 *{box-sizing:border-box}
@@ -550,12 +550,12 @@ html.locked{overflow:hidden;scrollbar-gutter:auto}
 .meter i.lost{background:var(--bad);opacity:.45}
 .verdict .meter{margin-left:6px}
 .dscore .meter{margin-right:6px}
-/* A place's meter: gold, beside the flag's blue; the icon in front says which. */
+/* A place's meter: purple, beside the flag's blue (gold is the badges' colour); the icon in front says which. */
 .mi{display:inline-flex;width:13px;height:13px;margin-right:4px;color:var(--accent)}
 .mi svg{width:100%;height:100%}
-.place .mi{color:var(--gold)}
+.place .mi{color:var(--place)}
 .pill .mi{color:inherit;width:12px;height:12px;vertical-align:-2px}
-.meter.place i.on{background:var(--gold)}
+.meter.place i.on{background:var(--place)}
 .meter.place i.new{background:var(--ok)}
 /* The flag's standing and the place's, stacked at the entry's top right. */
 .meters{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex:none;align-self:flex-start;margin-top:3px}

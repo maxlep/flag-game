@@ -28,7 +28,7 @@ function gainLine(g, place) {
   return `${meter(g, undefined, place ? "place" : "")} ${g >= MASTER ? (place ? "A right answer locates the place." : "A right answer learns the flag.") : "per right answer"}`;
 }
 // The rules behind the meter, in full, folded under More.
-const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, marked with a flag, and a full meter means learned. A right answer fills 1 on Medium, 2 on Hard, 3 on Expert, and on Master 3 when picking or ${MASTER} when typing; Easy fills none. A miss empties 2. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Rounds with no flag on screen (name to map, map to name) fill the place's meter, marked with a pin and drawn in gold, by the same rules; a full one means located.</span></div>`;
+const LEARNING = `<div class="seg"><span class="label">How learning works</span><span class="note">Each flag has a meter of ${MASTER}, marked with a flag, and a full meter means learned. A right answer fills 1 on Medium, 2 on Hard, 3 on Expert, and on Master 3 when picking or ${MASTER} when typing; Easy fills none. A miss empties 2. The meter keeps up to 4 more beyond full and can fall up to 4 below empty, neither of which shows. Rounds with no flag on screen (name to map, map to name) fill the place's meter, marked with a pin and drawn in purple, by the same rules; a full one means located.</span></div>`;
 function viewSetup() {
   const p = S.pick,
     pool = poolFor(p.mode, p.arg, p.flt),
